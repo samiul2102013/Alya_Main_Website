@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  background-color: #FFFFFF;
+  color: #111827;
+}
+
+html {
+  color-scheme: light !important;
+  background-color: #FFFFFF !important;
+}
+
+@theme {
+  --color-primary: #781E36;
+  --color-primary-hover: #B83A4A;
+  --color-secondary: #6B5B57;
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-background-soft: #FAEDE6;
+  --color-surface: #FFFFFF;
+  --color-border-soft: #E8CFC1;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B5B57;
+  --color-accent: #E8CFC1;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  font-family: var(--font-inter, Inter, sans-serif);
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+}
+
+body,
+body * {
+  color-scheme: light !important;
+}
+
+/* ============ Arabic (RTL) overrides ============ */
+[dir="rtl"] body {
+  font-family: var(--font-arabic, "Noto Sans Arabic", sans-serif);
+}
+
+/* Force all elements to use the Arabic font so inline "Poppins" styles
+   don't break Arabic glyph rendering */
+[dir="rtl"] body *:not(svg *) {
+  font-family: inherit !important;
+}
+
+[dir="rtl"] .ltr-only {
+  display: none !important;
+}
+
+[dir="ltr"] .rtl-only {
+  display: none !important;
+}
+
+/* Flip directional icons/arrows in RTL */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Fix text alignment for elements that are hard-coded to the left */
+[dir="rtl"] .rtl-text-left {
+  text-align: right;
+}
+
+/* ============ Reveal animation ============ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============ Responsive helpers ============ */
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+/* Prevent hard-coded inline font-size/line-height from causing overflow on
+   small screens */
+@media (max-width: 640px) {
+  [style*="fontSize"],
+  [style*="font-size"] {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+}
