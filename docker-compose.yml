@@ -1,0 +1,30 @@
+services:
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://aliabackend.kodevio.com/api
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-pk_test_xxx}
+    container_name: alia_web
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.alia-web.rule=Host(`aia.kodevio.com`)
+      - traefik.http.routers.alia-web.entrypoints=websecure
+      - traefik.http.routers.alia-web.tls.certResolver=letsencrypt
+      - traefik.docker.network=dokploy-network
+      - traefik.http.services.alia-web.loadbalancer.server.port=3000
+      # HTTP -> HTTPS redirect
+      - traefik.http.routers.alia-web-http.rule=Host(`aia.kodevio.com`)
+      - traefik.http.routers.alia-web-http.entrypoints=web
+      - traefik.http.routers.alia-web-http.middlewares=alia-web-redirect
+      - traefik.http.middlewares.alia-web-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.alia-web-redirect.redirectscheme.permanent=true
+
+networks:
+  dokploy-network:
+    external: true
