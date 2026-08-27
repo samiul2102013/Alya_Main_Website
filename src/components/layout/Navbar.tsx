@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale, useTranslations } from 'next-intl';
@@ -62,6 +62,23 @@ export default function Navbar() {
     { label: t('emirates'), href: '/emirates' },
   ];
 
+  const [navbarHidden, setNavbarHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    function handleScroll() {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current && currentY > 100) {
+        setNavbarHidden(true);
+      } else {
+        setNavbarHidden(false);
+      }
+      lastScrollY.current = currentY;
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const switchLocale = (next: 'en' | 'ar') => {
     setLangOpen(false);
     setMobileMenuOpen(false);
@@ -77,7 +94,7 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-50 w-full transition-all duration-300"
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${navbarHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
       <Container className="grid h-[72px] md:h-[100px] grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-4 lg:gap-6 py-[10px] !max-w-[1440px] !px-3 sm:!px-4 lg:!px-6">
         {/* Brand Logo */}
