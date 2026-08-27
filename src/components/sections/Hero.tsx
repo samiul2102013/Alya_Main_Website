@@ -89,6 +89,7 @@ export default function Hero() {
 
   return (
     <Section background="default" spacing="none" containerClassName="!max-w-[1440px]" className="pt-[56px] sm:pt-[96px] pb-[80px] sm:pb-[146px] overflow-hidden relative">
+      samiul
       {/* Heavy Futuristic Background layers — desktop only, skipped on touch for performance */}
       {!isTouch && (
         <>
