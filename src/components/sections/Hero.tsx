@@ -289,7 +289,7 @@ export default function Hero() {
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button href="/news" size="lg" variant="secondary">
+                <Button href="/consultation" size="lg" variant="secondary">
                   {t('ctaSecondary')}
                 </Button>
               </motion.div>
