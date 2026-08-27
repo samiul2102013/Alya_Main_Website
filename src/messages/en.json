@@ -384,6 +384,9 @@
     "description": "Rouse Marriage Initiative, Consulting Services, Financial Support Programs, Counseling Services, and Community Resources — all available in each emirate. Whether you are preparing for marriage, seeking family guidance, or looking for financial assistance, find the support you need close to home.",
     "exploreTitle": "Explore Emirates",
     "exploreText": "Export email and description will be updated daily from the verified UAE community platform.",
+    "searchPlaceholder": "Search emirates...",
+    "search": "Search",
+    "reset": "Reset filters",
     "list": [
       { "name": "Abu Dhabi", "description": "Abu Dhabi, the capital of the UAE, is home to a wide range of extensive family development programs, generous financial support initiatives, professional pre-marital counseling services, and well-established community resources designed to support couples and families at every stage of their journey across the emirate.", "count": "45 initiatives" },
       { "name": "Dubai", "description": "Dubai, a modern global hub with a wonderfully diverse community, features developed authorities, a wide network of private counseling centers, and comprehensive marriage support services readily available through both government entities and private organizations dedicated to family well-being.", "count": "36 initiatives" },

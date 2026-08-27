@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Search, ChevronDown } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import { getPublishedEmirates, type PublicEmirate } from '@/lib/api/emirates';
@@ -95,10 +95,29 @@ export default function EmiratesPage() {
   const t = useTranslations('emiratesPage');
   const tNav = useTranslations('nav');
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [filterRegion, setFilterRegion] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   const list = t.raw('list') as EmirateItem[];
   const orgs = t.raw('orgs') as Org[];
   const items = useEmiratesData(list);
+
+  const regionOptions = ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain'];
+
+  const filteredItems = items.filter((item) => {
+    const matchSearch = !searchText.trim() || item.name.toLowerCase().includes(searchText.toLowerCase());
+    const matchRegion = !filterRegion || item.name === filterRegion;
+    return matchSearch && matchRegion;
+  });
+
+  function handleResetFilters() {
+    setSearchText('');
+    setFilterRegion('');
+    setOpenDropdown(null);
+    setReloadKey((k) => k + 1);
+  }
 
   return (
     <div className="bg-[#FAEDE6]">
@@ -155,6 +174,78 @@ export default function EmiratesPage() {
               </p>
             </div>
 
+            <div className="w-full rounded-[12px] border border-[#E8CFC1] bg-white p-[10px] flex flex-col gap-[10px]">
+              <div className="flex items-center gap-[10px] w-full h-[61px] rounded-[12px] border border-[#E8CFC1] bg-white px-[10px]">
+                <Search className="h-5 w-5 text-[#989898] shrink-0" />
+                <input
+                  type="text"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder={t('searchPlaceholder')}
+                  className="w-full h-full bg-transparent text-sm font-normal text-gray-700 outline-none placeholder:text-[#989898]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                <div className="relative w-full">
+                  <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === 'region' ? null : 'region')}
+                    className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                      filterRegion || openDropdown === 'region'
+                        ? 'border-[#781E36]'
+                        : 'border-[#E8CFC1] hover:border-[#781E36]'
+                    }`}
+                  >
+                    <span className={`text-sm truncate ${filterRegion ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
+                      {filterRegion || 'All Emirates'}
+                    </span>
+                    <ChevronDown
+                      className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === 'region' ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {openDropdown === 'region' && (
+                    <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => { setFilterRegion(''); setOpenDropdown(null); }}
+                        className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors"
+                      >
+                        All Emirates
+                      </button>
+                      {regionOptions.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => { setFilterRegion(opt); setOpenDropdown(null); }}
+                          className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors"
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-[10px] w-full">
+                <button
+                  type="button"
+                  onClick={() => setReloadKey((k) => k + 1)}
+                  className="w-full h-[52px] rounded-[12px] bg-[#781E36] px-6 py-3 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors sm:flex-1"
+                >
+                  {t('search')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="w-full sm:w-auto h-[52px] rounded-[12px] bg-[#FAEDE6] px-6 py-3 text-sm font-bold text-[#781E36] border border-[#E8CFC1] hover:bg-[#F3D9CE] transition-colors"
+                >
+                  {t('reset')}
+                </button>
+              </div>
+            </div>
+
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               variants={containerVariants}
@@ -162,7 +253,7 @@ export default function EmiratesPage() {
               whileInView="visible"
               viewport={{ once: false, margin: '-50px' }}
             >
-              {items.map((item) => (
+              {filteredItems.map((item) => (
                 <motion.div key={item.slug} variants={itemVariants} className="flex flex-col mx-auto w-full max-w-[400px] min-h-[370px] rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden">
                   <div className="relative w-full h-[160px] shrink-0">
                     <Image src={item.image} alt={item.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" unoptimized />
@@ -187,6 +278,19 @@ export default function EmiratesPage() {
                 </motion.div>
               ))}
             </motion.div>
+
+            {filteredItems.length === 0 && (
+              <div className="flex flex-col items-center gap-4 py-8 text-center">
+                <p className="text-base font-normal text-[#6B5B57]">No emirates found.</p>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="h-[52px] rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </Reveal>
