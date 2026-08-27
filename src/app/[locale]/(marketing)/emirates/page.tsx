@@ -106,8 +106,8 @@ export default function EmiratesPage() {
 
   const regionOptions = list.map((item) => item.name);
 
-  const filteredItems = items.filter((item) => {
-    const regionName = list.find((l) => item.name.includes(l.name))?.name || item.name;
+  const filteredItems = items.filter((item, index) => {
+    const regionName = regionOptions[index] || item.name;
     const matchSearch = !searchText.trim() || regionName.toLowerCase().includes(searchText.toLowerCase()) || item.name.toLowerCase().includes(searchText.toLowerCase());
     const matchRegion = !filterRegion || regionName === filterRegion;
     return matchSearch && matchRegion;
