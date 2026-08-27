@@ -117,6 +117,7 @@ export default function EmiratesPage() {
     setSearchText('');
     setFilterRegion('');
     setOpenDropdown(null);
+    setReloadKey((k) => k + 1);
   }
 
   return (
@@ -247,6 +248,7 @@ export default function EmiratesPage() {
             </div>
 
             <motion.div
+              key={reloadKey}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               variants={containerVariants}
               initial="hidden"
