@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'aliabackend.kodevio.com',
+        hostname: 'api.wileef.com',
       },
       {
         protocol: 'http',
