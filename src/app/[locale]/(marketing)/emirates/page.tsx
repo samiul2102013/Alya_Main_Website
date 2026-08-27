@@ -104,11 +104,12 @@ export default function EmiratesPage() {
   const orgs = t.raw('orgs') as Org[];
   const items = useEmiratesData(list);
 
-  const regionOptions = ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain'];
+  const regionOptions = list.map((item) => item.name);
 
   const filteredItems = items.filter((item) => {
-    const matchSearch = !searchText.trim() || item.name.toLowerCase().includes(searchText.toLowerCase());
-    const matchRegion = !filterRegion || item.name === filterRegion;
+    const regionName = list.find((l) => item.name.includes(l.name))?.name || item.name;
+    const matchSearch = !searchText.trim() || regionName.toLowerCase().includes(searchText.toLowerCase()) || item.name.toLowerCase().includes(searchText.toLowerCase());
+    const matchRegion = !filterRegion || regionName === filterRegion;
     return matchSearch && matchRegion;
   });
 
@@ -116,7 +117,6 @@ export default function EmiratesPage() {
     setSearchText('');
     setFilterRegion('');
     setOpenDropdown(null);
-    setReloadKey((k) => k + 1);
   }
 
   return (
