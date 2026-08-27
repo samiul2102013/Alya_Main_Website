@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import Section from '../shared/Section';
 import Badge from '../shared/Badge';
 import Button from '../shared/Button';
@@ -19,6 +20,7 @@ import {
 export default function Hero() {
   const t = useTranslations('home.hero');
   const isRtl = useLocale() === 'ar';
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [isTouch, setIsTouch] = useState(false);
   const pictureRef = useRef<HTMLDivElement>(null);
@@ -224,7 +226,12 @@ export default function Hero() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
           >
             <form
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  router.push(`/consultation?search=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
               className="relative mt-1 flex h-[58px] w-full items-center rounded-2xl bg-white/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-300 focus-within:shadow-2xl focus-within:ring-4 focus-within:ring-[#781E36]/15"
             >
               <motion.div
@@ -273,7 +280,7 @@ export default function Hero() {
             <div className="mt-2 flex flex-wrap items-center gap-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                 <Button
-                  href="#initiatives"
+                  href="/initiatives"
                   size="lg"
                   variant="primary"
                   icon={<ArrowRight className="h-5 w-5 rtl:rotate-180" />}
@@ -282,7 +289,7 @@ export default function Hero() {
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button href="#consultation" size="lg" variant="secondary">
+                <Button href="/news" size="lg" variant="secondary">
                   {t('ctaSecondary')}
                 </Button>
               </motion.div>

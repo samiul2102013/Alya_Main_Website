@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Heading from '../shared/Heading';
@@ -107,10 +108,10 @@ export default function ExploreByEmirate() {
                   <Building2 className="h-4 w-4 text-[#E8CFC1] shrink-0" />
                   {item.centerCount}
                 </p>
-                <div className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
+                <Link href="/initiatives" className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
                   <span>{t('exploreCenters')}</span>
                   <ChevronRight className="h-5 w-5 rtl:rotate-180" />
-                </div>
+                </Link>
               </div>
             </div>
           </Reveal>

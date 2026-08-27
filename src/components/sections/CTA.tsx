@@ -37,7 +37,7 @@ export default function CTA() {
             {/* Buttons */}
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button
-                href="#initiatives"
+                href="/initiatives"
                 variant="white"
                 width="221px"
                 className="h-[64px] min-w-[221px] py-[18px] px-[32px] font-extrabold text-lg shadow-2xl"
@@ -46,7 +46,7 @@ export default function CTA() {
                 {t('ctaExplore')}
               </Button>
               <Button
-                href="#consultation"
+                href="/consultation"
                 variant="white"
                 width="221px"
                 className="h-[64px] min-w-[221px] py-[18px] px-[32px] font-extrabold text-lg shadow-2xl"

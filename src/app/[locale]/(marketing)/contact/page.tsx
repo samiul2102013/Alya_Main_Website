@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { MapPin, Clock, HelpCircle, HeadphonesIcon, Send } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
 
 const containerVariants = {
   hidden: {},
@@ -31,6 +33,45 @@ export default function ContactPage() {
   const hoursLines = t.raw('hoursLines') as string[];
   const inquiriesLines = t.raw('inquiriesLines') as string[];
   const supportLines = t.raw('supportLines') as string[];
+
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    userType: '',
+    subject: '',
+    phone: '',
+    message: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSuccess(false);
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.fullName,
+          email: form.email,
+          phone: form.phone,
+          subject: form.subject,
+          message: form.message,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to send message');
+      setSuccess(true);
+      setForm({ fullName: '', email: '', userType: '', subject: '', phone: '', message: '' });
+    } catch {
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="bg-[#FAEDE6]">
@@ -93,18 +134,31 @@ export default function ContactPage() {
                   </p>
                 </motion.div>
 
+                <form onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-2">
                     <label className="text-base font-medium leading-[28px] text-black">
                       {t('fullName')}
                     </label>
-                    <input type="text" placeholder={t('fullNamePlaceholder')} className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors" />
+                    <input
+                      type="text"
+                      value={form.fullName}
+                      onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                      placeholder={t('fullNamePlaceholder')}
+                      className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors"
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-base font-medium leading-[28px] text-black">
                       {t('email')}
                     </label>
-                    <input type="email" placeholder={t('emailPlaceholder')} className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors" />
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      placeholder={t('emailPlaceholder')}
+                      className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors"
+                    />
                   </div>
                 </motion.div>
 
@@ -113,7 +167,10 @@ export default function ContactPage() {
                     <label className="text-base font-medium leading-[28px] text-black">
                       {t('userType')}
                     </label>
-                    <select className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm text-gray-500 outline-none focus:border-[#781E36] transition-colors appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23989898%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_12px_center] bg-no-repeat">
+                    <select
+                      value={form.userType}
+                      onChange={(e) => setForm((f) => ({ ...f, userType: e.target.value }))}
+                      className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm text-gray-500 outline-none focus:border-[#781E36] transition-colors appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23989898%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_12px_center] bg-no-repeat">
                       <option>{t('selectUserType')}</option>
                       <option>{t('individual')}</option>
                       <option>{t('couple')}</option>
@@ -124,7 +181,13 @@ export default function ContactPage() {
                     <label className="text-base font-medium leading-[28px] text-black">
                       {t('subject')}
                     </label>
-                    <input type="text" placeholder={t('subjectPlaceholder')} className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors" />
+                    <input
+                      type="text"
+                      value={form.subject}
+                      onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+                      placeholder={t('subjectPlaceholder')}
+                      className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors"
+                    />
                   </div>
                 </motion.div>
 
@@ -132,20 +195,46 @@ export default function ContactPage() {
                   <label className="text-base font-medium leading-[28px] text-black">
                     {t('phone')}
                   </label>
-                  <input type="tel" placeholder={t('phonePlaceholder')} className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors" />
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    placeholder={t('phonePlaceholder')}
+                    className="w-full h-[52px] rounded-[10px] border border-[#E8CFC1] bg-white px-4 text-sm outline-none focus:border-[#781E36] transition-colors"
+                  />
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="flex flex-col gap-2">
                   <label className="text-base font-medium leading-[28px] text-black">
                     {t('message')}
                   </label>
-                  <textarea placeholder={t('messagePlaceholder')} rows={5} className="w-full rounded-[10px] border border-[#E8CFC1] bg-white px-4 py-3 text-sm outline-none focus:border-[#781E36] transition-colors resize-none" />
+                  <textarea
+                    value={form.message}
+                    onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+                    placeholder={t('messagePlaceholder')}
+                    rows={5}
+                    className="w-full rounded-[10px] border border-[#E8CFC1] bg-white px-4 py-3 text-sm outline-none focus:border-[#781E36] transition-colors resize-none"
+                  />
                 </motion.div>
 
-                <motion.button variants={itemVariants} className="flex items-center justify-center gap-2 w-full h-[56px] rounded-[10px] bg-[#781E36] text-white text-base font-bold hover:bg-[#B83A4A] transition-colors">
+                {error && (
+                  <p className="text-sm text-red-600">{error}</p>
+                )}
+
+                {success && (
+                  <p className="text-sm text-green-600">{t('successMessage') || 'Message sent successfully!'}</p>
+                )}
+
+                <motion.button
+                  type="submit"
+                  disabled={submitting}
+                  variants={itemVariants}
+                  className="flex items-center justify-center gap-2 w-full h-[56px] rounded-[10px] bg-[#781E36] text-white text-base font-bold hover:bg-[#B83A4A] transition-colors disabled:opacity-60"
+                >
                   <Send className="h-5 w-5" />
-                  {t('send')}
+                  {submitting ? t('sending') || 'Sending...' : t('send')}
                 </motion.button>
+              </form>
               </motion.div>
 
               <div className="flex flex-col gap-6 w-full max-w-[460px] pt-0 lg:pt-[52px]">

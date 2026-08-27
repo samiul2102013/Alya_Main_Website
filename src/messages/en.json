@@ -193,6 +193,8 @@
     "hoursLines": ["Mon – Fri: 9:00 AM – 6:00 PM", "Saturday: 10:00 AM – 2:00 PM", "Sunday: Closed"],
     "inquiriesLines": ["Email: info@marage.ae", "Phone: +971 50 123 4567"],
     "supportLines": ["Email: support@marage.ae", "Phone: +971 50 987 6543"],
+    "successMessage": "Your message has been sent successfully. We'll get back to you soon.",
+    "sending": "Sending...",
     "ourLocation": "Our Location",
     "ourLocationText": "Visit us at our main office in Dubai, UAE.",
     "mapTitle": "Alia Office Location"
