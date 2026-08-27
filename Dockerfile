@@ -12,11 +12,12 @@ RUN npm ci
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=https://api.wileef.com/api
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ARG BUILD_CACHE_BUSTER
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN ${BUILD_CACHE_BUSTER:-:} && npm run build
 
 # run
 FROM base AS runner
