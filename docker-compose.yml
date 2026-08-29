@@ -13,13 +13,13 @@ services:
       - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.alia-web.rule=Host(`wileef.com`)
+      - traefik.http.routers.alia-web.rule=Host(`wileef.com`) || Host(`www.wileef.com`)
       - traefik.http.routers.alia-web.entrypoints=websecure
       - traefik.http.routers.alia-web.tls.certResolver=letsencrypt
       - traefik.docker.network=dokploy-network
       - traefik.http.services.alia-web.loadbalancer.server.port=3000
       # HTTP -> HTTPS redirect
-      - traefik.http.routers.alia-web-http.rule=Host(`wileef.com`)
+      - traefik.http.routers.alia-web-http.rule=Host(`wileef.com`) || Host(`www.wileef.com`)
       - traefik.http.routers.alia-web-http.entrypoints=web
       - traefik.http.routers.alia-web-http.middlewares=alia-web-redirect
       - traefik.http.middlewares.alia-web-redirect.redirectscheme.scheme=https
