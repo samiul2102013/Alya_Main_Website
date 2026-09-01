@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Button from '../shared/Button';
@@ -44,8 +45,14 @@ function toLocalized(s: PublicConsultation, index: number): LocalizedSession {
 
 export default function ConsultationSessions() {
   const t = useTranslations('home');
-  const ctaLabel = t.raw('consultations') as { ctaLabel: string }[];
-  const cta = ctaLabel?.[0]?.ctaLabel ?? 'Book Now';
+  const { content, localize, loading: homepageLoading } = useHomepageContent();
+  const ctaLabelFallback = t.raw('consultations') as { ctaLabel: string }[];
+  const cta = localize(content?.consultationsCtaLabel ?? '', content?.consultationsCtaLabelAr ?? '') || ctaLabelFallback?.[0]?.ctaLabel || 'Book Now';
+
+  const sectionTitle = localize(content?.consultationsTitle ?? '', content?.consultationsTitleAr ?? '') || t('consultationsTitle');
+  const sectionSubtitle = localize(content?.consultationsSubtitle ?? '', content?.consultationsSubtitleAr ?? '') || t('consultationsSubtitle');
+  const freeTabLabel = localize(content?.consultationsFreeTab ?? '', content?.consultationsFreeTabAr ?? '') || t('freeSession');
+  const paidTabLabel = localize(content?.consultationsPaidTab ?? '', content?.consultationsPaidTabAr ?? '') || t('paidSession');
 
   const [items, setItems] = useState<LocalizedSession[]>([]);
   const [activeTab, setActiveTab] = useState<'free' | 'paid'>('free');
@@ -90,10 +97,10 @@ export default function ConsultationSessions() {
         <Reveal direction="up">
           <div className="flex flex-col items-center text-center gap-4">
             <Heading level={2} align="center">
-              {t('consultationsTitle')}
+              {sectionTitle}
             </Heading>
             <p className="max-w-2xl text-[#6B5B57] text-base leading-relaxed">
-              {t('consultationsSubtitle')}
+              {sectionSubtitle}
             </p>
           </div>
         </Reveal>
@@ -114,7 +121,7 @@ export default function ConsultationSessions() {
                   activeTab === 'free' ? 'text-[#781E36]' : 'text-[#6B5B57]'
                 }`}
               >
-                {t('freeSession')}
+                {freeTabLabel}
               </button>
               <button
                 type="button"
@@ -123,7 +130,7 @@ export default function ConsultationSessions() {
                   activeTab === 'paid' ? 'text-[#781E36]' : 'text-[#6B5B57]'
                 }`}
               >
-                {t('paidSession')}
+                {paidTabLabel}
               </button>
             </div>
           </div>

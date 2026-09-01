@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Heading from '../shared/Heading';
@@ -19,6 +20,7 @@ const FALLBACK_IMAGES = [
 
 export default function MarriageShorts() {
   const t = useTranslations('home');
+  const { content, localize, loading: homepageLoading } = useHomepageContent();
   const [videos, setVideos] = useState<PublicShort[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +41,11 @@ export default function MarriageShorts() {
     };
   }, []);
 
+  const sectionTitle = localize(content?.shortsTitle ?? '', content?.shortsTitleAr ?? '') || t('shortsTitle');
+  const sectionSubtitle = localize(content?.shortsSubtitle ?? '', content?.shortsSubtitleAr ?? '') || t('shortsSubtitle');
+  const ctaLabel = localize(content?.shortsCtaLabel ?? '', content?.shortsCtaLabelAr ?? '') || t('shortsWatchReel');
+  const emptyText = localize(content?.shortsEmptyText ?? '', content?.shortsEmptyTextAr ?? '') || t('shortsEmpty');
+
   return (
     <Section background="default" spacing="none" id="shorts" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
       {/* Header Container: width 1280, height 80, space-between */}
@@ -47,9 +54,9 @@ export default function MarriageShorts() {
           <Heading
             level={2}
             align="center"
-            subtitle={t('shortsSubtitle')}
+            subtitle={sectionSubtitle}
           >
-            {t('shortsTitle')}
+            {sectionTitle}
           </Heading>
         </div>
       </Reveal>
@@ -67,7 +74,7 @@ export default function MarriageShorts() {
           ))
         ) : videos.length === 0 ? (
           <p className="col-span-full text-center text-sm font-normal text-[#6B5B57] py-8">
-            {t('shortsEmpty')}
+            {emptyText}
           </p>
         ) : (
           videos.map((short, index) => (
@@ -125,7 +132,7 @@ export default function MarriageShorts() {
                           </span>
                         </span>
                         <span className="inline-flex items-center gap-1 font-bold text-[#E8CFC1] group-hover:underline h-[20px] leading-none">
-                          {t('shortsWatchReel')} <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+                          {ctaLabel} <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
                         </span>
                       </div>
                     </div>

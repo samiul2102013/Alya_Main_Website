@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Badge from '../shared/Badge';
 import Button from '../shared/Button';
@@ -17,6 +18,8 @@ import {
   Coins,
 } from 'lucide-react';
 
+const defaultIcons = [Landmark, MessageSquare, Calendar, Coins];
+
 export default function Hero() {
   const t = useTranslations('home.hero');
   const isRtl = useLocale() === 'ar';
@@ -24,6 +27,7 @@ export default function Hero() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isTouch, setIsTouch] = useState(false);
   const pictureRef = useRef<HTMLDivElement>(null);
+  const { content, localize, floatingCards, loading } = useHomepageContent();
 
   useEffect(() => {
     setIsTouch(window.matchMedia('(pointer: coarse)').matches);
@@ -48,44 +52,41 @@ export default function Hero() {
     y.set(0);
   }
 
-  const floatingCards = [
-    {
-      id: 'card-1',
-      titlePrimary: t('card1a'),
-      titleSecondary: t('card1b'),
-      icon: <Landmark className="h-5 w-5 text-[#781E36]" />,
-      position: 'top-12 left-1 sm:-left-12',
-      delay: 0,
-      duration: 4,
-    },
-    {
-      id: 'card-2',
-      titlePrimary: t('card2a'),
-      titleSecondary: t('card2b'),
-      icon: <MessageSquare className="h-5 w-5 text-[#781E36]" />,
-      position: 'top-24 right-1 sm:-right-10',
-      delay: 0.5,
-      duration: 4.5,
-    },
-    {
-      id: 'card-3',
-      titlePrimary: t('card3a'),
-      titleSecondary: t('card3b'),
-      icon: <Calendar className="h-5 w-5 text-[#781E36]" />,
-      position: 'bottom-28 left-1 sm:-left-12',
-      delay: 1,
-      duration: 3.8,
-    },
-    {
-      id: 'card-4',
-      titlePrimary: t('card4a'),
-      titleSecondary: t('card4b'),
-      icon: <Coins className="h-5 w-5 text-[#781E36]" />,
-      position: 'bottom-6 right-1 sm:-right-10',
-      delay: 1.5,
-      duration: 4.2,
-    },
+  // Build floating cards from backend data or fallback to translations
+  const cardData = (!loading && floatingCards.length >= 4)
+    ? floatingCards.slice(0, 4).map((card, i) => ({
+        id: `card-${i + 1}`,
+        titlePrimary: localize(card.label, card.labelAr),
+        titleSecondary: localize(card.sublabel, card.sublabelAr),
+        icon: defaultIcons[i],
+      }))
+    : [
+        { id: 'card-1', titlePrimary: t('card1a'), titleSecondary: t('card1b'), icon: Landmark },
+        { id: 'card-2', titlePrimary: t('card2a'), titleSecondary: t('card2b'), icon: MessageSquare },
+        { id: 'card-3', titlePrimary: t('card3a'), titleSecondary: t('card3b'), icon: Calendar },
+        { id: 'card-4', titlePrimary: t('card4a'), titleSecondary: t('card4b'), icon: Coins },
+      ];
+
+  const positions = [
+    'top-12 left-1 sm:-left-12',
+    'top-24 right-1 sm:-right-10',
+    'bottom-28 left-1 sm:-left-12',
+    'bottom-6 right-1 sm:-right-10',
   ];
+  const delays = [0, 0.5, 1, 1.5];
+  const durations = [4, 4.5, 3.8, 4.2];
+
+  const eyebrow = localize(content?.heroEyebrow ?? '', content?.heroEyebrowAr ?? '') || t('eyebrow');
+  const heroTitle = localize(content?.heroTitle ?? '', content?.heroTitleAr ?? '') || t('title');
+  const heroSubtitle = localize(content?.heroSubtitle ?? '', content?.heroSubtitleAr ?? '') || t('subtitle');
+  const searchPlaceholder = localize(content?.heroSearchPlaceholder ?? '', content?.heroSearchPlaceholderAr ?? '') || t('searchPlaceholder');
+  const searchButton = localize(content?.heroSearchButton ?? '', content?.heroSearchButtonAr ?? '') || t('search');
+  const primaryCtaLabel = localize(content?.heroPrimaryCtaLabel ?? '', content?.heroPrimaryCtaLabelAr ?? '') || t('ctaPrimary');
+  const secondaryCtaLabel = localize(content?.heroSecondaryCtaLabel ?? '', content?.heroSecondaryCtaLabelAr ?? '') || t('ctaSecondary');
+  const heroImage = content?.heroImage || '/Static/Home/Hero/Emirati couple looking at UAE skyline.png';
+  const heroImageAlt = content?.heroImageAlt || 'Emirati couple looking at UAE skyline';
+  const primaryCtaLink = content?.heroPrimaryCtaLink || '/initiatives';
+  const secondaryCtaLink = content?.heroSecondaryCtaLink || '/news';
 
   return (
     <Section background="default" spacing="none" containerClassName="!max-w-[1440px]" className="pt-[56px] sm:pt-[96px] pb-[80px] sm:pb-[146px] overflow-hidden relative">
@@ -187,7 +188,7 @@ export default function Hero() {
               }
               className="px-2.5 py-0.5 text-[11px] font-bold"
             >
-              {t('eyebrow')}
+              {eyebrow}
             </Badge>
           </motion.div>
 
@@ -203,7 +204,7 @@ export default function Hero() {
                 animate={isTouch ? undefined : { backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
                 transition={isTouch ? undefined : { duration: 6, repeat: Infinity, ease: 'linear' }}
               >
-                {t('title')}
+                {heroTitle}
               </motion.span>
             </h1>
           </motion.div>
@@ -215,7 +216,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.35 }}
           >
             <p className="text-base md:text-lg text-[#6B5B57] leading-relaxed font-medium overflow-hidden">
-              {t('subtitle')}
+              {heroSubtitle}
             </p>
           </motion.div>
 
@@ -252,7 +253,7 @@ export default function Hero() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('searchPlaceholder')}
+                placeholder={searchPlaceholder}
                 className="relative w-full bg-transparent px-5 text-sm font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none z-10"
               />
               <motion.button
@@ -266,7 +267,7 @@ export default function Hero() {
                   animate={isTouch ? undefined : { opacity: [0, 0.5, 0] }}
                   transition={isTouch ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
-                <span className="relative z-10">{t('search')}</span>
+                <span className="relative z-10">{searchButton}</span>
               </motion.button>
             </form>
           </motion.div>
@@ -280,17 +281,17 @@ export default function Hero() {
             <div className="mt-2 flex flex-wrap items-center gap-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                 <Button
-                  href="/initiatives"
+                  href={primaryCtaLink}
                   size="lg"
                   variant="primary"
                   icon={<ArrowRight className="h-5 w-5 rtl:rotate-180" />}
                 >
-                  {t('ctaPrimary')}
+                  {primaryCtaLabel}
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button href="/news" size="lg" variant="secondary">
-                  {t('ctaSecondary')}
+                <Button href={secondaryCtaLink} size="lg" variant="secondary">
+                  {secondaryCtaLabel}
                 </Button>
               </motion.div>
             </div>
@@ -339,8 +340,8 @@ export default function Hero() {
                 className="relative h-full w-full overflow-hidden rounded-[22px]"
               >
                 <Image
-                  src="/Static/Home/Hero/Emirati couple looking at UAE skyline.png"
-                  alt="Emirati couple looking at UAE skyline"
+                  src={heroImage}
+                  alt={heroImageAlt}
                   fill
                   priority
                   className="object-cover"
@@ -366,44 +367,47 @@ export default function Hero() {
             </motion.div>
 
             {/* 4 Futuristic Floating Cards */}
-            {floatingCards.map((card) => (
-              <motion.div
-                key={card.id}
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  y: isTouch ? [0, -7, 0] : [0, -10, 0],
-                }}
-                transition={{
-                  opacity: { duration: 0.5, delay: 0.4 + card.delay },
-                  scale: { duration: 0.5, delay: 0.4 + card.delay },
-                  y: {
-                    duration: card.duration,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                    delay: card.delay,
-                  },
-                }}
-                whileHover={{ scale: 1.1, borderColor: '#781E36' }}
-                className={`absolute ${card.position} z-20 flex items-center gap-3 sm:gap-4 rounded-2xl border border-[#E8CFC1] ${isTouch ? 'bg-white' : 'bg-white/95 backdrop-blur-md'} p-3 sm:p-4 shadow-2xl transition-shadow duration-300 hover:shadow-[#781E36]/20 cursor-pointer`}
-              >
+            {cardData.map((card, index) => {
+              const Icon = card.icon;
+              return (
                 <motion.div
-                  className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-[#FAEDE6] border border-[#E8CFC1]"
-                  whileHover={{ rotate: 10 }}
+                  key={card.id}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    y: isTouch ? [0, -7, 0] : [0, -10, 0],
+                  }}
+                  transition={{
+                    opacity: { duration: 0.5, delay: 0.4 + delays[index] },
+                    scale: { duration: 0.5, delay: 0.4 + delays[index] },
+                    y: {
+                      duration: durations[index],
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay: delays[index],
+                    },
+                  }}
+                  whileHover={{ scale: 1.1, borderColor: '#781E36' }}
+                  className={`absolute ${positions[index]} z-20 flex items-center gap-3 sm:gap-4 rounded-2xl border border-[#E8CFC1] ${isTouch ? 'bg-white' : 'bg-white/95 backdrop-blur-md'} p-3 sm:p-4 shadow-2xl transition-shadow duration-300 hover:shadow-[#781E36]/20 cursor-pointer`}
                 >
-                  {card.icon}
+                  <motion.div
+                    className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-[#FAEDE6] border border-[#E8CFC1]"
+                    whileHover={{ rotate: 10 }}
+                  >
+                    <Icon className="h-5 w-5 text-[#781E36]" />
+                  </motion.div>
+                  <div className="flex flex-col leading-none">
+                    <span className="text-sm sm:text-base font-black tracking-tight text-[#781E36]">
+                      {card.titlePrimary}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-gray-700 leading-tight">
+                      {card.titleSecondary}
+                    </span>
+                  </div>
                 </motion.div>
-                <div className="flex flex-col leading-none">
-                  <span className="text-sm sm:text-base font-black tracking-tight text-[#781E36]">
-                    {card.titlePrimary}
-                  </span>
-                  <span className="text-[10px] sm:text-[11px] font-bold text-gray-700 leading-tight">
-                    {card.titleSecondary}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
           </motion.div>
         </motion.div>

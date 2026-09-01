@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -20,6 +21,7 @@ function formatDetails(initiative: PublicInitiativeDetail | null) {
 
 export default function UpcomingInitiatives() {
   const t = useTranslations('home');
+  const { content, localize, loading: homepageLoading } = useHomepageContent();
   const [initiative, setInitiative] = useState<PublicInitiativeDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,13 +40,17 @@ export default function UpcomingInitiatives() {
     };
   }, []);
 
+  const sectionTitle = localize(content?.initiativesTitle ?? '', content?.initiativesTitleAr ?? '') || t('initiativesTitle');
+  const sectionSubtitle = localize(content?.initiativesSubtitle ?? '', content?.initiativesSubtitleAr ?? '') || t('initiativesSubtitle');
+  const ctaLabel = localize(content?.initiativesCtaLabel ?? '', content?.initiativesCtaLabelAr ?? '') || t('initiativesCta');
+
   if (loading || !initiative) {
     return (
       <Section background="default" spacing="none" id="initiatives" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
         <div className="flex flex-col gap-[48px] max-w-[1280px] mx-auto">
           <Reveal direction="up">
-            <Heading level={2} align="center" subtitle={t('initiativesSubtitle')}>
-              {t('initiativesTitle')}
+            <Heading level={2} align="center" subtitle={sectionSubtitle}>
+              {sectionTitle}
             </Heading>
           </Reveal>
         </div>
@@ -59,14 +65,13 @@ export default function UpcomingInitiatives() {
   const details = formatDetails(featured);
   const image = featured.coverImage;
   const ctaHref = featured.slug ? `/initiatives/${featured.slug}` : '/initiatives';
-  const ctaLabel = t('initiativesCta');
 
   return (
     <Section background="default" spacing="none" id="initiatives" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
       <div className="flex flex-col gap-[48px] max-w-[1280px] mx-auto">
         <Reveal direction="up">
-          <Heading level={2} align="center" subtitle={t('initiativesSubtitle')}>
-            {t('initiativesTitle')}
+          <Heading level={2} align="center" subtitle={sectionSubtitle}>
+            {sectionTitle}
           </Heading>
         </Reveal>
 

@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Heading from '../shared/Heading';
@@ -69,9 +70,14 @@ function useLatestNews(
 
 export default function LatestNews() {
   const t = useTranslations('home');
+  const { content, localize, loading: homepageLoading } = useHomepageContent();
   const fallbackItems = t.raw('news') as { tag: string; date: string; title: string; excerpt: string }[];
   const { items, page, totalPages, setPage } = useLatestNews(fallbackItems, fallbackImages);
   const onPageChange = useCallback((p: number) => setPage(p), [setPage]);
+
+  const sectionTitle = localize(content?.newsTitle ?? '', content?.newsTitleAr ?? '') || t('newsTitle');
+  const sectionSubtitle = localize(content?.newsSubtitle ?? '', content?.newsSubtitleAr ?? '') || t('newsSubtitle');
+  const ctaLabel = localize(content?.newsCtaLabel ?? '', content?.newsCtaLabelAr ?? '') || t('newsReadMore');
 
   return (
     <Section background="muted" spacing="none" id="news" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
@@ -82,9 +88,9 @@ export default function LatestNews() {
             <Heading
               level={2}
               align="center"
-              subtitle={t('newsSubtitle')}
+              subtitle={sectionSubtitle}
             >
-              {t('newsTitle')}
+              {sectionTitle}
             </Heading>
           </div>
         </Reveal>
@@ -136,7 +142,7 @@ export default function LatestNews() {
 
                 <div className="mt-4 flex items-center justify-between border-t border-[#E8CFC1]/60 pt-4 text-xs font-bold text-[#781E36]">
                   <span className="inline-flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
-                    {t('newsReadMore')} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    {ctaLabel} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                   </span>
                   <Bookmark className="h-4 w-4 text-gray-400 hover:text-[#781E36] transition-colors" />
                 </div>

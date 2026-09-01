@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Link } from '@/i18n/navigation';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -26,6 +27,7 @@ interface EmirateItem {
 
 export default function ExploreByEmirate() {
   const t = useTranslations('home');
+  const { content, localize, loading: homepageLoading } = useHomepageContent();
   const fallback = t.raw('emirates') as { name: string; title: string; centerCount: string }[];
   const fallbackItems = fallback.map((item, i) => ({
     ...item,
@@ -33,6 +35,12 @@ export default function ExploreByEmirate() {
   }));
   const [items, setItems] = useState<EmirateItem[]>(fallbackItems);
   const isCapital = (index: number) => index === 0;
+
+  const sectionTitle = localize(content?.emiratesTitle ?? '', content?.emiratesTitleAr ?? '') || t('emiratesTitle');
+  const sectionSubtitle = localize(content?.emiratesSubtitle ?? '', content?.emiratesSubtitleAr ?? '') || t('emiratesSubtitle');
+  const capitalLabel = localize(content?.emiratesCapitalLabel ?? '', content?.emiratesCapitalLabelAr ?? '') || t('capitalRegion');
+  const hqLabel = localize(content?.emiratesHeadquartersLabel ?? '', content?.emiratesHeadquartersLabelAr ?? '') || t('mainHeadquarters');
+  const ctaLabel = localize(content?.emiratesCtaLabel ?? '', content?.emiratesCtaLabelAr ?? '') || t('exploreCenters');
 
   useEffect(() => {
     let cancelled = false;
@@ -61,9 +69,9 @@ export default function ExploreByEmirate() {
           <Heading
             level={2}
             align="center"
-            subtitle={t('emiratesSubtitle')}
+            subtitle={sectionSubtitle}
           >
-            {t('emiratesTitle')}
+            {sectionTitle}
           </Heading>
         </div>
       </Reveal>
@@ -90,12 +98,12 @@ export default function ExploreByEmirate() {
               {/* Top Emirate Badge */}
               <div className="relative z-10 flex items-center justify-between gap-2">
                 <span className="rounded-full bg-[#781E36] px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-md">
-                  {isCapital(index) && `${t('capitalRegion')} • `}
+                  {isCapital(index) && `${capitalLabel} • `}
                   {item.name}
                 </span>
                 <span className="hidden items-center gap-1 text-xs font-semibold text-white/90 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 sm:flex">
                   <MapPin className="h-3.5 w-3.5 text-[#E8CFC1]" />
-                  {t('mainHeadquarters')}
+                  {hqLabel}
                 </span>
               </div>
 
@@ -109,7 +117,7 @@ export default function ExploreByEmirate() {
                   {item.centerCount}
                 </p>
                 <Link href="/initiatives" className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
-                  <span>{t('exploreCenters')}</span>
+                  <span>{ctaLabel}</span>
                   <ChevronRight className="h-5 w-5 rtl:rotate-180" />
                 </Link>
               </div>

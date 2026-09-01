@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import { HeartHandshake, Landmark, Users, Eye } from 'lucide-react';
@@ -12,7 +13,21 @@ const icons = [<HeartHandshake key="1" className="h-7 w-7 text-[#781E36] group-h
 
 export default function FeatureGrid() {
   const t = useTranslations('home');
-  const items = t.raw('stats') as { stat: string; title: string; subtitle: string }[];
+  const fallbackItems = t.raw('stats') as { stat: string; title: string; subtitle: string }[];
+  const { stats, localize, loading } = useHomepageContent();
+
+  // Use backend stats if available and non-empty, otherwise fallback to translations
+  const items = (!loading && stats.length > 0)
+    ? stats.map((s) => ({
+        stat: s.value,
+        title: localize(s.title, s.titleAr),
+        subtitle: localize(s.subtitle, s.subtitleAr),
+      }))
+    : fallbackItems.map((item) => ({
+        stat: item.stat,
+        title: item.title,
+        subtitle: item.subtitle,
+      }));
 
   return (
     <Section background="muted" spacing="none" containerClassName="!max-w-[1440px]" className="py-[48px]">
