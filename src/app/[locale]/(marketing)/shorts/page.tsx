@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
-import { ChevronDown, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, Search, Loader2, ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
@@ -175,6 +175,7 @@ export default function ShortsPage() {
   const showTopics       = secVis.topics       !== false;
   const showContributors = secVis.contributors !== false;
   const showFaqs         = secVis.faqs         !== false;
+  const showCta          = secVis.cta          !== false;
 
   const filters = [
     { name: 'marital', label: t('marital'), isDropdown: true, options: maritalOptions },
@@ -229,12 +230,7 @@ export default function ShortsPage() {
     setLibraryPage(1);
   }
 
-  function handleApplyFilters() {
-    const q = query.trim();
-    if (!q && !marital && !language && !date) {
-      setLibraryPage(1);
-      return;
-    }
+  function handleSearchWith(q: string) {
     setSearching(true);
     getPublishedShortsPage({
       ...buildShortParams(q, marital, language, date),
@@ -246,10 +242,29 @@ export default function ShortsPage() {
         setLibraryTotalPages(meta.totalPages);
         setLibraryPage(1);
       })
-      .catch(() => {
-        setVideos([]);
-        setLibraryTotalPages(1);
+      .catch(() => { setVideos([]); setLibraryTotalPages(1); })
+      .finally(() => setSearching(false));
+  }
+
+  // Search button — triggers text search only (keeps current filter values)
+  function handleSearch() {
+    handleSearchWith(query.trim());
+  }
+
+  // Filter button — applies dropdowns only (keeps current search text)
+  function handleApplyFilters() {
+    setSearching(true);
+    getPublishedShortsPage({
+      ...buildShortParams(query.trim(), marital, language, date),
+      page: '1',
+      perPage: String(LIBRARY_PER_PAGE),
+    })
+      .then(({ data, meta }) => {
+        setVideos(data);
+        setLibraryTotalPages(meta.totalPages);
+        setLibraryPage(1);
       })
+      .catch(() => { setVideos([]); setLibraryTotalPages(1); })
       .finally(() => setSearching(false));
   }
 
@@ -330,54 +345,87 @@ export default function ShortsPage() {
       <Reveal delay={0.2} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           <div className="w-full rounded-[12px] border border-[#E8CFC1] bg-white p-[10px] flex flex-col gap-[10px]">
-            <div className="flex items-center gap-[10px] w-full h-[48px] sm:h-[61px] rounded-[12px] border border-[#E8CFC1] bg-white px-[10px]">
-              <Search className="h-5 w-5 text-[#989898] shrink-0" />
-              <input
-                type="text"
-                placeholder={t('searchPlaceholder')}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className="w-full h-full bg-transparent text-sm font-normal text-gray-700 outline-none placeholder:text-[#989898]"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
-              {filters.map((filter) => {
-                const selected = getSelectedLabel(filter);
-                const active = Boolean(selected);
-                return (
-                  <div key={filter.name} className="relative w-full">
-                    <button type="button"
-                      onClick={() => toggleDropdown(filter.name)}
-                      className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${active || openDropdown === filter.name ? 'border-[#781E36]' : 'border-[#E8CFC1] hover:border-[#781E36]'}`}>
-                      <span className={`text-sm truncate ${active ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
-                        {selected || filter.label}
-                      </span>
-                      <ChevronDown className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === filter.name ? 'rotate-180' : ''}`} />
-                    </button>
-                    {openDropdown === filter.name && (
-                      <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
-                        {filter.options.map((opt, index) => (
-                          <button key={opt} type="button" onClick={() => handleOptionSelect(filter.name, index)}
-                            className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors">{opt}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-[10px] w-full">
-              <button className="w-full h-[52px] rounded-[12px] bg-[#781E36] px-6 py-3 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors sm:flex-1" onClick={handleApplyFilters}>
-                {searching ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t('filterButton')}
+
+            {/* Search row — triggers text search only */}
+            <div className="flex items-center gap-[10px] w-full">
+              <div className="flex items-center gap-[10px] flex-1 h-[48px] sm:h-[56px] rounded-[12px] border border-[#E8CFC1] bg-white px-[10px]">
+                <Search className="h-5 w-5 text-[#989898] shrink-0" />
+                <input
+                  type="text"
+                  placeholder={t('searchPlaceholder')}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="w-full h-full bg-transparent text-sm font-normal text-gray-700 outline-none placeholder:text-[#989898]"
+                />
+                {query && (
+                  <button type="button" onClick={() => { setQuery(''); handleSearchWith(''); }} className="shrink-0 text-[#989898] hover:text-[#781E36] cursor-pointer" aria-label="Clear search">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleSearch}
+                className="h-[48px] sm:h-[56px] px-6 rounded-[12px] bg-[#781E36] text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors shrink-0 flex items-center gap-2"
+              >
+                {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                <span className="hidden sm:inline">{t('search') ?? 'Search'}</span>
               </button>
-              <button className="w-full sm:w-auto h-[52px] rounded-[12px] bg-[#FAEDE6] px-6 py-3 text-sm font-bold text-[#781E36] border border-[#E8CFC1] hover:bg-[#F3D9CE] transition-colors" onClick={handleResetFilters}>{t('resetFilters')}</button>
             </div>
+
+            {/* Filter row — dropdowns + Apply Filters button */}
+            <div className="flex flex-col sm:flex-row gap-[10px] w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[10px] flex-1">
+                {filters.map((filter) => {
+                  const selected = getSelectedLabel(filter);
+                  const active = Boolean(selected);
+                  return (
+                    <div key={filter.name} className="relative w-full">
+                      <button type="button"
+                        onClick={() => toggleDropdown(filter.name)}
+                        className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${active || openDropdown === filter.name ? 'border-[#781E36]' : 'border-[#E8CFC1] hover:border-[#781E36]'}`}>
+                        <span className={`text-sm truncate ${active ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
+                          {selected || filter.label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === filter.name ? 'rotate-180' : ''}`} />
+                      </button>
+                      {openDropdown === filter.name && (
+                        <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
+                          {filter.options.map((opt, index) => (
+                            <button key={opt} type="button" onClick={() => handleOptionSelect(filter.name, index)}
+                              className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors">{opt}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-[10px] shrink-0">
+                <button
+                  type="button"
+                  onClick={handleApplyFilters}
+                  className="h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors flex items-center justify-center gap-2"
+                >
+                  <SlidersHorizontal className="h-4 w-4 shrink-0" />
+                  {t('filterButton')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="h-[48px] px-4 rounded-[12px] bg-[#FAEDE6] text-sm font-bold text-[#781E36] border border-[#E8CFC1] hover:bg-[#F3D9CE] transition-colors"
+                >
+                  {t('resetFilters')}
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </Reveal>
 
-      {/* Featured Shorts — sideways scrollable carousel with pagination */}
+      {/* Shorts — unified grid (featured carousel + all videos together) */}
       <Reveal delay={0.25} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           <div className="flex flex-col gap-[44px] w-full">
@@ -387,11 +435,11 @@ export default function ShortsPage() {
                 <span className="text-sm font-normal text-[#6B5B57]">{t('featuredSubtitle')}</span>
               </div>
               <div className="hidden sm:flex items-center gap-2 shrink-0">
-                <button type="button" aria-label="Previous featured shorts" onClick={() => scrollFeatured(-1)}
+                <button type="button" aria-label="Previous" onClick={() => scrollFeatured(-1)}
                   className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-[#E8CFC1] bg-white text-[#781E36] transition-colors hover:bg-[#781E36] hover:text-white">
                   <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                 </button>
-                <button type="button" aria-label="Next featured shorts" onClick={() => scrollFeatured(1)}
+                <button type="button" aria-label="Next" onClick={() => scrollFeatured(1)}
                   className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-[#E8CFC1] bg-white text-[#781E36] transition-colors hover:bg-[#781E36] hover:text-white">
                   <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                 </button>
@@ -445,14 +493,10 @@ export default function ShortsPage() {
                     </div>
                   ))}
                 </motion.div>
-
                 {featured.length > 4 && (
                   <div className="flex items-center justify-center gap-2 mt-2">
                     {featured.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        aria-label={`Go to featured short ${i + 1}`}
+                      <button key={i} type="button" aria-label={`Go to featured short ${i + 1}`}
                         onClick={() => {
                           const el = featuredRef.current;
                           if (!el) return;
@@ -471,35 +515,29 @@ export default function ShortsPage() {
         </div>
       </Reveal>
 
-      {/* Video Shorts Library — paginated grid */}
+      {/* All Shorts — paginated grid (no separate "library" heading) */}
       <Reveal delay={0.3} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
-          <div className="flex flex-col gap-[44px] w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <span className="text-xl font-bold leading-7 text-[#781E36]">{t('libraryTitle')}</span>
-              <span className="text-sm font-normal text-[#6B5B57]">{t('librarySubtitle')}</span>
+          {loading || searching ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
             </div>
-            {loading || searching ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
-              </div>
-            ) : videos.length === 0 ? (
-              <p className="text-sm font-normal text-[#6B5B57]">{t('empty')}</p>
-            ) : (
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"
-                variants={containerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: false, margin: '-50px' }}
-              >
-                {videos.map((video, i) => videoCard(video, i, `library-${video.id}`))}
-              </motion.div>
-            )}
-            {!loading && !searching && libraryTotalPages > 1 && (
-              <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={setLibraryPage} className="mt-4" />
-            )}
-          </div>
+          ) : videos.length === 0 ? (
+            <p className="text-sm font-normal text-[#6B5B57]">{t('empty')}</p>
+          ) : (
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, margin: '-50px' }}
+            >
+              {videos.map((video, i) => videoCard(video, i, `library-${video.id}`))}
+            </motion.div>
+          )}
+          {!loading && !searching && libraryTotalPages > 1 && (
+            <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={setLibraryPage} className="mt-8" />
+          )}
         </div>
       </Reveal>
 
@@ -590,6 +628,7 @@ export default function ShortsPage() {
       </Reveal>
       )}
 
+      {showCta && (
       <Reveal delay={0.5} direction="up">
         <div className="w-full pb-[80px]">
           <div className="mx-auto max-w-[1280px] px-6">
@@ -609,6 +648,7 @@ export default function ShortsPage() {
           </div>
         </div>
       </Reveal>
+      )}
     </div>
   );
 }
