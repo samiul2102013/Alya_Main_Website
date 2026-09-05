@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useCallback, useEffect, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,6 +16,20 @@ type GroupKey = 'shorts' | 'news' | 'consultations' | 'initiatives' | 'emirates'
 const GROUP_KEYS: GroupKey[] = ['initiatives', 'news', 'consultations', 'shorts', 'emirates'];
 
 export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-[#FAEDE6] min-h-screen flex items-center justify-center">
+          <p className="text-base font-normal text-[#6B5B57]">Loading...</p>
+        </div>
+      }
+    >
+      <SearchPageInner />
+    </Suspense>
+  );
+}
+
+function SearchPageInner() {
   const t = useTranslations('search');
   const nav = useTranslations('nav');
   const locale = useLocale();
