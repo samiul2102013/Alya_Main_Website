@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import Container from '../shared/Container';
 import Button from '../shared/Button';
 import { Menu, X, ChevronDown } from 'lucide-react';
+import { getPresentations } from '@/lib/api/presentations';
 
 const navLinkVariants = {
   hidden: { opacity: 0, y: -8 },
@@ -51,16 +52,34 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
-  const navLinks = [
-    { label: t('home'), href: '/' },
-    { label: t('about'), href: '/about' },
-    { label: t('contact'), href: '/contact' },
-    { label: t('shorts'), href: '/shorts' },
-    { label: t('news'), href: '/news' },
-    { label: t('initiatives'), href: '/initiatives' },
-    { label: t('consultation'), href: '/consultation' },
-    { label: t('emirates'), href: '/emirates' },
+  // Track which pages are published (visible in navbar)
+  const [hiddenPages, setHiddenPages] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    getPresentations().then((list) => {
+      const hidden = new Set<string>();
+      list.forEach((p) => {
+        if (p.published === false) hidden.add(p.key);
+      });
+      setHiddenPages(hidden);
+    }).catch(() => {/* silently ignore */});
+  }, []);
+
+  const allNavLinks = [
+    { label: t('home'),         href: '/',            key: null },
+    { label: t('about'),        href: '/about',        key: null },
+    { label: t('contact'),      href: '/contact',      key: null },
+    { label: t('shorts'),       href: '/shorts',       key: 'shorts' },
+    { label: t('news'),         href: '/news',         key: 'news' },
+    { label: t('initiatives'),  href: '/initiatives',  key: 'initiatives' },
+    { label: t('consultation'), href: '/consultation', key: 'consultation' },
+    { label: t('emirates'),     href: '/emirates',     key: 'emirates' },
   ];
+
+  // Filter out hidden pages
+  const navLinks = allNavLinks.filter(
+    (link) => link.key === null || !hiddenPages.has(link.key),
+  );
 
   const [navbarHidden, setNavbarHidden] = useState(false);
   const lastScrollY = useRef(0);

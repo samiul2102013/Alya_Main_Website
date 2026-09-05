@@ -10,6 +10,13 @@ export interface PresentationFaq {
   answerAr?: string;
 }
 
+export interface ShortsSectionVisibility {
+  hero?: boolean;
+  topics?: boolean;
+  contributors?: boolean;
+  faqs?: boolean;
+}
+
 export interface PagePresentation {
   id: string;
   key: string;
@@ -19,9 +26,11 @@ export interface PagePresentation {
   descriptionAr: string;
   badge: string;
   heroImage: string;
+  published: boolean;
   topics: PresentationTopic[];
   contributors: string[];
   faqs: PresentationFaq[];
+  sectionVisibility: ShortsSectionVisibility;
 }
 
 const API_URL =

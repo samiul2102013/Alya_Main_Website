@@ -169,6 +169,13 @@ export default function ShortsPage() {
       }))) ||
     i18nFaqs;
 
+  // Section visibility — default all to true if not set
+  const secVis = presentation.presentation?.sectionVisibility ?? {};
+  const showHero         = secVis.hero         !== false;
+  const showTopics       = secVis.topics       !== false;
+  const showContributors = secVis.contributors !== false;
+  const showFaqs         = secVis.faqs         !== false;
+
   const filters = [
     { name: 'marital', label: t('marital'), isDropdown: true, options: maritalOptions },
     { name: 'language', label: t('language'), isDropdown: true, options: languageOptions },
@@ -496,6 +503,7 @@ export default function ShortsPage() {
         </div>
       </Reveal>
 
+      {showTopics && (
       <Reveal delay={0.35} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           <div className="flex flex-col gap-6 w-full bg-white border-t border-b border-[#E8CFC1] py-8 px-4 sm:px-8">
