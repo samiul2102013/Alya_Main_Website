@@ -241,27 +241,29 @@ function ConsultationPageInner() {
   const paged = sessions;
 
   // Hybrid content resolution: CMS wins, i18n is the fallback.
-  const i18nTopics = t.raw('topics') as Topic[];
-  const i18nFaqs = t.raw('faqs') as Faq[];
+  const rawTopics = t.raw('topics');
+  const rawFaqs = t.raw('faqs');
+  const i18nTopics = (Array.isArray(rawTopics) ? rawTopics : []) as Topic[];
+  const i18nFaqs = (Array.isArray(rawFaqs) ? rawFaqs : []) as Faq[];
 
   const topics: Topic[] =
-    (presentation.presentation?.consultationTopics?.length &&
-      presentation.presentation.consultationTopics.map((topic) => ({
-        title: (isArabic && topic.titleAr ? topic.titleAr : topic.title) || topic.title,
-        videos: topic.videos ?? '',
-      }))) ||
-    i18nTopics;
+    (presentation.presentation?.consultationTopics?.length
+      ? presentation.presentation.consultationTopics.map((topic) => ({
+          title: (isArabic && topic.titleAr ? topic.titleAr : topic.title) || topic.title,
+          videos: topic.videos ?? '',
+        }))
+      : i18nTopics) || [];
   const contributorList: string[] =
-    (presentation.presentation?.consultationContributors?.length &&
-      presentation.presentation.consultationContributors) ||
-    [];
+    (presentation.presentation?.consultationContributors?.length
+      ? presentation.presentation.consultationContributors
+      : []) || [];
   const faqs: Faq[] =
-    (presentation.presentation?.consultationFaqs?.length &&
-      presentation.presentation.consultationFaqs.map((faq) => ({
-        question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
-        answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
-      }))) ||
-    i18nFaqs;
+    (presentation.presentation?.consultationFaqs?.length
+      ? presentation.presentation.consultationFaqs.map((faq) => ({
+          question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
+          answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+        }))
+      : i18nFaqs) || [];
 
   // Section visibility — default all to true if not set
   const secVis = presentation.presentation?.consultationSectionVisibility ?? {};

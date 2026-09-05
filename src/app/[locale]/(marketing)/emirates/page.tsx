@@ -66,7 +66,8 @@ export default function EmiratesPage() {
   });
 
   // Build date options from i18n
-  const dateOptions = t.raw('dateOptions') as string[];
+  const rawDateOptions = t.raw('dateOptions');
+  const dateOptions = (Array.isArray(rawDateOptions) ? rawDateOptions : ['This Week', 'This Month', 'This Year']) as string[];
   const regionOptions = useMemo(() => items.map((item) => item.name), [items]);
 
   function mapDate(label: string): string {
@@ -148,28 +149,32 @@ export default function EmiratesPage() {
   }
 
   // Hybrid content resolution: CMS wins, i18n is the fallback.
-  const i18nTopics = (t.raw('topics') ?? []) as Topic[];
-  const i18nFaqs = (t.raw('faqs') ?? []) as Faq[];
-  const i18nOrgs = (t.raw('orgs') ?? []) as Array<{ label: string; subtitle: string }>;
+  const rawTopics = t.raw('topics');
+  const rawFaqs = t.raw('faqs');
+  const rawOrgs = t.raw('orgs');
+
+  const i18nTopics = (Array.isArray(rawTopics) ? rawTopics : []) as Topic[];
+  const i18nFaqs = (Array.isArray(rawFaqs) ? rawFaqs : []) as Faq[];
+  const i18nOrgs = (Array.isArray(rawOrgs) ? rawOrgs : []) as Array<{ label: string; subtitle: string }>;
 
   const topics: Topic[] =
-    (presentation.presentation?.emiratesTopics?.length &&
-      presentation.presentation.emiratesTopics.map((topic) => ({
-        title: (isArabic && topic.titleAr ? topic.titleAr : topic.title) || topic.title,
-        videos: topic.videos ?? '',
-      }))) ||
-    i18nTopics;
+    (presentation.presentation?.emiratesTopics?.length
+      ? presentation.presentation.emiratesTopics.map((topic) => ({
+          title: (isArabic && topic.titleAr ? topic.titleAr : topic.title) || topic.title,
+          videos: topic.videos ?? '',
+        }))
+      : i18nTopics) || [];
   const contributorList: string[] =
-    (presentation.presentation?.emiratesContributors?.length &&
-      presentation.presentation.emiratesContributors) ||
-    [];
+    (presentation.presentation?.emiratesContributors?.length
+      ? presentation.presentation.emiratesContributors
+      : []) || [];
   const faqs: Faq[] =
-    (presentation.presentation?.emiratesFaqs?.length &&
-      presentation.presentation.emiratesFaqs.map((faq) => ({
-        question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
-        answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
-      }))) ||
-    i18nFaqs;
+    (presentation.presentation?.emiratesFaqs?.length
+      ? presentation.presentation.emiratesFaqs.map((faq) => ({
+          question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
+          answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+        }))
+      : i18nFaqs) || [];
 
   // Section visibility — default all to true if not set
   const secVis = presentation.presentation?.emiratesSectionVisibility ?? {};
