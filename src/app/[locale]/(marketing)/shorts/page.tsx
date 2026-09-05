@@ -406,7 +406,7 @@ export default function ShortsPage() {
               >
                 {videos.map((video, i) => videoCard(video, i, `video-${video.id}`))}
               </motion.div>
-              {libraryTotalPages > 1 && (
+              {libraryTotalPages >= 1 && (
                 <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={setLibraryPage} className="mt-8" />
               )}
             </>
