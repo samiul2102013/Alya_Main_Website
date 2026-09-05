@@ -1,15 +1,15 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
-import { ChevronDown, Search, Loader2, ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronDown, Search, Loader2, SlidersHorizontal, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { SHORT_IMAGES, SHORTS_HERO_IMAGE } from '@/lib/image-pools';
-import { getPublishedShorts, getPublishedShortsPage, type PublicShort } from '@/lib/api/shorts';
+import { getPublishedShortsPage, type PublicShort } from '@/lib/api/shorts';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const containerVariants = {
@@ -64,39 +64,17 @@ export default function ShortsPage() {
   const [marital, setMarital] = useState('');
   const [language, setLanguage] = useState('');
   const [date, setDate] = useState('');
-  const [featured, setFeatured] = useState<PublicShort[]>([]);
   const [videos, setVideos] = useState<PublicShort[]>([]);
   const [libraryPage, setLibraryPage] = useState(1);
   const [libraryTotalPages, setLibraryTotalPages] = useState(1);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
-
-  // Featured carousel scroll state
-  const featuredRef = useRef<HTMLDivElement>(null);
-  const [featuredIndex, setFeaturedIndex] = useState(0);
 
   const presentation = usePagePresentation('shorts', {
     title: t('title'),
     description: t('description'),
     heroImage: SHORTS_HERO_IMAGE,
   });
-
-  useEffect(() => {
-    let mounted = true;
-    getPublishedShorts()
-      .then((items) => {
-        if (!mounted) return;
-        setFeatured(items.filter((v) => v.category).slice(0, 6));
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (mounted) setLoadingFeatured(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -119,23 +97,6 @@ export default function ShortsPage() {
       mounted = false;
     };
   }, [libraryPage]);
-
-  function scrollFeatured(dir: 1 | -1) {
-    const el = featuredRef.current;
-    if (!el) return;
-    const first = el.querySelector(':scope > *') as HTMLElement | null;
-    const step = (first?.getBoundingClientRect().width ?? 280) + 24;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
-  }
-
-  function onFeaturedScroll() {
-    const el = featuredRef.current;
-    if (!el) return;
-    const first = el.querySelector(':scope > *') as HTMLElement | null;
-    const step = (first?.getBoundingClientRect().width ?? 280) + 24;
-    if (step <= 0) return;
-    setFeaturedIndex(Math.round(el.scrollLeft / step));
-  }
 
   const maritalOptions = t.raw('maritalOptions') as string[];
   const languageOptions = t.raw('languageOptions') as string[];
@@ -425,98 +386,8 @@ export default function ShortsPage() {
         </div>
       </Reveal>
 
-      {/* Shorts — unified grid (featured carousel + all videos together) */}
+      {/* All Shorts — single unified paginated grid */}
       <Reveal delay={0.25} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
-          <div className="flex flex-col gap-[44px] w-full">
-            <div className="flex items-end justify-between gap-6">
-              <div className="flex flex-col gap-2 w-full">
-                <span className="text-xl font-bold leading-7 text-[#781E36]">{t('featuredTitle')}</span>
-                <span className="text-sm font-normal text-[#6B5B57]">{t('featuredSubtitle')}</span>
-              </div>
-              <div className="hidden sm:flex items-center gap-2 shrink-0">
-                <button type="button" aria-label="Previous" onClick={() => scrollFeatured(-1)}
-                  className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-[#E8CFC1] bg-white text-[#781E36] transition-colors hover:bg-[#781E36] hover:text-white">
-                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-                </button>
-                <button type="button" aria-label="Next" onClick={() => scrollFeatured(1)}
-                  className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-[#E8CFC1] bg-white text-[#781E36] transition-colors hover:bg-[#781E36] hover:text-white">
-                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
-                </button>
-              </div>
-            </div>
-
-            {loadingFeatured ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
-              </div>
-            ) : featured.length === 0 ? (
-              <p className="text-sm font-normal text-[#6B5B57]">{t('empty')}</p>
-            ) : (
-              <>
-                <motion.div
-                  ref={featuredRef}
-                  onScroll={onFeaturedScroll}
-                  className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: false, margin: '-50px' }}
-                >
-                  {featured.map((video, i) => (
-                    <div key={`featured-${video.id}`} className="snap-start shrink-0 w-[calc(100%-16px)] sm:w-[calc(50%-16px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-16px)]">
-                      <motion.div variants={itemVariants} className="flex flex-col w-full rounded-[20px] border border-[#E8CFC1] bg-white overflow-hidden" style={{ boxShadow: '0px 1px 2px -1px #0000001A, 0px 1px 3px 0px #0000001A' }}>
-                        <Link href={`/shorts/${video.slug}`}>
-                          <div className="relative w-full aspect-video bg-[#E8CFC1] overflow-hidden">
-                            <Image src={video.coverImage || SHORT_IMAGES[i % SHORT_IMAGES.length]} alt={getTitle(video)} fill className="object-cover" sizes="(max-width: 768px) 100vw, 320px" />
-                            <div className="absolute top-3 right-3 rounded bg-black/60 px-1.5 py-0.5">
-                              <span className="text-[10px] font-medium leading-[15px] text-white">{video.duration}</span>
-                            </div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-white shadow-md cursor-pointer hover:bg-gray-100 transition-colors">
-                                <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M15.5 8.5L0.5 0.5V17.5L15.5 8.5Z" fill="#781E36" /></svg>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col p-4 gap-3">
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#989898]">{video.category}</span>
-                            <span className="text-[15px] font-bold leading-5 text-[#781E36]">{getTitle(video)}</span>
-                            <div className="flex items-center gap-3 mt-auto">
-                              <span className="text-[11px] font-normal text-[#989898]">{video.views || 0} views</span>
-                              <span className="text-[11px] font-normal text-[#989898]">
-                                {video.publishedAt ? new Date(video.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar-AE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      </motion.div>
-                    </div>
-                  ))}
-                </motion.div>
-                {featured.length > 4 && (
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    {featured.map((_, i) => (
-                      <button key={i} type="button" aria-label={`Go to featured short ${i + 1}`}
-                        onClick={() => {
-                          const el = featuredRef.current;
-                          if (!el) return;
-                          const first = el.querySelector(':scope > *') as HTMLElement | null;
-                          const step = (first?.getBoundingClientRect().width ?? 280) + 24;
-                          el.scrollTo({ left: i * step, behavior: 'smooth' });
-                        }}
-                        className={`h-2 rounded-full transition-all ${featuredIndex === i ? 'w-6 bg-[#781E36]' : 'w-2 bg-[#E8CFC1] hover:bg-[#B83A4A]'}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </Reveal>
-
-      {/* All Shorts — paginated grid (no separate "library" heading) */}
-      <Reveal delay={0.3} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
           {loading || searching ? (
             <div className="flex justify-center py-10">
@@ -525,18 +396,20 @@ export default function ShortsPage() {
           ) : videos.length === 0 ? (
             <p className="text-sm font-normal text-[#6B5B57]">{t('empty')}</p>
           ) : (
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false, margin: '-50px' }}
-            >
-              {videos.map((video, i) => videoCard(video, i, `library-${video.id}`))}
-            </motion.div>
-          )}
-          {!loading && !searching && libraryTotalPages > 1 && (
-            <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={setLibraryPage} className="mt-8" />
+            <>
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, margin: '-50px' }}
+              >
+                {videos.map((video, i) => videoCard(video, i, `video-${video.id}`))}
+              </motion.div>
+              {libraryTotalPages > 1 && (
+                <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={setLibraryPage} className="mt-8" />
+              )}
+            </>
           )}
         </div>
       </Reveal>

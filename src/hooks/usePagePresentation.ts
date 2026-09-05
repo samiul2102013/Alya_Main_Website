@@ -57,7 +57,9 @@ export function usePagePresentation(
             : p.description) || fallbackDescription,
           heroImage: p.heroImage || fallbackHero,
           badge: p.badge || fallbackBadge || null,
-          loading: false,
+          loading: false
+          
+          ,
           presentation: p,
         });
       })
