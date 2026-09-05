@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { getPresentation } from '@/lib/api/presentations';
+import { getPresentation, type PagePresentation } from '@/lib/api/presentations';
 
 export interface PresentationFallback {
   title: string;
@@ -16,6 +16,7 @@ export interface PagePresentationData {
   heroImage: string;
   badge: string | null;
   loading: boolean;
+  presentation: PagePresentation | null;
 }
 
 /**
@@ -36,6 +37,7 @@ export function usePagePresentation(
     heroImage: fallback.heroImage,
     badge: fallback.badge ?? null,
     loading: true,
+    presentation: null,
   });
 
   const fallbackTitle = fallback.title;
@@ -56,6 +58,7 @@ export function usePagePresentation(
           heroImage: p.heroImage || fallbackHero,
           badge: p.badge || fallbackBadge || null,
           loading: false,
+          presentation: p,
         });
       })
       .catch(() => {

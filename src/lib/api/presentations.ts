@@ -1,3 +1,15 @@
+export interface PresentationTopic {
+  title: string;
+  videos?: string;
+}
+
+export interface PresentationFaq {
+  question: string;
+  questionAr?: string;
+  answer: string;
+  answerAr?: string;
+}
+
 export interface PagePresentation {
   id: string;
   key: string;
@@ -7,6 +19,9 @@ export interface PagePresentation {
   descriptionAr: string;
   badge: string;
   heroImage: string;
+  topics: PresentationTopic[];
+  contributors: string[];
+  faqs: PresentationFaq[];
 }
 
 const API_URL =

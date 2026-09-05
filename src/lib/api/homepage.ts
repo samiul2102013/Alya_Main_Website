@@ -85,6 +85,33 @@ export interface HomepageContent {
   ctaSecondaryLabel: string;
   ctaSecondaryLabelAr: string;
   ctaSecondaryLink: string;
+  sectionVisibility?: SectionVisibility;
+}
+
+export interface SectionVisibility {
+  hero: boolean;
+  stats: boolean;
+  shorts: boolean;
+  news: boolean;
+  initiatives: boolean;
+  consultations: boolean;
+  emirates: boolean;
+  cta: boolean;
+}
+
+export const DEFAULT_SECTION_VISIBILITY: SectionVisibility = {
+  hero: true,
+  stats: true,
+  shorts: true,
+  news: true,
+  initiatives: true,
+  consultations: true,
+  emirates: true,
+  cta: true,
+};
+
+export function resolveSectionVisibility(value?: SectionVisibility | null): SectionVisibility {
+  return { ...DEFAULT_SECTION_VISIBILITY, ...(value ?? {}) };
 }
 
 const API_URL =

@@ -137,9 +137,6 @@ export default function ShortsPage() {
     setFeaturedIndex(Math.round(el.scrollLeft / step));
   }
 
-  const topics = t.raw('topics') as Topic[];
-  const contributorList = t.raw('contributorList') as string[];
-  const faqs = t.raw('faqs') as Faq[];
   const maritalOptions = t.raw('maritalOptions') as string[];
   const languageOptions = t.raw('languageOptions') as string[];
   const dateOptions = t.raw('dateOptions') as string[];
@@ -147,6 +144,30 @@ export default function ShortsPage() {
   const isArabic = locale === 'ar';
   const getTitle = (v: PublicShort) =>
     isArabic && v.videoTitleAr ? v.videoTitleAr : v.videoTitle;
+
+  const i18nTopics = t.raw('topics') as Topic[];
+  const i18nContributors = t.raw('contributorList') as string[];
+  const i18nFaqs = t.raw('faqs') as Faq[];
+
+  // Hybrid content resolution: CMS wins, i18n is the fallback.
+  const topics: Topic[] =
+    (presentation.presentation?.topics?.length &&
+      presentation.presentation.topics.map((topic) => ({
+        title: topic.title,
+        videos: topic.videos ?? '',
+      }))) ||
+    i18nTopics;
+  const contributorList: string[] =
+    (presentation.presentation?.contributors?.length &&
+      presentation.presentation.contributors) ||
+    i18nContributors;
+  const faqs: Faq[] =
+    (presentation.presentation?.faqs?.length &&
+      presentation.presentation.faqs.map((faq) => ({
+        question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
+        answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+      }))) ||
+    i18nFaqs;
 
   const filters = [
     { name: 'marital', label: t('marital'), isDropdown: true, options: maritalOptions },

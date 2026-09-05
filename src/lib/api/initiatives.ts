@@ -14,6 +14,7 @@ export interface PublicInitiative {
   officialWebsiteUrl: string;
   shareUrl: string;
   isFeatured: boolean;
+  isListed?: boolean;
   status: string;
 }
 
@@ -29,6 +30,16 @@ export interface PublicInitiativeDetail extends PublicInitiative {
   showSupportOffered: boolean;
   showBenefits: boolean;
   showApplicationForm: boolean;
+}
+
+export interface InitiativesPage {
+  data: PublicInitiative[];
+  meta: {
+    page: number;
+    perPage: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
@@ -48,6 +59,26 @@ export async function getPublishedInitiatives(
   } catch (error) {
     console.warn('[initiatives] Falling back to empty list:', error);
     return [];
+  }
+}
+
+export async function getPublishedInitiativesPage(
+  params: Record<string, string> = {},
+): Promise<InitiativesPage> {
+  const qs = new URLSearchParams(params).toString();
+  try {
+    const res = await fetch(`${API_URL}/initiatives${qs ? `?${qs}` : ''}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) throw new Error(`Failed to load initiatives (${res.status})`);
+    const json = await res.json();
+    return {
+      data: (json?.data as PublicInitiative[]) ?? [],
+      meta: json?.meta ?? { page: 1, perPage: 10, total: 0, totalPages: 1 },
+    };
+  } catch (error) {
+    console.warn('[initiatives] Falling back to empty page:', error);
+    return { data: [], meta: { page: 1, perPage: 10, total: 0, totalPages: 1 } };
   }
 }
 

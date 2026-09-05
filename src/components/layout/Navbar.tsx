@@ -128,7 +128,7 @@ export default function Navbar() {
             >
               <Link
                 href={link.href}
-                className="relative text-[13px] xl:text-sm font-semibold text-gray-700 transition-colors duration-200 hover:text-[#781E36] py-1 whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#781E36] after:transition-all after:duration-300 hover:after:w-full"
+                className="relative rounded-md px-2.5 py-1.5 text-[13px] xl:text-sm font-semibold text-gray-700 transition-colors duration-200 hover:bg-[#FAEDE6] hover:text-[#781E36] whitespace-nowrap after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:w-auto after:origin-left after:scale-x-0 after:bg-[#781E36] after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 {link.label}
               </Link>

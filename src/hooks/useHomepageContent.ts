@@ -1,8 +1,15 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { getHomepageContent } from '@/lib/api/homepage';
-import type { HomepageContent, StatItem, FloatingCard } from '@/lib/api/homepage';
+import {
+  DEFAULT_SECTION_VISIBILITY,
+  getHomepageContent,
+  resolveSectionVisibility,
+  type FloatingCard,
+  type HomepageContent,
+  type SectionVisibility,
+  type StatItem,
+} from '@/lib/api/homepage';
 
 export interface HomepageData {
   content: HomepageContent | null;
@@ -13,6 +20,8 @@ export interface HomepageData {
   stats: StatItem[];
   /** Get floating cards, returns empty array if no content */
   floatingCards: FloatingCard[];
+  /** Per-section on/off switches from the admin panel. Missing keys default to true. */
+  sectionVisibility: SectionVisibility;
 }
 
 /**
@@ -41,11 +50,19 @@ export function useHomepageContent(): HomepageData {
     return en || '';
   };
 
+  const sectionVisibility = useMemo<SectionVisibility>(
+    () => resolveSectionVisibility(content?.sectionVisibility ?? null),
+    [content?.sectionVisibility],
+  );
+
   return {
     content,
     loading,
     localize,
     stats: content?.stats ?? [],
     floatingCards: content?.heroFloatingCards ?? [],
+    sectionVisibility,
   };
 }
+
+export { DEFAULT_SECTION_VISIBILITY };

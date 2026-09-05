@@ -450,6 +450,12 @@
   "initiative": {
     "title": "Mass Marriage Program 2026",
     "browseInitiatives": "Browse Initiatives",
+    "searchPlaceholder": "Search initiatives...",
+    "allEmirates": "All Emirates",
+    "search": "Search",
+    "reset": "Reset",
+    "noInitiatives": "No initiatives found.",
+    "viewDetails": "View details",
     "currentInitiative": "Current Initiative",
     "noCurrentInitiative": "No current initiative available",
     "description": "A comprehensive government initiative designed to alleviate the financial burden of marriage for Emirati youth, fostering family stability and community cohesion.",
@@ -521,6 +527,22 @@
     "ctaText": "Explore the wide range of government and private initiative financial support and expert counseling service available across the UAE.",
     "ctaExplore": "Explore Initiatives",
     "ctaFind": "Find Consultation"
+  },
+  "search": {
+    "title": "Search Results",
+    "placeholder": "Search initiatives, news, videos, sessions, and emirates...",
+    "button": "Search",
+    "emptyQuery": "Type a keyword above to search across all Alia content.",
+    "noResults": "No results found for your search.",
+    "resultsFor": "Results for",
+    "all": "Everything",
+    "sectionShorts": "Videos",
+    "sectionNews": "News",
+    "sectionConsultations": "Consultations",
+    "sectionInitiatives": "Initiatives",
+    "sectionEmirates": "Emirates",
+    "viewAll": "View more",
+    "backToSearch": "Back to search"
   },
   "consultation": {
     "title": "Find the Right Marriage Consultation Session for a Stronger and Happier Future.",

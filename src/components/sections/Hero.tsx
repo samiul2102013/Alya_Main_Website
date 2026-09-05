@@ -230,7 +230,7 @@ export default function Hero() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (searchQuery.trim()) {
-                  router.push(`/consultation?search=${encodeURIComponent(searchQuery.trim())}`);
+                  router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
                 }
               }}
               className="relative mt-1 flex h-[58px] w-full items-center rounded-2xl bg-white/90 p-2 shadow-lg backdrop-blur-sm transition-all duration-300 focus-within:shadow-2xl focus-within:ring-4 focus-within:ring-[#781E36]/15"

@@ -8,18 +8,22 @@ import UpcomingInitiatives from '@/components/sections/UpcomingInitiatives';
 import ConsultationSessions from '@/components/sections/ConsultationSessions';
 import ExploreByEmirate from '@/components/sections/ExploreByEmirate';
 import CTA from '@/components/sections/CTA';
+import { useHomepageContent, DEFAULT_SECTION_VISIBILITY } from '@/hooks/useHomepageContent';
 
 export default function HomePage() {
+  const { sectionVisibility } = useHomepageContent();
+  const vis = { ...DEFAULT_SECTION_VISIBILITY, ...sectionVisibility };
+
   return (
     <>
-      <Hero />
-      <FeatureGrid />
-      <MarriageShorts />
-      <LatestNews />
-      <UpcomingInitiatives />
-      <ConsultationSessions />
-      <ExploreByEmirate />
-      <CTA />
+      {vis.hero && <Hero />}
+      {vis.stats && <FeatureGrid />}
+      {vis.shorts && <MarriageShorts />}
+      {vis.news && <LatestNews />}
+      {vis.initiatives && <UpcomingInitiatives />}
+      {vis.consultations && <ConsultationSessions />}
+      {vis.emirates && <ExploreByEmirate />}
+      {vis.cta && <CTA />}
     </>
   );
 }

@@ -104,12 +104,14 @@ export default function EmiratesPage() {
   const orgs = t.raw('orgs') as Org[];
   const items = useEmiratesData(list);
 
-  const regionOptions = list.map((item) => item.name);
+  // Build region options from the items the page is actually showing.
+  // This keeps the filter in sync with the API list instead of the i18n fallback.
+  const regionOptions = items.map((item) => item.name);
 
-  const filteredItems = items.filter((item, index) => {
-    const regionName = regionOptions[index] || item.name;
-    const matchSearch = !searchText.trim() || regionName.toLowerCase().includes(searchText.toLowerCase()) || item.name.toLowerCase().includes(searchText.toLowerCase());
-    const matchRegion = !filterRegion || regionName === filterRegion;
+  const filteredItems = items.filter((item) => {
+    const q = searchText.trim().toLowerCase();
+    const matchSearch = !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
+    const matchRegion = !filterRegion || item.name === filterRegion;
     return matchSearch && matchRegion;
   });
 
