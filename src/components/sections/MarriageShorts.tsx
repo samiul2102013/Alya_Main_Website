@@ -46,6 +46,28 @@ export default function MarriageShorts() {
   const ctaLabel = localize(content?.shortsCtaLabel ?? '', content?.shortsCtaLabelAr ?? '') || t('shortsWatchReel');
   const emptyText = localize(content?.shortsEmptyText ?? '', content?.shortsEmptyTextAr ?? '') || t('shortsEmpty');
 
+  const fallbackList = (Array.isArray(t.raw('shorts')) ? (t.raw('shorts') as Array<{
+    title: string;
+    category: string;
+    duration: string;
+    date: string;
+  }>) : []) || [];
+
+  const displayVideos = videos.length > 0 ? videos : fallbackList.map((item, idx) => ({
+    id: `fallback-${idx}`,
+    videoTitle: item.title,
+    videoTitleAr: '',
+    slug: 'featured-marriage-guidance',
+    category: item.category,
+    organization: 'UAE Marriage Support',
+    maritalStage: 'All Stages',
+    duration: item.duration,
+    coverImage: FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length],
+    views: 1250 * (idx + 1),
+    publishedAt: item.date,
+    status: 'published',
+  }));
+
   return (
     <Section background="default" spacing="none" id="shorts" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
       {/* Header Container: width 1280, height 80, space-between */}
@@ -72,12 +94,12 @@ export default function MarriageShorts() {
               <Loader2 className="h-6 w-6 text-[#781E36] animate-spin" />
             </div>
           ))
-        ) : videos.length === 0 ? (
+        ) : displayVideos.length === 0 ? (
           <p className="col-span-full text-center text-sm font-normal text-[#6B5B57] py-8">
             {emptyText}
           </p>
         ) : (
-          videos.map((short, index) => (
+          displayVideos.map((short, index) => (
             <Reveal key={short.id || index} delay={index * 0.1} direction="up">
               <Link href={`/shorts/${short.slug}`}>
                 <div className="group relative h-[460px] sm:h-[504px] w-full max-w-[295px] mx-auto rounded-[20px] border border-[#781E36] overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-2 hover:border-[#781E36]">

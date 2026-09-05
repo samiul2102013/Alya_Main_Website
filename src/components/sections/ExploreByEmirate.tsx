@@ -116,7 +116,7 @@ export default function ExploreByEmirate() {
                   <Building2 className="h-4 w-4 text-[#E8CFC1] shrink-0" />
                   {item.centerCount}
                 </p>
-                <Link href="/initiatives" className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
+                <Link href="/emirates" className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
                   <span>{ctaLabel}</span>
                   <ChevronRight className="h-5 w-5 rtl:rotate-180" />
                 </Link>

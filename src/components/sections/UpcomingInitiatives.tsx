@@ -44,27 +44,27 @@ export default function UpcomingInitiatives() {
   const sectionSubtitle = localize(content?.initiativesSubtitle ?? '', content?.initiativesSubtitleAr ?? '') || t('initiativesSubtitle');
   const ctaLabel = localize(content?.initiativesCtaLabel ?? '', content?.initiativesCtaLabelAr ?? '') || t('initiativesCta');
 
-  if (loading || !initiative) {
-    return (
-      <Section background="default" spacing="none" id="initiatives" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
-        <div className="flex flex-col gap-[48px] max-w-[1280px] mx-auto">
-          <Reveal direction="up">
-            <Heading level={2} align="center" subtitle={sectionSubtitle}>
-              {sectionTitle}
-            </Heading>
-          </Reveal>
-        </div>
-      </Section>
-    );
-  }
+  const fallbackList = (t.raw('initiatives') as Array<{
+    badge: string;
+    title: string;
+    description: string;
+    details: string;
+    ctaLabel: string;
+  }>) || [];
+  const fallbackItem = fallbackList[0] || {
+    badge: 'Registration Open',
+    title: 'Mawaddah National Family Preparedness Program',
+    description: 'A comprehensive 4-week interactive workshop series covering effective communication, emotional intelligence, conflict resolution, and financial budgeting for engaged couples.',
+    details: 'Starts Aug 15 • Virtual & In-Person across Abu Dhabi & Dubai',
+    ctaLabel: 'Learn More & Register',
+  };
 
-  const featured = initiative;
-  const title = featured.title;
-  const badge = featured.badge;
-  const description = featured.subtitle || featured.description;
-  const details = formatDetails(featured);
-  const image = featured.coverImage;
-  const ctaHref = featured.slug ? `/initiatives/${featured.slug}` : '/initiatives';
+  const title = initiative?.title || fallbackItem.title;
+  const badge = initiative?.badge || fallbackItem.badge;
+  const description = initiative?.subtitle || initiative?.description || fallbackItem.description;
+  const details = initiative ? formatDetails(initiative) : fallbackItem.details;
+  const image = initiative?.coverImage || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=900&auto=format&fit=crop';
+  const ctaHref = initiative?.slug ? `/initiatives/${initiative.slug}` : '/initiatives';
 
   return (
     <Section background="default" spacing="none" id="initiatives" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
