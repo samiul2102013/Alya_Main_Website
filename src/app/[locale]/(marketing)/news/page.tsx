@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
-import { ArrowRight, Search, ChevronDown, Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { ChevronDown, Search, Loader2, SlidersHorizontal, X, Building2, BadgeCheck, Users, Globe } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
-import { getPublishedNews, type PublicNews } from '@/lib/api/news';
-import { NEWS_IMAGES } from '@/lib/image-pools';
+import { NEWS_IMAGES, NEWS_HERO_IMAGE } from '@/lib/image-pools';
+import { getPublishedNewsPage, type PublicNews } from '@/lib/api/news';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const containerVariants = {
@@ -28,19 +28,6 @@ const itemVariants = {
   },
 };
 
-interface ArticleItem {
-  title: string;
-  description: string;
-}
-
-interface ArticleDisplay extends ArticleItem {
-  image: string;
-  slug?: string;
-  category?: string;
-  source?: string;
-  date: number | null;
-}
-
 interface OrgItem {
   label: string;
   subtitle: string;
@@ -51,191 +38,268 @@ interface FaqItem {
   answer: string;
 }
 
-interface FilterItem {
-  name: string;
-  label: string;
-  isDropdown: boolean;
-  options: string[];
+interface TopicItem {
+  title: string;
+  videos: string;
 }
 
-const articleImages = [
-  NEWS_IMAGES[1],
-  NEWS_IMAGES[2],
-  NEWS_IMAGES[3],
-  NEWS_IMAGES[4],
-  NEWS_IMAGES[0],
-  NEWS_IMAGES[5],
-  NEWS_IMAGES[6],
-  NEWS_IMAGES[7],
-];
-
-const categoryIcons = ['🏛️', '💍', '👨‍👩‍👧‍👦', '🤝', '📚', '🎉'];
-
-const orgIcons = ['💒', '🏗️', '👪', '🌟'];
-
-const norm = (s?: string) => (s ?? '').trim().toLowerCase();
-
-const DAY = 24 * 60 * 60 * 1000;
-const NOW_MS = Date.now();
-const dateWindowDays = (label: string, options: string[]): number | null => {
-  const idx = options.indexOf(label);
-  if (idx === 0) return 7;
-  if (idx === 1) return 30;
-  if (idx === 2) return 365;
-  return null;
-};
-
-function useNewsArticles(
-  fallback: ArticleItem[],
-  fallbackImgs: string[],
-  catOptions: string[],
-  srcOptions: string[],
-): ArticleDisplay[] {
-  const [articles, setArticles] = useState<ArticleDisplay[]>(() =>
-    fallback.map((a, i) => ({
-      ...a,
-      image: fallbackImgs[i % fallbackImgs.length],
-      category: catOptions[i % catOptions.length] ?? undefined,
-      source: srcOptions[i % srcOptions.length] ?? undefined,
-      date: NOW_MS - i * 20 * DAY,
-    })),
-  );
-  useEffect(() => {
-    let cancelled = false;
-    getPublishedNews({ perPage: '50' })
-      .then((list: PublicNews[]) => {
-        if (cancelled || !list.length) return;
-        setArticles(
-          list.map((n) => ({
-            title: n.articleTitle,
-            description: n.articleTitle,
-            image: n.coverImage || fallbackImgs[0],
-            slug: n.slug,
-            category: n.category,
-            source: n.source,
-            date: n.publishedDate ? new Date(n.publishedDate).getTime() : null,
-          })),
-        );
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return articles;
+function buildNewsParams(
+  q: string,
+  category: string,
+  source: string,
+  date: string,
+): Record<string, string> {
+  const params: Record<string, string> = {};
+  if (q) params.search = q;
+  if (category) params.category = category;
+  if (source) params.source = source;
+  if (date) params.date = date;
+  return params;
 }
+
+const PER_PAGE = 6;
 
 export default function NewsPage() {
   const t = useTranslations('news');
-  const tnav = useTranslations('nav');
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const tNav = useTranslations('nav');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
   const [source, setSource] = useState('');
   const [date, setDate] = useState('');
+
+  const [articles, setArticles] = useState<PublicNews[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
 
-  const rawArticles = t.raw('articles') as ArticleItem[];
-  const catOptions = t.raw('catOptions') as string[];
-  const dateOptions = t.raw('dateOptions') as string[];
-  const srcOptions = t.raw('sourceOptions') as string[];
-  const allArticles = useNewsArticles(rawArticles, articleImages, catOptions, srcOptions);
   const presentation = usePagePresentation('news', {
     title: t('title'),
     description: t('description'),
-    heroImage: NEWS_IMAGES[1],
+    heroImage: NEWS_HERO_IMAGE,
     badge: t('heroBadge'),
   });
 
-  const windowDays = date ? dateWindowDays(date, dateOptions) : null;
+  // Section visibility — default all to true if not set (news-specific fields
+  const secVis = presentation.presentation?.newsSectionVisibility ?? {};
+  const showHero         = secVis.hero         !== false;
+  const showCategories = secVis.categories !== false;
+  const showOrgs       = secVis.orgs       !== false;
+  const showTopics     = secVis.topics     !== false;
+  const showContributors = secVis.contributors !== false;
+  const showFaqs       = secVis.faqs       !== false;
+  const showCta        = secVis.cta        !== false;
 
-  const articles = allArticles.filter((a) => {
-    if (searchTerm.trim()) {
-      const q = searchTerm.trim().toLowerCase();
-      const inTitle = norm(a.title).includes(q);
-      const inDesc = norm(a.description).includes(q);
-      if (!inTitle && !inDesc) return false;
-    }
-    if (category && norm(a.category) !== norm(category)) return false;
-    if (source && norm(a.source) !== norm(source)) return false;
-    if (windowDays && a.date != null && a.date < NOW_MS - windowDays * DAY) return false;
-    return true;
-  });
+  const catOptions = t.raw('catOptions') as string[];
+  const dateOptions = t.raw('dateOptions') as string[];
+  const srcOptions = t.raw('sourceOptions') as string[];
+  const i18nFaqs = t.raw('faqs') as FaqItem[];
+  const i18nOrgs = t.raw('orgs') as OrgItem[];
+  const i18nTopics = (t.raw('topics') ?? []) as TopicItem[];
 
-  const perPage = 6;
-  const totalPages = Math.max(1, Math.ceil(articles.length / perPage));
-  const safePage = Math.min(currentPage, totalPages);
-  const pagedArticles = articles.slice((safePage - 1) * perPage, safePage * perPage);
+  // Hybrid content resolution: CMS wins, i18n is the fallback
+  const topics: TopicItem[] =
+    (presentation.presentation?.newsTopics?.length &&
+      presentation.presentation.newsTopics.map((topic) => ({
+        title: topic.title,
+        videos: topic.videos ?? '',
+      }))) ||
+    i18nTopics;
+
+  const contributorList: string[] =
+    (presentation.presentation?.newsContributors?.length &&
+      presentation.presentation.newsContributors) ||
+    [];
+
+  const faqs: FaqItem[] =
+    (presentation.presentation?.newsFaqs?.length &&
+      presentation.presentation.newsFaqs.map((faq) => ({
+        question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
+        answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+      }))) ||
+    i18nFaqs;
+
+  const orgs = i18nOrgs.map((org, i) => ({
+    ...org,
+    icon: ['💒', '🏗️', '👪', '🌟'][i] ?? '🏛️',
+  }));
 
   const categories = (t.raw('categories') as string[]).map((label, i) => ({
-    icon: categoryIcons[i],
+    icon: ['🏛️', '💍', '👨‍👩‍👧‍👦', '🤝', '📚', '🎉'][i] ?? '📰',
     label,
   }));
 
-  const orgs = (t.raw('orgs') as OrgItem[]).map((org, i) => ({
-    ...org,
-    icon: orgIcons[i],
-  }));
+  const topicIcons = ['📰', '🏛️', '💍', '👨‍👩‍👧‍👦', '📚', '🎉', '🌟'];
+  const contributorIcons = [Building2, BadgeCheck, Users, Globe];
 
-  const faqs = t.raw('faqs') as FaqItem[];
+  // Fetch articles from API
+  useEffect(() => {
+    let mounted = true;
+    getPublishedNewsPage({ page: String(currentPage), perPage: String(PER_PAGE) })
+      .then(({ data, meta }) => {
+        if (!mounted) return;
+        setArticles(data);
+        setTotalPages(meta.totalPages);
+      })
+      .catch(() => {
+        if (mounted) {
+          setArticles([]);
+          setTotalPages(1);
+        }
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => { mounted = false; };
+  }, [currentPage]);
 
-  const filters: FilterItem[] = [
-    { name: 'latest', label: t('latest'), isDropdown: false, options: [] },
+  const filters = [
     { name: 'category', label: t('category'), isDropdown: true, options: catOptions },
-    { name: 'date', label: t('date'), isDropdown: true, options: dateOptions },
     { name: 'source', label: t('source'), isDropdown: true, options: srcOptions },
+    { name: 'date', label: t('date'), isDropdown: true, options: dateOptions },
   ];
 
-  const getSelected = (name: string): string => {
-    if (name === 'category') return category;
-    if (name === 'date') return date;
-    if (name === 'source') return source;
-    return '';
+  const getSelectedLabel = (name: string): string | null => {
+    if (name === 'category') {
+      const idx = catOptions.indexOf(category);
+      return idx >= 0 ? catOptions[idx] : null;
+    }
+    if (name === 'source') {
+      const idx = srcOptions.indexOf(source);
+      return idx >= 0 ? srcOptions[idx] : null;
+    }
+    if (name === 'date') {
+      const idx = dateOptions.indexOf(date);
+      return idx >= 0 ? dateOptions[idx] : null;
+    }
+    return null;
   };
 
-  const handleSelect = (name: string, value: string) => {
-    if (name === 'category') setCategory(value);
-    if (name === 'date') setDate(value);
-    if (name === 'source') setSource(value);
+  function handleOptionSelect(name: string, index: number) {
     setOpenDropdown(null);
-    setCurrentPage(1);
-  };
+    if (name === 'category') {
+      const val = catOptions[index] ?? '';
+      setCategory(category === val ? '' : val);
+    } else if (name === 'source') {
+      const val = srcOptions[index] ?? '';
+      setSource(source === val ? '' : val);
+    } else if (name === 'date') {
+      const val = dateOptions[index] ?? '';
+      setDate(date === val ? '' : val);
+    }
+  }
 
-  const handleSearch = () => {
+  function handleSearchWith(q: string) {
     setSearching(true);
-    setCurrentPage(1);
-    setTimeout(() => setSearching(false), 350);
-  };
+    getPublishedNewsPage({
+      ...buildNewsParams(q, category, source, date),
+      page: '1',
+      perPage: String(PER_PAGE),
+    })
+      .then(({ data, meta }) => {
+        setArticles(data);
+        setTotalPages(meta.totalPages);
+        setCurrentPage(1);
+      })
+      .catch(() => { setArticles([]); setTotalPages(1); })
+      .finally(() => setSearching(false));
+  }
 
-  const handleReset = () => {
-    setSearchTerm('');
+  // Search button — triggers text search only
+  function handleSearch() {
+    handleSearchWith(query.trim());
+  }
+
+  // Filter button — applies dropdowns only
+  function handleApplyFilters() {
+    setSearching(true);
+    getPublishedNewsPage({
+      ...buildNewsParams(query.trim(), category, source, date),
+      page: '1',
+      perPage: String(PER_PAGE),
+    })
+      .then(({ data, meta }) => {
+        setArticles(data);
+        setTotalPages(meta.totalPages);
+        setCurrentPage(1);
+      })
+      .catch(() => { setArticles([]); setTotalPages(1); })
+      .finally(() => setSearching(false));
+  }
+
+  function handleResetFilters() {
+    setQuery('');
     setCategory('');
-    setDate('');
     setSource('');
+    setDate('');
     setOpenDropdown(null);
     setCurrentPage(1);
-  };
+  }
 
-  const toggleDropdown = (name: string) => {
-    setOpenDropdown(openDropdown === name ? null : name);
-  };
+  function articleCard(article: PublicNews, i: number) {
+    const coverImg = article.coverImage || NEWS_IMAGES[i % NEWS_IMAGES.length];
+    const title = article.articleTitle;
+    return (
+      <motion.div key={article.id} variants={itemVariants}
+        className="flex flex-col w-full rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden"
+        style={{ boxShadow: '0px 1px 2px -1px #0000001A, 0px 1px 3px 0px #0000001A' }}>
+        <div className="relative w-full h-[180px] overflow-hidden">
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${coverImg})` }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(0deg, rgba(120, 30, 54, 0.8) 0%, rgba(120, 30, 54, 0.2) 50%, rgba(120, 30, 54, 0) 100%)' }} />
+          {article.category && (
+            <div className="absolute top-3 left-3 rounded bg-black/60 px-1.5 py-0.5">
+              <span className="text-[10px] font-medium leading-[15px] text-white">{article.category}</span>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col justify-between w-full min-h-[218px] p-6 bg-white">
+          <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-semibold text-[#781E36] leading-snug">{title}</h3>
+            {article.source && (
+              <span className="text-[11px] font-normal text-[#989898]">{article.source}</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-3 mt-auto">
+            <hr className="border-t border-[#E8CFC1]" />
+            <div className="flex items-center justify-between">
+              <Link
+                href={article.slug ? `/news/article?slug=${encodeURIComponent(article.slug)}` : '/news/article'}
+                className="text-sm font-semibold text-[#781E36] hover:text-[#B83A4A] transition-colors"
+              >
+                {t('readMore')} <span className="rtl:rotate-180 inline-block">→</span>
+              </Link>
+              {article.publishedDate && (
+                <span className="text-[11px] font-normal text-[#989898]">
+                  {new Date(article.publishedDate).toLocaleDateString(isArabic ? 'ar-AE' : 'en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric',
+                  })}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
-    <div className="bg-[#FAEDE6]">
+    <div className="bg-[#FAEDE6] min-h-screen">
       <Reveal delay={0}>
         <div className="mx-auto w-full max-w-[1440px] px-4 md:px-8 pt-5 pb-3">
           <Breadcrumb items={[
-            { label: tnav('home'), href: '/' },
-            { label: tnav('news') },
+            { label: tNav('home'), href: '/' },
+            { label: tNav('news') },
           ]} />
         </div>
       </Reveal>
 
+      {showHero && (
       <Reveal delay={0.1} direction="up">
         <section className="w-full bg-white mb-16">
           <div className="max-w-[1120px] mx-auto px-4 md:px-8 py-14">
@@ -250,7 +314,6 @@ export default function NewsPage() {
                 <div className="flex flex-col sm:flex-row items-center gap-4 mt-2">
                   <Link href="#articles" className="flex h-[56px] w-full sm:w-[280px] items-center justify-center gap-2 rounded-[16px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors">
                     {t('browseArticles')}
-                    <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                   </Link>
                   <Link href="#learn-more" className="flex h-[56px] w-full sm:w-[280px] items-center justify-center gap-2 rounded-[16px] border-2 border-[#781E36] bg-transparent px-[10px] text-sm font-bold text-[#781E36] hover:bg-[#781E36] hover:text-white transition-colors">
                     {t('learnMore')}
@@ -265,141 +328,128 @@ export default function NewsPage() {
           </div>
         </section>
       </Reveal>
+      )}
 
+      {/* Search + Filter section */}
       <Reveal delay={0.2} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
-
-
           <div className="w-full rounded-[12px] border border-[#E8CFC1] bg-white p-[10px] flex flex-col gap-[10px]">
-            <div className="flex items-center gap-[10px] w-full h-[61px] rounded-[12px] border border-[#E8CFC1] bg-white px-[10px]">
-              <Search className="h-5 w-5 text-[#989898] shrink-0" />
-              <input
-                type="text"
-                placeholder={t('searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full h-full bg-transparent text-sm font-normal text-gray-700 outline-none placeholder:text-[#989898]"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
-              {filters.map((filter) => {
-                const selected = getSelected(filter.name);
-                const active = Boolean(selected);
-                return (
-                  <div key={filter.name} className="relative w-full">
-                    <button type="button" onClick={() => filter.isDropdown && toggleDropdown(filter.name)}
-                      className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors ${
-                        active || openDropdown === filter.name ? 'border-[#781E36]' : 'border-[#E8CFC1] hover:border-[#781E36]'
-                      } bg-white`}>
-                      <span className={`text-sm truncate ${active ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
-                        {selected || filter.label}
-                      </span>
-                      {filter.isDropdown && (
-                        <ChevronDown className={`h-4 w-4 text-[#989898] transition-transform duration-200 ${openDropdown === filter.name ? 'rotate-180' : ''}`} />
-                      )}
-                    </button>
-                    {filter.isDropdown && openDropdown === filter.name && (
-                      <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
-                        {filter.options.map((opt) => (
-                          <button key={opt} type="button" onClick={() => handleSelect(filter.name, opt)}
-                            className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors">{opt}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-[10px] w-full">
-              <button className="w-full h-[52px] rounded-[12px] bg-[#781E36] px-6 py-3 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors sm:flex-1" onClick={handleSearch}>
-                {searching ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t('search')}
+
+            {/* Search row — triggers text search only */}
+            <div className="flex items-center gap-[10px] w-full">
+              <div className="flex items-center gap-[10px] flex-1 h-[48px] sm:h-[56px] rounded-[12px] border border-[#E8CFC1] bg-white px-[10px]">
+                <Search className="h-5 w-5 text-[#989898] shrink-0" />
+                <input
+                  type="text"
+                  placeholder={t('searchPlaceholder')}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="w-full h-full bg-transparent text-sm font-normal text-gray-700 outline-none placeholder:text-[#989898]"
+                />
+                {query && (
+                  <button type="button" onClick={() => { setQuery(''); handleSearchWith(''); }} className="shrink-0 text-[#989898] hover:text-[#781E36] cursor-pointer" aria-label="Clear search">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleSearch}
+                className="h-[48px] sm:h-[56px] px-6 rounded-[12px] bg-[#781E36] text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors shrink-0 flex items-center gap-2"
+              >
+                {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                <span className="hidden sm:inline">{t('search')}</span>
               </button>
-              <button className="w-full sm:w-auto h-[52px] rounded-[12px] bg-[#FAEDE6] px-6 py-3 text-sm font-bold text-[#781E36] border border-[#E8CFC1] hover:bg-[#F3D9CE] transition-colors" onClick={handleReset}>{t('reset')}</button>
             </div>
-            {articles.length > 0 && (
-              <p className="px-1 text-xs font-normal text-[#989898]">
-                {articles.length} {articles.length === 1 ? 'result' : 'results'}
-              </p>
-            )}
-          </div>
-        </div>
-      </Reveal>
 
-      <Reveal delay={0.25} direction="up">
-        <div className="relative max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
-          <div className="relative w-full min-h-[300px] sm:min-h-[400px] rounded-[20px] overflow-hidden flex items-center py-12 md:py-16"
-            style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1280&auto=format&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center', boxShadow: '0px 8px 10px -6px #781E360D, 0px 20px 25px -5px #781E360D' }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
-            <div className="absolute top-6 right-6 rounded-md bg-[#781E36] px-4 py-2 z-10">
-              <span className="text-white font-bold text-sm">{t('heroBadge')}</span>
-            </div>
-            <div className="relative z-10 flex flex-col gap-3 max-w-[1184px] px-8 md:px-12">
-              <h2 className="max-w-[753px] text-xl sm:text-2xl lg:text-3xl font-semibold text-white leading-snug">
-                {t('heroTitle')}
-              </h2>
-              <p className="max-w-[657.81px] text-sm sm:text-base font-light text-white/80 leading-relaxed">
-                {t('heroDesc')}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.3} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
-          <div className="flex flex-col gap-[50px] w-full">
-            <div className="flex flex-col gap-[14px] w-full">
-              <span className="text-xl font-bold text-[#781E36]">{t('latestTitle')}</span>
-            </div>
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false, margin: '-50px' }}
-            >
-              {pagedArticles.map((article, i) => (
-                <motion.div key={i} variants={itemVariants} className="flex flex-col w-full rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden">
-                  <div className="relative w-full h-[180px] overflow-hidden">
-                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${article.image})` }} />
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(0deg, rgba(120, 30, 54, 0.8) 0%, rgba(120, 30, 54, 0.2) 50%, rgba(120, 30, 54, 0) 100%)' }} />
-                  </div>
-                  <div className="flex flex-col justify-between w-full min-h-[218px] p-6 bg-white">
-                    <div className="flex flex-col gap-3">
-                      <h3 className="text-lg font-semibold text-[#781E36] leading-snug">{article.title}</h3>
-                      <p className="text-[13px] font-normal text-[#6B5B57] leading-relaxed">{article.description}</p>
+            {/* Filter row — dropdowns + Apply Filters button */}
+            <div className="flex flex-col sm:flex-row gap-[10px] w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[10px] flex-1">
+                {filters.map((filter) => {
+                  const selected = getSelectedLabel(filter.name);
+                  const active = Boolean(selected);
+                  return (
+                    <div key={filter.name} className="relative w-full">
+                      <button type="button"
+                        onClick={() => setOpenDropdown(openDropdown === filter.name ? null : filter.name)}
+                        className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${active || openDropdown === filter.name ? 'border-[#781E36]' : 'border-[#E8CFC1] hover:border-[#781E36]'}`}>
+                        <span className={`text-sm truncate ${active ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
+                          {selected || filter.label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === filter.name ? 'rotate-180' : ''}`} />
+                      </button>
+                      {openDropdown === filter.name && (
+                        <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
+                          {filter.options.map((opt, index) => (
+                            <button key={opt} type="button" onClick={() => handleOptionSelect(filter.name, index)}
+                              className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors">{opt}</button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex flex-col gap-3 mt-auto">
-                      <hr className="border-t border-[#E8CFC1]" />
-                      <Link
-                        href={article.slug ? `/news/article?slug=${encodeURIComponent(article.slug)}` : '/news/article'}
-                        className="text-sm font-semibold text-[#781E36] hover:text-[#B83A4A] transition-colors"
-                      >
-                        {t('readMore')} <span className="rtl:rotate-180 inline-block">→</span>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-            {pagedArticles.length === 0 && (
-              <div className="flex flex-col items-center gap-3 py-10 text-center">
-                <p className="text-sm font-normal text-[#6B5B57]">No articles found matching your search or filters.</p>
-                <button type="button" onClick={handleReset}
-                  className="h-[48px] rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">
+                  );
+                })}
+              </div>
+              <div className="flex gap-[10px] shrink-0">
+                <button
+                  type="button"
+                  onClick={handleApplyFilters}
+                  className="h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors flex items-center justify-center gap-2"
+                >
+                  <SlidersHorizontal className="h-4 w-4 shrink-0" />
+                  {t('search')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="h-[48px] px-4 rounded-[12px] bg-[#FAEDE6] text-sm font-bold text-[#781E36] border border-[#E8CFC1] hover:bg-[#F3D9CE] transition-colors"
+                >
                   {t('reset')}
                 </button>
               </div>
-            )}
-            {pagedArticles.length > 0 && totalPages > 1 && (
-              <Pagination page={safePage} totalPages={totalPages} onChange={setCurrentPage} />
-            )}
+            </div>
+
           </div>
         </div>
       </Reveal>
 
-      <Reveal delay={0.35} direction="up">
+      {/* All Articles — single unified paginated grid */}
+      <Reveal delay={0.25} direction="up">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16" id="articles">
+          {loading || searching ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
+            </div>
+          ) : articles.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <p className="text-sm font-normal text-[#6B5B57]">No articles found matching your search or filters.</p>
+              <button type="button" onClick={handleResetFilters}
+                className="h-[48px] rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">
+                {t('reset')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, margin: '-50px' }}
+              >
+                {articles.map((article, i) => articleCard(article, i))}
+              </motion.div>
+              {totalPages >= 1 && (
+                <Pagination page={currentPage} totalPages={totalPages} onChange={setCurrentPage} className="mt-8" />
+              )}
+            </>
+          )}
+        </div>
+      </Reveal>
+
+      {showCategories && (
+      <Reveal delay={0.3} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           <div className="flex flex-col gap-8 w-full bg-white border-t border-b border-[#E8CFC1] py-12 px-8">
             <div className="flex flex-col gap-2">
@@ -427,9 +477,46 @@ export default function NewsPage() {
           </div>
         </div>
       </Reveal>
+      )}
 
-      <Reveal delay={0.4} direction="up">
+      {showTopics && topics.length > 0 && (
+      <Reveal delay={0.32} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
+          <div className="flex flex-col gap-8 w-full bg-white py-12 px-8 rounded-none border-b border-[#E8CFC1]">
+            <div className="flex flex-col gap-2">
+              <span className="text-xl font-bold text-[#781E36]">{t('exploreTopics') || 'Explore Topics'}</span>
+              <p className="text-sm font-normal text-[#6B5B57]">{t('exploreTopicsText') || 'Browse our curated collection of news categories and featured topics.'}</p>
+            </div>
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-3 gap-6"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, margin: '-50px' }}
+            >
+              {topics.map((topic, i) => (
+                <motion.div key={i} variants={itemVariants}
+                  className="flex flex-col gap-4 w-full rounded-[24px] border border-[#E8CFC1] bg-white p-6 cursor-pointer hover:border-[#781E36] hover:shadow-lg transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-[14px] bg-[#FAEDE6]">
+                      <span className="text-xl">{topicIcons[i % topicIcons.length]}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <h3 className="text-base font-bold text-[#781E36] leading-snug">{topic.title}</h3>
+                      <span className="text-xs font-semibold text-[#987171]">{topic.videos}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </Reveal>
+      )}
+
+      {showOrgs && (
+      <Reveal delay={0.35} direction="up">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12" id="learn-more">
           <div className="flex flex-col gap-8 w-full bg-white pt-[48px] pb-[48px] px-8">
             <div className="flex flex-col gap-2">
               <span className="text-xl font-bold text-[#781E36]">{t('featuredOrgs')}</span>
@@ -442,18 +529,47 @@ export default function NewsPage() {
               whileInView="visible"
               viewport={{ once: false, margin: '-50px' }}
             >
-              {orgs.map((org, i) => {
-                const isSelected = selectedOrg === org.label;
+              {orgs.map((org, i) => (
+                <motion.div key={i} variants={itemVariants}
+                  className="flex flex-col items-center justify-center gap-3 w-full min-h-[200px] rounded-[24px] bg-white border border-[#E8CFC1] cursor-pointer hover:border-[#781E36] transition-all px-6 py-8"
+                  style={{ boxShadow: '0px 4px 6px -4px #781E360D, 0px 10px 15px -3px #781E360D' }}>
+                  <div className="flex items-center justify-center h-[56px] w-[56px] rounded-[16px] bg-[#FAEDE6]">
+                    <span className="text-2xl">{org.icon}</span>
+                  </div>
+                  <span className="text-center text-sm font-extrabold text-[#781E36] leading-snug">{org.label}</span>
+                  <span className="text-center text-xs font-normal text-[#6B5B57]">{org.subtitle}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </Reveal>
+      )}
+
+      {showContributors && contributorList.length > 0 && (
+      <Reveal delay={0.38} direction="up">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
+          <div className="flex flex-col gap-8 w-full bg-white py-12 px-8 rounded-none border-b border-[#E8CFC1]">
+            <div className="flex flex-col gap-2">
+              <span className="text-xl font-bold text-[#781E36]">{t('trustedContributors') || 'Trusted Contributors'}</span>
+              <p className="text-sm font-normal text-[#6B5B57]">{t('trustedContributorsText') || 'Content provided by our trusted partners and organizations.'}</p>
+            </div>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, margin: '-50px' }}
+            >
+              {contributorList.map((name, i) => {
+                const Icon = contributorIcons[i % contributorIcons.length];
                 return (
                   <motion.div key={i} variants={itemVariants}
-                    className={`flex flex-col items-center justify-center gap-3 w-full min-h-[200px] rounded-[24px] bg-white cursor-pointer transition-all px-6 py-8 ${isSelected ? 'border-2 border-[#781E36]' : 'border border-[#E8CFC1]'}`}
-                    style={{ boxShadow: isSelected ? '0px 4px 6px -4px #781E360D, 0px 10px 15px -3px #781E360D' : 'none' }}
-                    onClick={() => setSelectedOrg(isSelected ? null : org.label)}>
-                    <div className={`flex items-center justify-center h-[56px] w-[56px] rounded-[16px] transition-colors ${isSelected ? 'bg-[#781E36]' : 'bg-[#FAEDE6]'}`}>
-                      <span className="text-2xl">{org.icon}</span>
+                    className="flex items-center gap-3 w-full h-[88px] rounded-[20px] bg-white border border-[#E8CFC1] px-5 cursor-pointer hover:border-[#781E36] hover:shadow-md transition-all">
+                    <div className="flex items-center justify-center h-11 w-11 rounded-[12px] bg-[#FAEDE6] shrink-0">
+                      <Icon className="h-5 w-5 text-[#781E36]" />
                     </div>
-                    <span className="text-center text-sm font-extrabold text-[#781E36] leading-snug">{org.label}</span>
-                    <span className="text-center text-xs font-normal text-[#6B5B57]">{org.subtitle}</span>
+                    <span className="text-sm font-bold text-[#781E36] leading-snug truncate">{name}</span>
                   </motion.div>
                 );
               })}
@@ -461,8 +577,10 @@ export default function NewsPage() {
           </div>
         </div>
       </Reveal>
+      )}
 
-      <Reveal delay={0.45} direction="up">
+      {showFaqs && (
+      <Reveal delay={0.4} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
           <div className="flex flex-col items-center text-center gap-4 mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-[#781E36] leading-tight">{t('faqTitle')}</h2>
@@ -489,8 +607,10 @@ export default function NewsPage() {
           </motion.div>
         </div>
       </Reveal>
+      )}
 
-      <Reveal delay={0.5} direction="up">
+      {showCta && (
+      <Reveal delay={0.45} direction="up">
         <div className="w-full pb-[80px]">
           <div className="mx-auto max-w-[1280px] px-6">
             <div className="relative flex h-auto min-h-[464px] flex-col items-center justify-center overflow-hidden rounded-[40px] px-6 py-[80px] text-center text-white md:px-[80px]"
@@ -509,6 +629,7 @@ export default function NewsPage() {
           </div>
         </div>
       </Reveal>
+      )}
     </div>
   );
 }
