@@ -532,7 +532,9 @@ export default function ShortsPage() {
           </div>
         </div>
       </Reveal>
+      )}
 
+      {showContributors && (
       <Reveal delay={0.4} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           <div className="flex flex-col gap-6 w-full bg-white pt-[30px] pb-[48px] px-4 sm:px-8">
@@ -556,7 +558,9 @@ export default function ShortsPage() {
           </div>
         </div>
       </Reveal>
+      )}
 
+      {showFaqs && (
       <Reveal delay={0.45} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
           <div className="flex flex-col items-center text-center gap-4 mb-8">
@@ -584,6 +588,7 @@ export default function ShortsPage() {
           </motion.div>
         </div>
       </Reveal>
+      )}
 
       <Reveal delay={0.5} direction="up">
         <div className="w-full pb-[80px]">
