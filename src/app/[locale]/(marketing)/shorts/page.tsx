@@ -61,6 +61,9 @@ export default function ShortsPage() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [query, setQuery] = useState('');
+  // The search text actually sent to the server. Kept separate from `query`
+  // (the input value) so typing doesn't fire a request per keystroke.
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [marital, setMarital] = useState('');
   const [language, setLanguage] = useState('');
   const [date, setDate] = useState('');
@@ -68,7 +71,6 @@ export default function ShortsPage() {
   const [libraryPage, setLibraryPage] = useState(1);
   const [libraryTotalPages, setLibraryTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
 
   const presentation = usePagePresentation('shorts', {
     title: t('title'),
@@ -76,9 +78,19 @@ export default function ShortsPage() {
     heroImage: SHORTS_HERO_IMAGE,
   });
 
+  // Single fetch path for the library grid. It ALWAYS carries the active
+  // filters along with the page — previously only page/perPage were sent here,
+  // so clicking page 2 dropped the filters entirely and showed page 2 of the
+  // unfiltered list (or an empty grid). The backend already supports
+  // search/marital_stage/language/date, so filtering and pagination now
+  // operate on the same server-side result set.
   useEffect(() => {
     let mounted = true;
-    getPublishedShortsPage({ page: String(libraryPage), perPage: String(LIBRARY_PER_PAGE) })
+    getPublishedShortsPage({
+      ...buildShortParams(appliedSearch, marital, language, date),
+      page: String(libraryPage),
+      perPage: String(LIBRARY_PER_PAGE),
+    })
       .then(({ data, meta }) => {
         if (!mounted) return;
         setVideos(data);
@@ -96,7 +108,7 @@ export default function ShortsPage() {
     return () => {
       mounted = false;
     };
-  }, [libraryPage]);
+  }, [libraryPage, appliedSearch, marital, language, date]);
 
   const maritalOptions = t.raw('maritalOptions') as string[];
   const languageOptions = t.raw('languageOptions') as string[];
@@ -154,6 +166,9 @@ export default function ShortsPage() {
 
   function handleOptionSelect(name: string, index: number) {
     setOpenDropdown(null);
+    // A filter change invalidates the current page — always go back to page 1
+    // so we never request a page beyond the filtered result set.
+    setLibraryPage(1);
     if (name === 'marital') {
       const val = MARITAL_VALUES[index] ?? '';
       setMarital(marital === val ? '' : val);
@@ -184,6 +199,7 @@ export default function ShortsPage() {
 
   function handleResetFilters() {
     setQuery('');
+    setAppliedSearch('');
     setMarital('');
     setLanguage('');
     setDate('');
@@ -191,42 +207,17 @@ export default function ShortsPage() {
     setLibraryPage(1);
   }
 
-  function handleSearchWith(q: string) {
-    setSearching(true);
-    getPublishedShortsPage({
-      ...buildShortParams(q, marital, language, date),
-      page: '1',
-      perPage: String(LIBRARY_PER_PAGE),
-    })
-      .then(({ data, meta }) => {
-        setVideos(data);
-        setLibraryTotalPages(meta.totalPages);
-        setLibraryPage(1);
-      })
-      .catch(() => { setVideos([]); setLibraryTotalPages(1); })
-      .finally(() => setSearching(false));
-  }
-
-  // Search button — triggers text search only (keeps current filter values)
+  // Search button / Enter key — commit the search text; the effect above picks
+  // it up (together with the current dropdown filters) and fetches page 1.
   function handleSearch() {
-    handleSearchWith(query.trim());
+    setAppliedSearch(query.trim());
+    setLibraryPage(1);
   }
 
-  // Filter button — applies dropdowns only (keeps current search text)
+  // Filter button — dropdown selections already flow into the effect directly;
+  // this just snaps back to page 1 (kept for the visible button in the UI).
   function handleApplyFilters() {
-    setSearching(true);
-    getPublishedShortsPage({
-      ...buildShortParams(query.trim(), marital, language, date),
-      page: '1',
-      perPage: String(LIBRARY_PER_PAGE),
-    })
-      .then(({ data, meta }) => {
-        setVideos(data);
-        setLibraryTotalPages(meta.totalPages);
-        setLibraryPage(1);
-      })
-      .catch(() => { setVideos([]); setLibraryTotalPages(1); })
-      .finally(() => setSearching(false));
+    setLibraryPage(1);
   }
 
   function videoCard(video: PublicShort, i: number, key: string) {
@@ -320,7 +311,7 @@ export default function ShortsPage() {
                   className="w-full h-full bg-transparent text-sm font-normal text-gray-700 outline-none placeholder:text-[#989898]"
                 />
                 {query && (
-                  <button type="button" onClick={() => { setQuery(''); handleSearchWith(''); }} className="shrink-0 text-[#989898] hover:text-[#781E36] cursor-pointer" aria-label="Clear search">
+                  <button type="button" onClick={() => { setQuery(''); setAppliedSearch(''); setLibraryPage(1); }} className="shrink-0 text-[#989898] hover:text-[#781E36] cursor-pointer" aria-label="Clear search">
                     <X className="h-4 w-4" />
                   </button>
                 )}
@@ -330,7 +321,7 @@ export default function ShortsPage() {
                 onClick={handleSearch}
                 className="h-[48px] sm:h-[56px] px-6 rounded-[12px] bg-[#781E36] text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors shrink-0 flex items-center gap-2"
               >
-                {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                <Search className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('search') ?? 'Search'}</span>
               </button>
             </div>
@@ -389,7 +380,7 @@ export default function ShortsPage() {
       {/* All Shorts — single unified paginated grid */}
       <Reveal delay={0.25} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
-          {loading || searching ? (
+          {loading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
             </div>
