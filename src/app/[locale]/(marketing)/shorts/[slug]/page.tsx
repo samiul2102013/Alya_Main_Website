@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
-import type { PublicShort, PublicShortDetail } from '@/lib/api/shorts';
+import type { PublicShort, PublicShortDetail, ShortResource } from '@/lib/api/shorts';
 import { getShortBySlug } from '@/lib/api/shorts';
 
 const FALLBACK_IMAGES = [
@@ -49,6 +49,7 @@ export default function VideoDetailsPage() {
   const [video, setVideo] = useState<PublicShortDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -65,6 +66,21 @@ export default function VideoDetailsPage() {
       mounted = false;
     };
   }, [slug]);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      const input = document.createElement('textarea');
+      input.value = window.location.href;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
 
   const isArabic = locale === 'ar';
   const title = video ? (isArabic && video.videoTitleAr ? video.videoTitleAr : video.videoTitle) : '';
@@ -85,7 +101,11 @@ export default function VideoDetailsPage() {
 
   const keyTopics = video?.keyTopics?.length ? video.keyTopics : [];
   const resourcesList = video?.resources?.length
-    ? video.resources.map((r) => (typeof r === 'string' ? r : (r as { title?: string }).title || ''))
+    ? video.resources.map((r) => {
+        if (typeof r === 'string') return { title: r, url: '' };
+        const res = r as ShortResource;
+        return { title: res.title || '', url: res.url || '' };
+      })
     : [];
   const relatedVideos = video?.relatedVideos?.length ? video.relatedVideos : [];
 
@@ -237,15 +257,20 @@ export default function VideoDetailsPage() {
                       {t('resourcesText')}
                     </motion.p>
                     <motion.div className="flex flex-col gap-3 mt-2" variants={containerVariants}>
-                      {resourcesList.map((label, i) => (
+                      {resourcesList.map((item, i) => (
                         <motion.div key={i} variants={itemVariants}>
-                          <Link href={video.shareUrl || '#'} className="flex items-center justify-between w-full h-[58px] rounded-[12px] border border-[#E8CFC1] bg-white px-4 hover:border-[#781E36] transition-colors">
+                          <a
+                            href={item.url || video.shareUrl || '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-between w-full h-[58px] rounded-[12px] border border-[#E8CFC1] bg-white px-4 hover:border-[#781E36] transition-colors"
+                          >
                             <div className="flex items-center gap-3">
                               <ExternalLink className="h-5 w-5 text-[#781E36]" />
-                              <span className="text-sm font-medium text-[#6B5B57]">{label}</span>
+                              <span className="text-sm font-medium text-[#6B5B57]">{item.title}</span>
                             </div>
                             <Share2 className="h-4 w-4 text-[#989898]" />
-                          </Link>
+                          </a>
                         </motion.div>
                       ))}
                     </motion.div>
@@ -268,7 +293,7 @@ export default function VideoDetailsPage() {
                       {[
                         { icon: 'facebook', label: 'Facebook' },
                         { icon: 'twitter', label: 'Twitter' },
-                        { icon: 'link', label: 'Copy Link' },
+                        { icon: 'link', label: copied ? 'Copied!' : 'Copy Link' },
                       ].map((item, i) => {
                         const iconEl = item.icon === 'facebook' ? (
                           <svg className="h-5 w-5 text-[#781E36]" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
@@ -277,17 +302,33 @@ export default function VideoDetailsPage() {
                         ) : (
                           <Link2 className="h-5 w-5 text-[#781E36]" />
                         );
-                        const url = item.icon === 'link'
-                          ? 'https://marriagesupport.gov.ae'
-                          : item.icon === 'facebook'
-                            ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(video.shareUrl || 'https://marriagesupport.gov.ae')}`
-                            : `https://twitter.com/intent/tweet?url=${encodeURIComponent(video.shareUrl || 'https://marriagesupport.gov.ae')}`;
+                        const isCopy = item.icon === 'link';
+                        const url = item.icon === 'facebook'
+                          ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`
+                          : item.icon === 'twitter'
+                            ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`
+                            : '';
                         return (
                           <motion.div key={i} variants={itemVariants} className="flex flex-col items-center gap-2 w-[58.11px] cursor-pointer group">
-                            <a href={url} target={item.icon === 'link' ? undefined : '_blank'} rel="noreferrer"
-                              className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-[#FAEDE6] border border-[#E8CFC1] group-hover:border-[#781E36] transition-colors">
-                              {iconEl}
-                            </a>
+                            {isCopy ? (
+                              <button
+                                type="button"
+                                onClick={handleCopyLink}
+                                aria-label="Copy Link"
+                                className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-[#FAEDE6] border border-[#E8CFC1] group-hover:border-[#781E36] transition-colors"
+                              >
+                                {iconEl}
+                              </button>
+                            ) : (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-[#FAEDE6] border border-[#E8CFC1] group-hover:border-[#781E36] transition-colors"
+                              >
+                                {iconEl}
+                              </a>
+                            )}
                             <span className="text-center text-xs font-medium leading-4 text-[#6B5B57]">{item.label}</span>
                           </motion.div>
                         );

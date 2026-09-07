@@ -1,3 +1,9 @@
+export interface ShortResource {
+  title?: string;
+  url?: string;
+  type?: string;
+}
+
 export interface PublicShort {
   id: string;
   videoTitle: string;
@@ -20,7 +26,7 @@ export interface PublicShortDetail extends PublicShort {
   speaker: string;
   description: string;
   keyTopics: string[];
-  resources: unknown[];
+  resources: ShortResource[];
   shareUrl: string;
   lastUpdated: string | null;
   showKeyTopics: boolean;
