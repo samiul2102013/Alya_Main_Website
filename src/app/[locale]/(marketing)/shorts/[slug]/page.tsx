@@ -93,8 +93,8 @@ export default function VideoDetailsPage() {
         { label: t('maritalStage'), value: video.maritalStage },
         { label: t('languageLabel'), value: video.language === 'ar' ? 'Arabic' : video.language === 'both' ? 'Both' : 'English' },
         { label: t('duration'), value: video.duration },
-        { label: t('views'), value: String(video.views ?? 0) },
-        { label: t('speaker'), value: video.speaker },
+        ...(video.showViews ? [{ label: t('views'), value: String(video.views ?? 0) }] : []),
+        ...(video.showSpeaker ? [{ label: t('speaker'), value: video.speaker }] : []),
         { label: t('publishedDate'), value: video.publishedAt ? new Date(video.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar-AE' : 'en-US') : '' },
       ].filter((d) => d.value)
     : [];
@@ -226,22 +226,27 @@ export default function VideoDetailsPage() {
                   <motion.p variants={itemVariants} className="max-w-[1214px] text-base font-normal leading-7 text-[#6B5B57]">
                     {description || t('aboutText')}
                   </motion.p>
-                  <motion.span variants={itemVariants} className="mt-4 text-lg font-semibold leading-7 text-[#781E36]">
-                    {t('keyTopics')}
-                  </motion.span>
-                  <motion.div className="flex flex-wrap gap-3" variants={containerVariants}>
-                    {keyTopics.map((topic, i) => (
-                      <motion.div key={i} variants={itemVariants} className="flex items-center rounded-full border border-[#E8CFC180] bg-[#FAEDE6] px-4 py-2">
-                        <span className="text-sm font-medium leading-5 text-[#781E36]">{topic}</span>
+                  {video.showKeyTopics && keyTopics.length > 0 && (
+                    <>
+                      <motion.span variants={itemVariants} className="mt-4 text-lg font-semibold leading-7 text-[#781E36]">
+                        {t('keyTopics')}
+                      </motion.span>
+                      <motion.div className="flex flex-wrap gap-3" variants={containerVariants}>
+                        {keyTopics.map((topic, i) => (
+                          <motion.div key={i} variants={itemVariants} className="flex items-center rounded-full border border-[#E8CFC180] bg-[#FAEDE6] px-4 py-2">
+                            <span className="text-sm font-medium leading-5 text-[#781E36]">{topic}</span>
+                          </motion.div>
+                        ))}
                       </motion.div>
-                    ))}
-                  </motion.div>
+                    </>
+                  )}
                 </motion.div>
               </div>
             </Reveal>
 
             <Reveal delay={0.3} direction="up">
               <div className="flex flex-col lg:flex-row gap-[30px] w-full">
+                {video.showResources && resourcesList.length > 0 && (
                 <div className="flex flex-col w-full max-w-none lg:max-w-[624px] min-h-[352px] rounded-[20px] border border-[#E8CFC180] bg-white p-6 sm:p-8 gap-2">
                   <motion.div
                     className="flex flex-col gap-4"
@@ -276,7 +281,9 @@ export default function VideoDetailsPage() {
                     </motion.div>
                   </motion.div>
                 </div>
+                )}
 
+                {video.showShare && (
                 <div className="flex flex-col w-full max-w-none lg:max-w-[624px] min-h-[352px] rounded-[20px] bg-white p-6 sm:p-8 gap-4"
                   style={{ boxShadow: '0px 1px 2px -1px #0000001A, 0px 1px 3px 0px #0000001A' }}>
                   <motion.div
@@ -336,10 +343,12 @@ export default function VideoDetailsPage() {
                     </motion.div>
                   </motion.div>
                 </div>
+                )}
               </div>
             </Reveal>
 
             <Reveal delay={0.35} direction="up">
+              {video.showRelated && (
               <div className="flex flex-col gap-6 w-full">
                 <span className="text-xl font-bold leading-7 text-[#781E36]">{t('relatedShorts')}</span>
                 {relatedVideos.length === 0 ? (
@@ -388,6 +397,7 @@ export default function VideoDetailsPage() {
                   </motion.div>
                 )}
               </div>
+              )}
             </Reveal>
 
             <Reveal delay={0.4} direction="up">
