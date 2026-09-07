@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Clock, HelpCircle, HeadphonesIcon, Send } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
+import { useContactContent } from '@/hooks/useContactContent';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
 
@@ -29,10 +30,17 @@ const itemVariants = {
 export default function ContactPage() {
   const t = useTranslations('contact');
   const tNav = useTranslations('nav');
+  const { content: contactContent } = useContactContent();
   const addressLines = t.raw('addressLines') as string[];
   const hoursLines = t.raw('hoursLines') as string[];
   const inquiriesLines = t.raw('inquiriesLines') as string[];
   const supportLines = t.raw('supportLines') as string[];
+
+  const secVis = contactContent?.sectionVisibility ?? {};
+  const showHero        = secVis.hero !== false;
+  const showFormLabels  = secVis.formLabels !== false;
+  const showContactInfo = secVis.contactInfo !== false;
+  const showLocationMap = secVis.locationMap !== false;
 
   const [form, setForm] = useState({
     fullName: '',
@@ -85,6 +93,7 @@ export default function ContactPage() {
       </Reveal>
 
       <Reveal delay={0.1} direction="up">
+        {showHero && (
         <section className="w-full bg-white mb-16">
           <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-12">
             <div className="flex flex-col md:flex-row items-center gap-10">
@@ -112,12 +121,15 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
+        )}
       </Reveal>
 
       <Reveal delay={0.2} direction="up">
+        {(showFormLabels || showContactInfo) && (
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           <div className="w-full bg-white rounded-[10px] border border-[#959595] border-[0.5px]">
             <div className="flex flex-col lg:flex-row gap-10 p-6 md:p-10">
+              {showFormLabels && (
               <motion.div
                 className="flex flex-col gap-6 w-full max-w-[640px]"
                 variants={containerVariants}
@@ -236,7 +248,9 @@ export default function ContactPage() {
                 </motion.button>
               </form>
               </motion.div>
+              )}
 
+              {showContactInfo && (
               <div className="flex flex-col gap-6 w-full max-w-[460px] pt-0 lg:pt-[52px]">
                 <span className="text-xl md:text-2xl font-bold leading-8 text-[#781E36]">
                   {t('contactInfo')}
@@ -289,12 +303,15 @@ export default function ContactPage() {
                   ))}
                 </motion.div>
               </div>
+              )}
             </div>
           </div>
         </div>
+        )}
       </Reveal>
 
       <Reveal delay={0.3} direction="up">
+        {showLocationMap && (
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
           <div className="flex flex-col gap-[30px] w-full bg-white">
             <div className="flex items-center gap-[26px]">
@@ -325,6 +342,7 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
+        )}
       </Reveal>
     </div>
   );

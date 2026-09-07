@@ -49,6 +49,17 @@ export default function AboutPage() {
 	const whyValues = (content?.whyValues && content.whyValues.length > 0) ? content.whyValues : fallbackWhyValues;
 	const coreValueList = (content?.coreValueList && content.coreValueList.length > 0) ? content.coreValueList : fallbackCoreValueList;
 
+	const secVis = content?.sectionVisibility ?? {};
+	const showHero         = secVis.hero !== false;
+	const showOurStory     = secVis.ourStory !== false;
+	const showOurMission   = secVis.ourMission !== false;
+	const showOurVision    = secVis.ourVision !== false;
+	const showOurObjective = secVis.ourObjective !== false;
+	const showWhatWeOffer  = secVis.whatWeOffer !== false;
+	const showOurImpact    = secVis.ourImpact !== false;
+	const showWhyChoose    = secVis.whyChoose !== false;
+	const showCoreValues   = secVis.coreValues !== false;
+
 	const heroTitle = localize(content?.title ?? '', content?.titleAr ?? '') || t('title');
 	const heroDescription = localize(content?.description ?? '', content?.descriptionAr ?? '') || t('description');
 	const browseSession = localize(content?.browseSession ?? '', content?.browseSessionAr ?? '') || t('browseSession');
@@ -92,6 +103,7 @@ export default function AboutPage() {
 			</Reveal>
 
 			<Reveal delay={0.1} direction="up">
+				{showHero && (
 				<section className="w-full bg-white mb-16">
 					<div className="max-w-[1280px] mx-auto px-4 md:px-8 py-12">
 						<div className="flex flex-col md:flex-row items-center gap-10">
@@ -119,13 +131,16 @@ export default function AboutPage() {
 						</div>
 					</div>
 				</section>
+				)}
 			</Reveal>
 
 			<Reveal delay={0.2} direction="up">
+				{(showOurStory || showOurMission || showOurVision) && (
 				<div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
 					<div className="flex flex-col w-full bg-white rounded-[16px] p-6 md:p-10 gap-10"
 						style={{ boxShadow: '0px 4px 20px 0px #781E360A' }}
 					>
+						{showOurStory && (
 						<div className="flex flex-col gap-3">
 							<div className="flex items-center gap-3">
 								<div className="flex items-center justify-center w-[50px] h-[50px] rounded-[6px] border border-[#781E36] bg-white p-[10px]">
@@ -139,7 +154,9 @@ export default function AboutPage() {
 								{ourStoryText}
 							</p>
 						</div>
+						)}
 
+						{(showOurMission || showOurVision) && (
 						<motion.div
 							className="grid grid-cols-1 md:grid-cols-2 gap-6"
 							variants={containerVariants}
@@ -147,6 +164,7 @@ export default function AboutPage() {
 							whileInView="visible"
 							viewport={{ once: false, margin: '-50px' }}
 						>
+							{showOurMission && (
 							<motion.div variants={itemVariants} className="flex flex-col gap-4 rounded-[16px] border border-[#E8CFC1] bg-white p-6">
 								<div className="flex justify-end">
 									<div className="flex items-center justify-center w-[50px] h-[50px] rounded-[6px] border border-[#781E36] bg-white p-[10px]">
@@ -160,7 +178,9 @@ export default function AboutPage() {
 									{ourMissionText}
 								</p>
 							</motion.div>
+							)}
 
+							{showOurVision && (
 							<motion.div variants={itemVariants} className="flex flex-col gap-4 rounded-[16px] border border-[#E8CFC1] bg-white p-6">
 								<div className="flex justify-end">
 									<div className="flex items-center justify-center w-[50px] h-[50px] rounded-[6px] border border-[#781E36] bg-white p-[10px]">
@@ -174,12 +194,16 @@ export default function AboutPage() {
 									{ourVisionText}
 								</p>
 							</motion.div>
+							)}
 						</motion.div>
+						)}
 					</div>
 				</div>
+				)}
 			</Reveal>
 
 			<Reveal delay={0.3} direction="up">
+				{showOurObjective && (
 				<div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
 					<div className="flex flex-col gap-8 w-full bg-white border-t border-b border-[#E8CFC1] py-12 px-6 md:px-8">
 						<div className="flex flex-col gap-2">
@@ -211,9 +235,11 @@ export default function AboutPage() {
 						</motion.div>
 					</div>
 				</div>
+				)}
 			</Reveal>
 
 			<Reveal delay={0.35} direction="up">
+				{showWhatWeOffer && (
 				<div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
 					<div className="flex flex-col gap-8 w-full bg-white border-t border-b border-[#E8CFC1] py-12 px-6 md:px-8">
 						<div className="flex flex-col gap-2">
@@ -256,9 +282,11 @@ export default function AboutPage() {
 						</motion.div>
 					</div>
 				</div>
+				)}
 			</Reveal>
 
 			<Reveal delay={0.4} direction="up">
+				{showOurImpact && (
 				<div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
 					<div className="flex flex-col items-center gap-6 w-full bg-white rounded-[10px] py-10 px-6 md:px-12">
 						<div className="flex flex-col items-center gap-1 text-center">
@@ -289,9 +317,11 @@ export default function AboutPage() {
 						</motion.div>
 					</div>
 				</div>
+				)}
 			</Reveal>
 
 			<Reveal delay={0.45} direction="up">
+				{showWhyChoose && (
 				<div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
 					<div className="flex flex-col items-center gap-8 w-full bg-white border-t border-b border-[#E8CFC1] py-12 px-6 md:px-8">
 						<div className="flex flex-col items-center gap-1 text-center">
@@ -323,9 +353,11 @@ export default function AboutPage() {
 						</motion.div>
 					</div>
 				</div>
+				)}
 			</Reveal>
 
 			<Reveal delay={0.5} direction="up">
+				{showCoreValues && (
 				<div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
 					<div className="flex flex-col items-center gap-6 w-full bg-white rounded-[10px] py-10 px-6 md:px-12">
 						<div className="flex flex-col items-center gap-1 text-center">
@@ -353,6 +385,7 @@ export default function AboutPage() {
 						</motion.div>
 					</div>
 				</div>
+				)}
 			</Reveal>
 		</div>
 	);

@@ -291,26 +291,28 @@ export default function ShortsPage() {
         </div>
       </Reveal>
 
-      <Reveal delay={0.1} direction="up">
-        <section className="w-full bg-white mb-16">
-          <div className="max-w-[1120px] mx-auto px-4 md:px-8 py-14">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
-              <div className="flex flex-col gap-6">
-                <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-[#781E36] leading-tight">
-                  {presentation.title}
-                </h1>
-                <p className="text-base md:text-lg font-normal text-[#6B5B57] leading-relaxed">
-                  {presentation.description}
-                </p>
-              </div>
-              <div className="relative order-first md:order-last w-full max-w-[540px] mx-auto aspect-[4/5] max-h-[560px] rounded-[24px] overflow-hidden">
-                <Image src={presentation.heroImage} alt={presentation.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 540px" priority />
-                <div className="absolute inset-0 bg-gradient-to-tl from-[#781E36]/25 via-transparent to-transparent" />
+      {showHero && (
+        <Reveal delay={0.1} direction="up">
+          <section className="w-full bg-white mb-16">
+            <div className="max-w-[1120px] mx-auto px-4 md:px-8 py-14">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
+                <div className="flex flex-col gap-6">
+                  <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-[#781E36] leading-tight">
+                    {presentation.title}
+                  </h1>
+                  <p className="text-base md:text-lg font-normal text-[#6B5B57] leading-relaxed">
+                    {presentation.description}
+                  </p>
+                </div>
+                <div className="relative order-first md:order-last w-full max-w-[540px] mx-auto aspect-[4/5] max-h-[560px] rounded-[24px] overflow-hidden">
+                  <Image src={presentation.heroImage} alt={presentation.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 540px" priority />
+                  <div className="absolute inset-0 bg-gradient-to-tl from-[#781E36]/25 via-transparent to-transparent" />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      </Reveal>
+          </section>
+        </Reveal>
+      )}
 
       <Reveal delay={0.2} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
