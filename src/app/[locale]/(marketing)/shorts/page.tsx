@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
@@ -71,6 +71,9 @@ export default function ShortsPage() {
   const [libraryPage, setLibraryPage] = useState(1);
   const [libraryTotalPages, setLibraryTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  // Guards against out-of-order responses: clicking pages quickly must never
+  // let an older request overwrite the newer one's results.
+  const fetchSeq = useRef(0);
 
   const presentation = usePagePresentation('shorts', {
     title: t('title'),
@@ -86,24 +89,31 @@ export default function ShortsPage() {
   // operate on the same server-side result set.
   useEffect(() => {
     let mounted = true;
+    const seq = ++fetchSeq.current;
+    setLoading(true);
     getPublishedShortsPage({
       ...buildShortParams(appliedSearch, marital, language, date),
       page: String(libraryPage),
       perPage: String(LIBRARY_PER_PAGE),
     })
       .then(({ data, meta }) => {
-        if (!mounted) return;
+        if (!mounted || seq !== fetchSeq.current) return;
+        // The result set shrank (filter change/delete) and this page no longer
+        // exists — snap back to the last valid page instead of showing empty.
+        if (meta.totalPages > 0 && libraryPage > meta.totalPages) {
+          setLibraryPage(meta.totalPages);
+          return;
+        }
         setVideos(data);
         setLibraryTotalPages(meta.totalPages);
       })
       .catch(() => {
-        if (mounted) {
-          setVideos([]);
-          setLibraryTotalPages(1);
-        }
+        if (!mounted || seq !== fetchSeq.current) return;
+        setVideos([]);
+        setLibraryTotalPages(1);
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted && seq === fetchSeq.current) setLoading(false);
       });
     return () => {
       mounted = false;
