@@ -197,39 +197,43 @@ function ConsultationDetailsInner() {
           <div className="flex flex-col lg:flex-row gap-[24px]">
             {/* Left: Big image + small image gallery */}
             <div className="flex flex-col gap-[24px] w-full lg:max-w-[838px]">
-              <div className="relative w-full h-[300px] sm:h-[420px] md:h-[520px] lg:h-[618px] rounded-[20px] overflow-hidden bg-gray-200">
-                <Image
-                  src={images[activeImage]}
-                  alt={session.sessionTitle}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 838px"
-                  priority
-                />
-              </div>
-
-              <div className="flex gap-[17px] flex-wrap">
-                {images.map((src, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setActiveImage(i)}
-                    className={`relative w-[calc(50%-8.5px)] sm:w-[calc(25%-12.75px)] h-[100px] sm:h-[125px] rounded-[20px] overflow-hidden border-2 transition-all ${
-                      activeImage === i
-                        ? 'border-[#781E36]'
-                        : 'border-transparent hover:border-[#E8CFC1]'
-                    }`}
-                  >
+              {session.showGallery && (
+                <>
+                  <div className="relative w-full h-[300px] sm:h-[420px] md:h-[520px] lg:h-[618px] rounded-[20px] overflow-hidden bg-gray-200">
                     <Image
-                      src={src}
-                      alt=""
+                      src={images[activeImage]}
+                      alt={session.sessionTitle}
                       fill
                       className="object-cover"
-                      sizes="169px"
+                      sizes="(max-width: 1024px) 100vw, 838px"
+                      priority
                     />
-                  </button>
-                ))}
-              </div>
+                  </div>
+
+                  <div className="flex gap-[17px] flex-wrap">
+                    {images.map((src, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setActiveImage(i)}
+                        className={`relative w-[calc(50%-8.5px)] sm:w-[calc(25%-12.75px)] h-[100px] sm:h-[125px] rounded-[20px] overflow-hidden border-2 transition-all ${
+                          activeImage === i
+                            ? 'border-[#781E36]'
+                            : 'border-transparent hover:border-[#E8CFC1]'
+                        }`}
+                      >
+                        <Image
+                          src={src}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="169px"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Product info + Counselor info */}

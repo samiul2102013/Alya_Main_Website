@@ -54,6 +54,10 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
   info: InfoValues;
   resources: string[];
   stories: { title: string; image: string; slug?: string }[];
+  showArticleInfo: boolean;
+  showRelatedResources: boolean;
+  showShare: boolean;
+  showRelatedStories: boolean;
 } {
   const t = useTranslations('article');
 
@@ -71,6 +75,10 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
     info: mockInfo,
     resources: mockResources,
     stories: mockStories,
+    showArticleInfo: true,
+    showRelatedResources: true,
+    showShare: true,
+    showRelatedStories: true,
   });
 
   useEffect(() => {
@@ -124,6 +132,10 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
                 slug: rs.slug,
               }))
             : mockStories,
+        showArticleInfo: detail.showArticleInfo ?? true,
+        showRelatedResources: detail.showRelatedResources ?? true,
+        showShare: detail.showShare ?? true,
+        showRelatedStories: detail.showRelatedStories ?? true,
       });
     }
 
@@ -157,7 +169,7 @@ function ArticlePageInner() {
   const searchParams = useSearchParams();
   const slugParam = searchParams.get('slug');
 
-  const { title, content, cover, info, resources, stories } = useArticle(
+  const { title, content, cover, info, resources, stories, showArticleInfo, showRelatedResources, showShare, showRelatedStories } = useArticle(
     slugParam,
     t('title'),
   );
@@ -222,6 +234,7 @@ function ArticlePageInner() {
           </Reveal>
 
           <div className="flex flex-col gap-6 w-full lg:max-w-[400px]">
+            {showArticleInfo && (
             <Reveal delay={0.2} direction="right">
               <div className="flex flex-col gap-3 w-full rounded-[20px] border border-[#E8CFC1] bg-white p-5"
                 style={{ boxShadow: '0px 2px 8px 0px #781E3605' }}>
@@ -245,7 +258,9 @@ function ArticlePageInner() {
                 </motion.div>
               </div>
             </Reveal>
+            )}
 
+            {showRelatedResources && (
             <Reveal delay={0.25} direction="right">
               <div className="flex flex-col gap-3 w-full rounded-[20px] border border-[#E8CFC1] bg-white p-5"
                 style={{ boxShadow: '0px 2px 8px 0px #781E3605' }}>
@@ -269,7 +284,9 @@ function ArticlePageInner() {
                 </motion.div>
               </div>
             </Reveal>
+            )}
 
+            {showShare && (
             <Reveal delay={0.3} direction="right">
               <div className="flex flex-col gap-3 w-full rounded-[20px] border border-[#E8CFC1] bg-white p-5"
                 style={{ boxShadow: '0px 2px 8px 0px #781E3605' }}>
@@ -308,7 +325,9 @@ function ArticlePageInner() {
                 </motion.div>
               </div>
             </Reveal>
+            )}
 
+            {showRelatedStories && (
             <Reveal delay={0.35} direction="right">
               <div className="flex flex-col gap-4 w-full rounded-[20px] border border-[#E8CFC1] bg-white p-5"
                 style={{ boxShadow: '0px 2px 8px 0px #781E3605' }}>
@@ -338,6 +357,7 @@ function ArticlePageInner() {
                 </motion.div>
               </div>
             </Reveal>
+            )}
           </div>
         </div>
       </div>

@@ -65,10 +65,12 @@ function ConsultationPageInner() {
   const [loaded, setLoaded] = useState(false);
   const [searchText, setSearchText] = useState(searchParams.get('search') ?? '');
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all');
-  const [filters, setFilters] = useState<{ marital: string; language: string; date: string }>({
+  const [filters, setFilters] = useState<{ marital: string; language: string; date: string; sessionType: string; emirate: string }>({
     marital: '',
     language: '',
     date: '',
+    sessionType: '',
+    emirate: '',
   });
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -107,6 +109,18 @@ function ConsultationPageInner() {
       isDropdown: true,
       options: t.raw('dateOptions') as string[],
     },
+    {
+      name: 'sessionType',
+      label: filters.sessionType || t('sessionType'),
+      isDropdown: true,
+      options: ['counseling', 'financial', 'legal', 'health', 'workshop'],
+    },
+    {
+      name: 'emirate',
+      label: filters.emirate || t('emirate'),
+      isDropdown: true,
+      options: ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Ras Al Khaimah', 'Fujairah'],
+    },
   ];
 
   function mapMarital(label: string): string {
@@ -136,7 +150,7 @@ function ConsultationPageInner() {
     return mapping[label] ?? label;
   }
 
-  function getSelectedValue(name: 'marital' | 'language' | 'date'): string {
+  function getSelectedValue(name: 'marital' | 'language' | 'date' | 'sessionType' | 'emirate'): string {
     return filters[name];
   }
 
@@ -148,6 +162,8 @@ function ConsultationPageInner() {
     if (f.marital) params.marital_stage = mapMarital(f.marital);
     if (f.language) params.language = mapLanguage(f.language);
     if (f.date) params.date = mapDate(f.date);
+    if (f.sessionType) params.session_type = f.sessionType;
+    if (f.emirate) params.emirate = f.emirate;
     if (tab === 'free') params.free = 'true';
     if (tab === 'paid') params.free = 'false';
     params.page = String(p);
@@ -220,7 +236,7 @@ function ConsultationPageInner() {
 
   function handleResetFilters() {
     setSearchText('');
-    setFilters({ marital: '', language: '', date: '' });
+    setFilters({ marital: '', language: '', date: '', sessionType: '', emirate: '' });
     setActiveTab('all');
     setOpenDropdown(null);
     setCurrentPage(1);
@@ -367,7 +383,7 @@ function ConsultationPageInner() {
 
             {/* ROW 2: Filter dropdowns + Filter button + Reset button */}
             <div className="flex flex-col sm:flex-row gap-[10px] w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 flex-1">
                 {filterDefs.map((filter) => {
                   const selected = getSelectedValue(filter.name as 'marital' | 'language' | 'date');
                   const active = Boolean(selected);
@@ -468,7 +484,7 @@ function ConsultationPageInner() {
                 type="button"
                 onClick={() => {
                   setSearchText('');
-                  setFilters({ marital: '', language: '', date: '' });
+                  setFilters({ marital: '', language: '', date: '', sessionType: '', emirate: '' });
                   setActiveTab('all');
                   setCurrentPage(1);
                 }}

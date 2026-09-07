@@ -1192,6 +1192,8 @@
       "هذا الشهر",
       "هذه السنة"
     ],
+    "sessionType": "نوع الجلسة",
+    "emirate": "الإمارة",
     "allSessions": "جميع الجلسات",
     "freeSessions": "جلسات مجانية",
     "paidSessions": "جلسات مدفوعة",

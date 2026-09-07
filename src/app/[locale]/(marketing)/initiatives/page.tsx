@@ -18,6 +18,16 @@ import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const PER_PAGE = 9;
 
+const CATEGORY_OPTIONS = [
+  { value: 'Financial Support', label: 'Financial Support' },
+  { value: 'Housing Support', label: 'Housing Support' },
+  { value: 'Education', label: 'Education' },
+  { value: 'Counseling', label: 'Counseling' },
+  { value: 'Community Support', label: 'Community Support' },
+  { value: 'Youth Support', label: 'Youth Support' },
+  { value: 'Cultural Heritage', label: 'Cultural Heritage' },
+];
+
 interface Topic {
   title: string;
   videos: string;
@@ -42,7 +52,8 @@ export default function InitiativesPage() {
 
   const [query, setQuery] = useState('');
   const [emirate, setEmirate] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState<'emirate' | null>(null);
+  const [category, setCategory] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState<'emirate' | 'category' | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const INITIATIVES_HERO_IMAGE = 'https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?q=80&w=1200&auto=format&fit=crop';
@@ -53,17 +64,18 @@ export default function InitiativesPage() {
     heroImage: INITIATIVES_HERO_IMAGE,
   });
 
-  function buildParams(q = query, em = emirate, p = page) {
+  function buildParams(q = query, em = emirate, cat = category, p = page) {
     const params: Record<string, string> = { page: String(p), perPage: String(PER_PAGE), listed: '1' };
     if (q.trim()) params.search = q.trim();
     if (em) params.emirate = em;
+    if (cat) params.category = cat;
     return params;
   }
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    getPublishedInitiativesPage(buildParams(query, emirate, page))
+    getPublishedInitiativesPage(buildParams(query, emirate, category, page))
       .then(({ data, meta: m }) => {
         if (!mounted) return;
         setItems(data);
@@ -86,7 +98,7 @@ export default function InitiativesPage() {
 
   function handleSearchWith(q: string) {
     setSearching(true);
-    getPublishedInitiativesPage(buildParams(q, emirate, 1))
+    getPublishedInitiativesPage(buildParams(q, emirate, category, 1))
       .then(({ data, meta: m }) => {
         setItems(data);
         setMeta(m);
@@ -105,7 +117,7 @@ export default function InitiativesPage() {
 
   function handleApplyFilters() {
     setSearching(true);
-    getPublishedInitiativesPage(buildParams(query, emirate, 1))
+    getPublishedInitiativesPage(buildParams(query, emirate, category, 1))
       .then(({ data, meta: m }) => {
         setItems(data);
         setMeta(m);
@@ -121,6 +133,7 @@ export default function InitiativesPage() {
   function handleReset() {
     setQuery('');
     setEmirate('');
+    setCategory('');
     setDropdownOpen(null);
     setPage(1);
     setLoading(true);
@@ -254,7 +267,7 @@ export default function InitiativesPage() {
               </button>
             </div>
 
-            {/* ROW 2: Emirate dropdown + Filter button + Reset button */}
+            {/* ROW 2: Emirate dropdown + Category dropdown + Filter button + Reset button */}
             <div className="flex flex-col sm:flex-row gap-[10px] w-full">
               <div className="flex-1 relative w-full">
                 <button
@@ -295,6 +308,47 @@ export default function InitiativesPage() {
                   </div>
                 )}
               </div>
+
+              <div className="flex-1 relative w-full">
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(dropdownOpen === 'category' ? null : 'category')}
+                  className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                    category || dropdownOpen === 'category'
+                      ? 'border-[#781E36]'
+                      : 'border-[#E8CFC1] hover:border-[#781E36]'
+                  }`}
+                >
+                  <span className={`text-sm truncate ${category ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
+                    {category || (t('allCategories') ?? 'All Categories')}
+                  </span>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${dropdownOpen === 'category' ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {dropdownOpen === 'category' && (
+                  <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => { setCategory(''); setDropdownOpen(null); }}
+                      className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors"
+                    >
+                      {t('allCategories') ?? 'All Categories'}
+                    </button>
+                    {CATEGORY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => { setCategory(opt.value); setDropdownOpen(null); }}
+                        className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors"
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-[10px] shrink-0">
                 <button
                   type="button"

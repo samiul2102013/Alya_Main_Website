@@ -18,6 +18,7 @@ import {
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import Button from '@/components/shared/Button';
+import InitiativeApplicationForm from '@/components/InitiativeApplicationForm';
 import { getInitiativeBySlug, type PublicInitiativeDetail } from '@/lib/api/initiatives';
 
 const FALLBACK_IMAGES = [
@@ -181,7 +182,7 @@ export default function InitiativeDetailsPage() {
               </div>
             </Reveal>
 
-            {(initiative.description || initiative.purpose || objectives.length > 0) && (
+            {initiative.showAbout && (initiative.description || initiative.purpose || objectives.length > 0) && (
               <Reveal delay={0.15} direction="up">
                 <section className="w-full rounded-[20px] bg-white p-6 sm:p-10">
                   <div className="border-b border-[#E8CFC1] pb-[10px] mb-6">
@@ -233,7 +234,7 @@ export default function InitiativeDetailsPage() {
               </Reveal>
             )}
 
-            {supportList.length > 0 && (
+            {initiative.showSupportOffered && supportList.length > 0 && (
               <Reveal delay={0.25} direction="up">
                 <section className="w-full rounded-[20px] bg-white p-6 sm:p-10">
                   <div className="border-b border-[#E8CFC1] pb-[10px] mb-6">
@@ -251,7 +252,7 @@ export default function InitiativeDetailsPage() {
               </Reveal>
             )}
 
-            {benefits.length > 0 && (
+            {initiative.showBenefits && benefits.length > 0 && (
               <Reveal delay={0.3} direction="up">
                 <section className="w-full rounded-[20px] bg-white p-6 sm:p-10">
                   <div className="border-b border-[#E8CFC1] pb-[10px] mb-6">
@@ -296,6 +297,17 @@ export default function InitiativeDetailsPage() {
                       {t('visitWebsite')}
                     </a>
                   )}
+                </section>
+              </Reveal>
+            )}
+
+            {initiative.showApplicationForm && (
+              <Reveal delay={0.35} direction="up">
+                <section className="w-full rounded-[20px] bg-white p-6 sm:p-10">
+                  <div className="border-b border-[#E8CFC1] pb-[10px] mb-6">
+                    <h2 className="text-2xl font-bold text-[#781E36]">{t('applyNow') ?? 'Apply Now'}</h2>
+                  </div>
+                  <InitiativeApplicationForm initiativeId={initiative.id} />
                 </section>
               </Reveal>
             )}

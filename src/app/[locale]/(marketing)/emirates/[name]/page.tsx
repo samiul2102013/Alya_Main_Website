@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
@@ -72,6 +72,8 @@ export default function EmirateDetailPage() {
   const name = ((params.name as string) || '').toLowerCase().replace(/\s+/g, '-');
   const t = useTranslations('emirateDetail');
   const tNav = useTranslations('nav');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
 
   const emiratesData = t.raw('emiratesData') as Record<string, EmirateEntry>;
@@ -110,7 +112,9 @@ export default function EmirateDetailPage() {
     };
   }, [name]);
 
-  const displayName = emirate?.title || emirate?.emiratesName || fallbackEntry.title.split('—')[0].trim();
+  const displayName = isArabic && emirate?.emiratesNameAr
+    ? emirate.emiratesNameAr
+    : emirate?.title || emirate?.emiratesName || fallbackEntry.title.split('—')[0].trim();
   const emirateImage = emirate?.image || emirateImages[name] || emirateImages['abu-dhabi'];
   const emirateSubtitle = emirate?.description || fallbackEntry.subtitle;
   const orgs = t.raw('orgs') as Org[];
@@ -155,6 +159,76 @@ export default function EmirateDetailPage() {
           </div>
         </section>
       </Reveal>
+
+      {emirate && (
+        <Reveal delay={0.15} direction="up">
+          <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-8">
+            <div className="flex flex-wrap gap-4">
+              {emirate.serviceCenters > 0 && (
+                <div className="flex items-center gap-3 rounded-[16px] border border-[#E8CFC1] bg-white px-6 py-4"
+                  style={{ boxShadow: '0px 2px 4px -2px #0000001A' }}
+                >
+                  <div className="flex items-center justify-center h-10 w-10 rounded-[12px] bg-[#FAEDE6]">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0H5m14 0h2m-2 0a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2m14 0H5m14 0h2M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 4h1m-1 4h1" stroke="#781E36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#781E36]">{emirate.serviceCenters} Service Centers</p>
+                    {emirate.centerCount && (
+                      <p className="text-xs text-[#6B5B57]">{emirate.centerCount}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {emirate.contactPhone && (
+                <div className="flex items-center gap-3 rounded-[16px] border border-[#E8CFC1] bg-white px-6 py-4"
+                  style={{ boxShadow: '0px 2px 4px -2px #0000001A' }}
+                >
+                  <div className="flex items-center justify-center h-10 w-10 rounded-[12px] bg-[#FAEDE6]">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="#781E36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#781E36]">{emirate.contactPhone}</p>
+                    <p className="text-xs text-[#6B5B57]">Contact Phone</p>
+                  </div>
+                </div>
+              )}
+
+              {emirate.websiteUrl && (
+                <a
+                  href={emirate.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-[16px] border border-[#E8CFC1] bg-white px-6 py-4 hover:border-[#781E36] transition-colors"
+                  style={{ boxShadow: '0px 2px 4px -2px #0000001A' }}
+                >
+                  <div className="flex items-center justify-center h-10 w-10 rounded-[12px] bg-[#FAEDE6]">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6m4-3h6v6m-11 5L21 3" stroke="#781E36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#781E36]">Visit Website</p>
+                    <p className="text-xs text-[#6B5B57] truncate max-w-[180px]">{emirate.websiteUrl}</p>
+                  </div>
+                </a>
+              )}
+
+              {emirate.showStatus && emirate.status && (
+                <div className="flex items-center gap-3 rounded-[16px] border border-[#E8CFC1] bg-white px-6 py-4"
+                  style={{ boxShadow: '0px 2px 4px -2px #0000001A' }}
+                >
+                  <div className="flex items-center justify-center h-10 w-10 rounded-[12px] bg-[#FAEDE6]">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="#781E36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><polyline points="22 4 12 14.01 9 11.01" stroke="#781E36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#781E36]">{emirate.status}</p>
+                    <p className="text-xs text-[#6B5B57]">Status</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </Reveal>
+      )}
 
       <Reveal delay={0.2} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">

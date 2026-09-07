@@ -1192,6 +1192,8 @@
       "This Month",
       "This Year"
     ],
+    "sessionType": "Session Type",
+    "emirate": "Emirate",
     "allSessions": "All Sessions",
     "freeSessions": "Free Sessions",
     "paidSessions": "Paid Sessions",

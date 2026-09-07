@@ -48,12 +48,14 @@ function buildNewsParams(
   category: string,
   source: string,
   date: string,
+  emirate: string,
 ): Record<string, string> {
   const params: Record<string, string> = {};
   if (q) params.search = q;
   if (category) params.category = category;
   if (source) params.source = source;
   if (date) params.date = date;
+  if (emirate) params.emirate = emirate;
   return params;
 }
 
@@ -72,6 +74,7 @@ export default function NewsPage() {
   const [category, setCategory] = useState('');
   const [source, setSource] = useState('');
   const [date, setDate] = useState('');
+  const [emirate, setEmirate] = useState('');
 
   const [articles, setArticles] = useState<PublicNews[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -99,6 +102,7 @@ export default function NewsPage() {
   const catOptions = t.raw('catOptions') as string[];
   const dateOptions = t.raw('dateOptions') as string[];
   const srcOptions = t.raw('sourceOptions') as string[];
+  const emirateOptions = ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al-Quwain'];
   const i18nFaqs = t.raw('faqs') as FaqItem[];
   const i18nOrgs = t.raw('orgs') as OrgItem[];
   const i18nTopics = (t.raw('topics') ?? []) as TopicItem[];
@@ -163,6 +167,7 @@ export default function NewsPage() {
     { name: 'category', label: t('category'), isDropdown: true, options: catOptions },
     { name: 'source', label: t('source'), isDropdown: true, options: srcOptions },
     { name: 'date', label: t('date'), isDropdown: true, options: dateOptions },
+    { name: 'emirate', label: 'Emirate', isDropdown: true, options: emirateOptions },
   ];
 
   const getSelectedLabel = (name: string): string | null => {
@@ -178,6 +183,10 @@ export default function NewsPage() {
       const idx = dateOptions.indexOf(date);
       return idx >= 0 ? dateOptions[idx] : null;
     }
+    if (name === 'emirate') {
+      const idx = emirateOptions.indexOf(emirate);
+      return idx >= 0 ? emirateOptions[idx] : null;
+    }
     return null;
   };
 
@@ -192,13 +201,16 @@ export default function NewsPage() {
     } else if (name === 'date') {
       const val = dateOptions[index] ?? '';
       setDate(date === val ? '' : val);
+    } else if (name === 'emirate') {
+      const val = emirateOptions[index] ?? '';
+      setEmirate(emirate === val ? '' : val);
     }
   }
 
   function handleSearchWith(q: string) {
     setSearching(true);
     getPublishedNewsPage({
-      ...buildNewsParams(q, category, source, date),
+      ...buildNewsParams(q, category, source, date, emirate),
       page: '1',
       perPage: String(PER_PAGE),
     })
@@ -220,7 +232,7 @@ export default function NewsPage() {
   function handleApplyFilters() {
     setSearching(true);
     getPublishedNewsPage({
-      ...buildNewsParams(query.trim(), category, source, date),
+      ...buildNewsParams(query.trim(), category, source, date, emirate),
       page: '1',
       perPage: String(PER_PAGE),
     })
@@ -238,6 +250,7 @@ export default function NewsPage() {
     setCategory('');
     setSource('');
     setDate('');
+    setEmirate('');
     setOpenDropdown(null);
     setCurrentPage(1);
   }
@@ -365,7 +378,7 @@ export default function NewsPage() {
 
             {/* Filter row — dropdowns + Apply Filters button */}
             <div className="flex flex-col sm:flex-row gap-[10px] w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[10px] flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[10px] flex-1">
                 {filters.map((filter) => {
                   const selected = getSelectedLabel(filter.name);
                   const active = Boolean(selected);
