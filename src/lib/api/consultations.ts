@@ -108,7 +108,7 @@ export async function getPublishedConsultations(
   const qs = new URLSearchParams(params).toString();
   try {
     const res = await fetch(`${API_URL}/consultations${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load consultations (${res.status})`);
     const json = await res.json();
@@ -126,7 +126,7 @@ export async function getPublishedConsultationsPage(
   const qs = new URLSearchParams(params).toString();
   try {
     const res = await fetch(`${API_URL}/consultations${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load consultations (${res.status})`);
     const json = await res.json();
@@ -148,7 +148,7 @@ export async function getConsultationBySlug(
 ): Promise<PublicConsultationDetail | null> {
   try {
     const res = await fetch(`${API_URL}/consultations/${slug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) {
       if (res.status === 404) return null;

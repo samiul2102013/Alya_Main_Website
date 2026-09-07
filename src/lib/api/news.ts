@@ -54,7 +54,7 @@ export async function getPublishedNews(
   const qs = new URLSearchParams(params).toString();
   try {
     const res = await fetch(`${API_URL}/news${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load news (${res.status})`);
     const json = await res.json();
@@ -72,7 +72,7 @@ export async function getPublishedNewsPage(
   const qs = new URLSearchParams(params).toString();
   try {
     const res = await fetch(`${API_URL}/news${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load news (${res.status})`);
     const json = await res.json();
@@ -92,7 +92,7 @@ export async function getPublishedNewsPage(
 export async function getNewsBySlug(slug: string): Promise<PublicNewsDetail | null> {
   try {
     const res = await fetch(`${API_URL}/news/${slug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) {
       if (res.status === 404) return null;

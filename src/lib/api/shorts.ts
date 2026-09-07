@@ -47,7 +47,7 @@ export async function getPublishedShorts(
 ): Promise<PublicShort[]> {
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(`${API_URL}/shorts${qs ? `?${qs}` : ''}`, {
-    next: { revalidate: 60 },
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error(`Failed to load shorts (${res.status})`);
   const json = await res.json();
@@ -60,7 +60,7 @@ export async function getPublishedShortsPage(
 ): Promise<{ data: PublicShort[]; meta: PaginationMeta }> {
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(`${API_URL}/shorts${qs ? `?${qs}` : ''}`, {
-    next: { revalidate: 60 },
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error(`Failed to load shorts (${res.status})`);
   const json = await res.json();
@@ -74,7 +74,7 @@ export async function getPublishedShortsPage(
 }
 
 export async function getShortBySlug(slug: string): Promise<PublicShortDetail> {
-  const res = await fetch(`${API_URL}/shorts/${slug}`, { next: { revalidate: 60 } });
+  const res = await fetch(`${API_URL}/shorts/${slug}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to load short (${res.status})`);
   return res.json();
 }

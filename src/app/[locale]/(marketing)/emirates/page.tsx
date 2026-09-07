@@ -8,6 +8,7 @@ import { ArrowRight, Search, ChevronDown, Building2, MapPin, Users, BadgeCheck, 
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import { getPublishedEmirates, type PublicEmirate } from '@/lib/api/emirates';
+import { getPublishedInitiatives, type PublicInitiative } from '@/lib/api/initiatives';
 import { EMIRATES_IMAGES, EMIRATES_HERO_IMAGE } from '@/lib/image-pools';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -44,6 +45,13 @@ interface DisplayItem {
   count: string;
 }
 
+interface DisplayInitiative {
+  slug: string;
+  title: string;
+  subtitle: string;
+  image: string;
+}
+
 const fallbackImages = EMIRATES_IMAGES;
 
 export default function EmiratesPage() {
@@ -56,6 +64,11 @@ export default function EmiratesPage() {
   const [filterRegion, setFilterRegion] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [items, setItems] = useState<DisplayItem[]>([]);
+  // Initiatives for the currently selected emirate (shown in a dedicated
+  // section once an emirate is picked from the dropdown or a card is opened).
+  const [initiatives, setInitiatives] = useState<DisplayInitiative[]>([]);
+  const [initiativesEmirate, setInitiativesEmirate] = useState('');
+  const [initiativesLoading, setInitiativesLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [searching, setSearching] = useState(false);
 
@@ -84,7 +97,9 @@ export default function EmiratesPage() {
     if (q.trim()) params.search = q.trim();
     if (d) params.date = mapDate(d);
     return getPublishedEmirates(params).then((list: PublicEmirate[]) => {
-      if (!list.length) return [];
+      // Region filtering happens client-side by emirate name (the public API
+      // has no `region` param). Comparing case-insensitively on emiratesName
+      // keeps it robust for both English and Arabic display names.
       const display: DisplayItem[] = list.map((emi, i) => ({
         slug: emi.slug,
         image: emi.image || fallbackImages[i % fallbackImages.length],
@@ -92,8 +107,44 @@ export default function EmiratesPage() {
         description: emi.description || '',
         count: emi.centerCount || '',
       }));
-      return r ? display.filter((item) => item.name === r) : display;
+      if (!r) return display;
+      const needle = r.trim().toLowerCase();
+      return display.filter((item) => item.name.toLowerCase().includes(needle));
     });
+  }
+
+  // Load the initiatives that belong to the currently selected emirate.
+  // When no emirate is selected the section is hidden.
+  function fetchInitiatives(emirateName: string) {
+    if (!emirateName.trim()) {
+      setInitiatives([]);
+      setInitiativesEmirate('');
+      return;
+    }
+    setInitiativesLoading(true);
+    setInitiativesEmirate(emirateName);
+    // Resolve the selected emirate's canonical slug from the loaded list so
+    // the API can match on the slug (initiatives store the emirate as a slug).
+    const match = items.find((item) => item.name.toLowerCase() === emirateName.trim().toLowerCase());
+    const params: Record<string, string> = {};
+    if (match?.slug) {
+      params.emirate = match.slug;
+    } else {
+      params.search = emirateName.trim();
+    }
+    getPublishedInitiatives(params)
+      .then((list: PublicInitiative[]) => {
+        setInitiatives(
+          list.map((init) => ({
+            slug: init.slug,
+            title: init.title,
+            subtitle: init.subtitle || '',
+            image: init.coverImage || '',
+          })),
+        );
+      })
+      .catch(() => setInitiatives([]))
+      .finally(() => setInitiativesLoading(false));
   }
 
   useEffect(() => {
@@ -134,13 +185,19 @@ export default function EmiratesPage() {
       .then((display) => setItems(display))
       .catch(() => setItems([]))
       .finally(() => setSearching(false));
+    if (filterRegion) fetchInitiatives(filterRegion);
   }
 
   function handleResetFilters() {
+    // Clear every filter and reload the FULL list (all 7 emirates). The
+    // previous implementation re-applied the stale region filter which made
+    // reset appear to show a single emirate.
     setSearchText('');
     setFilterRegion('');
     setFilterDate('');
     setOpenDropdown(null);
+    setInitiatives([]);
+    setInitiativesEmirate('');
     setSearching(true);
     fetchEmirates('', '', '')
       .then((display) => setItems(display))
@@ -309,7 +366,18 @@ export default function EmiratesPage() {
                           <button
                             key={opt}
                             type="button"
-                            onClick={() => { setFilterRegion(opt); setOpenDropdown(null); }}
+                            onClick={() => {
+                              setFilterRegion(opt);
+                              setOpenDropdown(null);
+                              // Selecting an emirate narrows the list and also
+                              // loads that emirate's initiatives section.
+                              setSearching(true);
+                              fetchEmirates(searchText, filterDate, opt)
+                                .then((display) => setItems(display))
+                                .catch(() => setItems([]))
+                                .finally(() => setSearching(false));
+                              fetchInitiatives(opt);
+                            }}
                             className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors"
                           >
                             {opt}
@@ -430,6 +498,66 @@ export default function EmiratesPage() {
           </div>
         </div>
       </Reveal>
+
+      {/* Initiatives for the selected emirate */}
+      {initiativesEmirate && (initiativesLoading || initiatives.length > 0) && (
+      <Reveal delay={0.22} direction="up">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
+          <div className="flex flex-col gap-8 w-full bg-white border-t border-b border-[#E8CFC1] py-12 px-8">
+            <div className="flex flex-col gap-2">
+              <span className="text-xl font-bold text-[#781E36]">
+                {isArabic ? `مبادرات في ${initiativesEmirate}` : `Initiatives in ${initiativesEmirate}`}
+              </span>
+              <p className="text-sm text-[#6B5B57]">
+                {isArabic
+                  ? 'برامج الدعم المتاحة حاليًا في هذه الإمارة.'
+                  : 'Support programs currently available in this emirate.'}
+              </p>
+            </div>
+
+            {initiativesLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="h-6 w-6 animate-spin text-[#781E36]" />
+              </div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, margin: '-50px' }}
+              >
+                {initiatives.map((init) => (
+                  <motion.div
+                    key={init.slug}
+                    variants={itemVariants}
+                    className="flex flex-col mx-auto w-full max-w-[400px] min-h-[280px] rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden"
+                  >
+                    <div className="relative w-full h-[150px] shrink-0">
+                      {init.image ? (
+                        <Image src={init.image} alt={init.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" unoptimized />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#98142f] via-[#781E36] to-[#3f1220]" />
+                      )}
+                    </div>
+                    <div className="flex flex-col flex-1 p-4 gap-3">
+                      <span className="text-sm font-bold text-[#781E36]">{init.title}</span>
+                      <p className="text-xs leading-4 text-[#6B5B57] line-clamp-2">{init.subtitle}</p>
+                      <div className="mt-auto pt-2 border-t border-[#E8CFC1]">
+                        <Link href={`/initiatives/${init.slug}`} className="flex items-center gap-1 text-xs font-bold text-[#781E36] hover:text-[#B83A4A] transition-colors">
+                          {t('readMore')}
+                          <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </Reveal>
+      )}
 
       {showTopics && (
       <Reveal delay={0.25} direction="up">

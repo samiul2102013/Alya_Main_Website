@@ -20,7 +20,7 @@ export async function getGlobalSearch(q: string): Promise<GlobalSearchResult> {
   if (!q.trim()) return empty;
   try {
     const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q.trim())}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to search (${res.status})`);
     const json = await res.json();

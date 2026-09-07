@@ -3,12 +3,12 @@
 import { Suspense, useCallback, useEffect, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter as useNextRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Loader2, Search as SearchIcon } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
 import Reveal from '@/components/shared/Reveal';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { getGlobalSearch, type GlobalSearchResult } from '@/lib/api/search';
 
 type GroupKey = 'shorts' | 'news' | 'consultations' | 'initiatives' | 'emirates';
@@ -34,7 +34,11 @@ function SearchPageInner() {
   const nav = useTranslations('nav');
   const locale = useLocale();
   const isArabic = locale === 'ar';
+  // next-intl router keeps the /en or /ar prefix on navigation (the plain
+  // next/navigation router does not, which dropped users into the default
+  // locale — Arabic — after searching from the homepage).
   const router = useRouter();
+  const nextRouter = useNextRouter();
   const searchParams = useSearchParams();
 
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
@@ -76,6 +80,11 @@ function SearchPageInner() {
     if (!input.trim()) return;
     setQuery(input.trim());
     router.push(`/search?q=${encodeURIComponent(input.trim())}`, { scroll: false });
+    // Also sync the raw URL (without navigating) so a browser refresh keeps the query.
+    nextRouter.replace(
+      `/search?q=${encodeURIComponent(input.trim())}`,
+      { scroll: false },
+    );
   }
 
   const countFor = useCallback(

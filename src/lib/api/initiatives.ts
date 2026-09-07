@@ -50,7 +50,7 @@ export async function getPublishedInitiatives(
   const qs = new URLSearchParams(params).toString();
   try {
     const res = await fetch(`${API_URL}/initiatives${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load initiatives (${res.status})`);
     const json = await res.json();
@@ -68,7 +68,7 @@ export async function getPublishedInitiativesPage(
   const qs = new URLSearchParams(params).toString();
   try {
     const res = await fetch(`${API_URL}/initiatives${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load initiatives (${res.status})`);
     const json = await res.json();
@@ -85,7 +85,7 @@ export async function getPublishedInitiativesPage(
 export async function getFeaturedInitiative(): Promise<PublicInitiativeDetail | null> {
   try {
     const res = await fetch(`${API_URL}/initiatives/featured`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) {
       if (res.status === 404) return null;
@@ -101,7 +101,7 @@ export async function getFeaturedInitiative(): Promise<PublicInitiativeDetail | 
 export async function getInitiativeBySlug(slug: string): Promise<PublicInitiativeDetail | null> {
   try {
     const res = await fetch(`${API_URL}/initiatives/${slug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) {
       if (res.status === 404) return null;

@@ -9,7 +9,7 @@ const API_URL =
 export async function getPrivacyPolicy(): Promise<PublicStaticPage | null> {
   try {
     const res = await fetch(`${API_URL}/privacy/`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load privacy policy (${res.status})`);
     return res.json();
@@ -22,7 +22,7 @@ export async function getPrivacyPolicy(): Promise<PublicStaticPage | null> {
 export async function getTerms(): Promise<PublicStaticPage | null> {
   try {
     const res = await fetch(`${API_URL}/terms/`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Failed to load terms (${res.status})`);
     return res.json();

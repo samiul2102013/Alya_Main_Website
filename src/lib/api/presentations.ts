@@ -93,7 +93,7 @@ const API_URL =
 export async function getPresentation(key: string): Promise<PagePresentation | null> {
   try {
     const res = await fetch(`${API_URL}/presentations/${encodeURIComponent(key)}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) return null;
     return (await res.json()) as PagePresentation;
@@ -106,7 +106,7 @@ export async function getPresentation(key: string): Promise<PagePresentation | n
 export async function getPresentations(): Promise<PagePresentation[]> {
   try {
     const res = await fetch(`${API_URL}/presentations`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) return [];
     const json = await res.json();
