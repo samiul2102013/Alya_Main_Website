@@ -152,6 +152,14 @@ export default function ShortsPage() {
       }))) ||
     i18nFaqs;
 
+  // CTA banner text: CMS wins, i18n is the fallback (same pattern as topics/faqs).
+  const ctaContent = {
+    title: (isArabic ? presentation.presentation?.shortsCta?.titleAr : presentation.presentation?.shortsCta?.title) || t('ctaTitle'),
+    text: (isArabic ? presentation.presentation?.shortsCta?.textAr : presentation.presentation?.shortsCta?.text) || t('ctaText'),
+    browseLabel: (isArabic ? presentation.presentation?.shortsCta?.browseLabelAr : presentation.presentation?.shortsCta?.browseLabel) || t('ctaBrowse'),
+    exploreLabel: (isArabic ? presentation.presentation?.shortsCta?.exploreLabelAr : presentation.presentation?.shortsCta?.exploreLabel) || t('ctaExplore'),
+  };
+
   // Section visibility — default all to true if not set
   const secVis = presentation.presentation?.sectionVisibility ?? {};
   const showHero         = secVis.hero         !== false;
@@ -511,11 +519,11 @@ export default function ShortsPage() {
               <div className="absolute -top-32 -left-32 h-80 w-80 rounded-full bg-white/10 blur-3xl pointer-events-none animate-pulse" />
               <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
               <div className="relative z-10 flex flex-col items-center max-w-[848px]">
-                <h2 className="max-w-[848px] text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl leading-tight pb-6">{t('ctaTitle')}</h2>
-                <p className="max-w-[672px] text-base md:text-lg text-white/90 leading-relaxed pb-10">{t('ctaText')}</p>
+                <h2 className="max-w-[848px] text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl leading-tight pb-6">{ctaContent.title}</h2>
+                <p className="max-w-[672px] text-base md:text-lg text-white/90 leading-relaxed pb-10">{ctaContent.text}</p>
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                  <Link href="#videos" className="flex h-[64px] w-full sm:w-[221px] items-center justify-center gap-2 rounded-full bg-white px-8 py-[18px] font-extrabold text-lg text-[#781E36] hover:bg-[#FAEDE6] transition-colors">{t('ctaBrowse')}</Link>
-                  <Link href="/initiatives" className="flex h-[64px] w-full sm:w-[221px] items-center justify-center gap-2 rounded-full border-2 border-white bg-transparent px-8 py-[18px] font-extrabold text-lg text-white hover:bg-white hover:text-[#781E36] transition-colors">{t('ctaExplore')}</Link>
+                  <Link href="#videos" className="flex h-[64px] w-full sm:w-[221px] items-center justify-center gap-2 rounded-full bg-white px-8 py-[18px] font-extrabold text-lg text-[#781E36] hover:bg-[#FAEDE6] transition-colors">{ctaContent.browseLabel}</Link>
+                  <Link href="/initiatives" className="flex h-[64px] w-full sm:w-[221px] items-center justify-center gap-2 rounded-full border-2 border-white bg-transparent px-8 py-[18px] font-extrabold text-lg text-white hover:bg-white hover:text-[#781E36] transition-colors">{ctaContent.exploreLabel}</Link>
                 </div>
               </div>
             </div>
