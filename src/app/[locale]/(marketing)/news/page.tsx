@@ -91,7 +91,7 @@ export default function NewsPage() {
 
   // Section visibility — default all to true if not set (news-specific fields
   const secVis = presentation.presentation?.newsSectionVisibility ?? {};
-  const showHero         = secVis.hero         !== false;
+  const showHero         = true;
   const showCategories = secVis.categories !== false;
   const showOrgs       = secVis.orgs       !== false;
   const showTopics     = secVis.topics     !== false;

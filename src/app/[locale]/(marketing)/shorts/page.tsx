@@ -162,7 +162,7 @@ export default function ShortsPage() {
 
   // Section visibility — default all to true if not set
   const secVis = presentation.presentation?.sectionVisibility ?? {};
-  const showHero         = secVis.hero         !== false;
+  const showHero         = true;
   const showTopics       = secVis.topics       !== false;
   const showContributors = secVis.contributors !== false;
   const showFaqs         = secVis.faqs         !== false;

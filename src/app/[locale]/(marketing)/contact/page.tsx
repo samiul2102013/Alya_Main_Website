@@ -37,7 +37,7 @@ export default function ContactPage() {
   const supportLines = t.raw('supportLines') as string[];
 
   const secVis = contactContent?.sectionVisibility ?? {};
-  const showHero        = secVis.hero !== false;
+  const showHero        = true;
   const showFormLabels  = secVis.formLabels !== false;
   const showContactInfo = secVis.contactInfo !== false;
   const showLocationMap = secVis.locationMap !== false;

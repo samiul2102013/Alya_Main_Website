@@ -50,7 +50,7 @@ export default function AboutPage() {
 	const coreValueList = (content?.coreValueList && content.coreValueList.length > 0) ? content.coreValueList : fallbackCoreValueList;
 
 	const secVis = content?.sectionVisibility ?? {};
-	const showHero         = secVis.hero !== false;
+	const showHero         = true;
 	const showOurStory     = secVis.ourStory !== false;
 	const showOurMission   = secVis.ourMission !== false;
 	const showOurVision    = secVis.ourVision !== false;

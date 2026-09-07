@@ -16,7 +16,7 @@ export default function HomePage() {
 
   return (
     <>
-      {vis.hero && <Hero />}
+      <Hero />
       {vis.stats && <FeatureGrid />}
       {vis.shorts && <MarriageShorts />}
       {vis.news && <LatestNews />}
