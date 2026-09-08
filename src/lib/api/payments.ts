@@ -26,6 +26,21 @@ interface ApiErrorBody {
   error?: { message?: string; details?: Record<string, string[]> };
 }
 
+export interface StripeConfig {
+  publishableKey: string;
+}
+
+/** Fetch the public Stripe publishable key from the backend at runtime. */
+export async function getStripeConfig(): Promise<StripeConfig | null> {
+  try {
+    const res = await fetch(`${API_URL}/payments/config`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return (await res.json()) as StripeConfig;
+  } catch {
+    return null;
+  }
+}
+
 /** Fire-and-forget helper reading errors from the contract `{ error: { message, details } }` envelope. */
 function extractError(json: unknown, fallback: string): Error {
   const body = (json ?? {}) as ApiErrorBody;

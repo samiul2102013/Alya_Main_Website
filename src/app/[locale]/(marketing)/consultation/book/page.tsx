@@ -10,7 +10,7 @@ import {
   useElements,
   useStripe,
 } from '@stripe/react-stripe-js';
-import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js';
+import { loadStripe, type Stripe, type StripeElementsOptions } from '@stripe/stripe-js';
 import { User, FileText, Clock, Globe, Calendar, MapPin, ChevronDown } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
@@ -18,16 +18,31 @@ import { getConsultationBySlug, createBooking, type PublicConsultationDetail } f
 import {
   createPaymentIntent,
   confirmBookingPayment,
+  getStripeConfig,
   type PaymentIntentResult,
 } from '@/lib/api/payments';
 
-function getStripePromise() {
-  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-  if (!key || key === 'pk_test_xxx') return null;
-  return loadStripe(key);
+// Runtime Stripe loader. Resolves the publishable key from the backend config
+// endpoint first (so Docker builds don't need the key baked in), falling back to
+// the build-time env var. The result is cached so it's only fetched once.
+let stripeLoaderPromise: Promise<Stripe | null> | null = null;
+function getStripeLoader(): Promise<Stripe | null> {
+  if (!stripeLoaderPromise) {
+    stripeLoaderPromise = (async () => {
+      let key = '';
+      try {
+        const config = await getStripeConfig();
+        key = config?.publishableKey || '';
+      } catch {
+        /* ignore */
+      }
+      if (!key) key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
+      if (!key || key === 'pk_test_xxx') return null;
+      return loadStripe(key);
+    })();
+  }
+  return stripeLoaderPromise;
 }
-
-const stripePromise = getStripePromise();
 
 const containerVariants = {
   hidden: {},
@@ -169,6 +184,17 @@ function BookingPageInner() {
   const [agree, setAgree] = useState(false);
 
   const [paymentSetup, setPaymentSetup] = useState<PaymentIntentResult | null>(null);
+  const [stripe, setStripe] = useState<Stripe | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getStripeLoader().then((s) => {
+      if (active) setStripe(s);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -292,7 +318,8 @@ function BookingPageInner() {
     }
     setSubmitting(true);
     try {
-      if (!stripePromise) {
+      const stripeInstance = await getStripeLoader();
+      if (!stripeInstance) {
         setErrorMessage(
           t('paymentNotConfigured') || 'Online payment is not available right now. Please contact support.',
         );
@@ -640,8 +667,8 @@ function BookingPageInner() {
                     </motion.div>
                   </motion.div>
                 ) : paymentSetup ? (
-                  stripePromise ? (
-                    <Elements stripe={stripePromise} options={elementsOptions}>
+                  stripe ? (
+                    <Elements stripe={stripe} options={elementsOptions}>
                       <StripeCheckout
                         onSuccess={handlePaymentSuccess}
                         onBack={() => {
