@@ -96,11 +96,24 @@ function StripeCheckout({
     try {
       const result = (await stripe.confirmPayment({
         elements,
-        confirmParams: { return_url: window.location.href },
-      })) as { error?: { message?: string } | null; paymentIntent?: { id: string; status: string } | null };
+        redirect: 'if_required',
+        confirmParams: { return_url: `${window.location.origin}/consultation` },
+      })) as {
+        error?: { message?: string } | null;
+        paymentIntent?: { id: string; status: string } | null;
+        redirect?: { url: string };
+      };
       if (result.error) {
         setErrorMessage(result.error.message ?? 'Payment could not be completed.');
-      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        return;
+      }
+      if (result.redirect?.url) {
+        // A redirect-based payment method (e.g. a wallet) was used — follow it
+        // to complete payment; Stripe will return to /consultation.
+        window.location.href = result.redirect.url;
+        return;
+      }
+      if (result.paymentIntent?.status === 'succeeded') {
         onSuccess(result.paymentIntent.id);
       }
     } catch {
@@ -346,8 +359,8 @@ function BookingPageInner() {
 
   async function handlePaymentSuccess(paymentIntentId: string) {
     try {
-      const booking = await confirmBookingPayment(paymentIntentId);
-      router.push(`/consultation/confirmation?ref=${booking.reference}`);
+      await confirmBookingPayment(paymentIntentId);
+      router.push('/consultation');
     } catch (e) {
       const err = e as Error & { details?: Record<string, string[]> };
       const firstDetail = err.details
