@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ArrowRight, Search, ChevronDown, Building2, MapPin, Users, BadgeCheck, Globe, HelpCircle, BookOpen, Loader2, SlidersHorizontal, X } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
+import Pagination from '@/components/shared/Pagination';
 import { getPublishedEmirates, type PublicEmirate } from '@/lib/api/emirates';
 import { getPublishedInitiatives, type PublicInitiative } from '@/lib/api/initiatives';
 import { EMIRATES_IMAGES, EMIRATES_HERO_IMAGE } from '@/lib/image-pools';
@@ -55,6 +56,8 @@ interface DisplayInitiative {
 
 const fallbackImages = EMIRATES_IMAGES;
 
+const EMIRATES_PER_PAGE = 6;
+
 export default function EmiratesPage() {
   const t = useTranslations('emiratesPage');
   const tNav = useTranslations('nav');
@@ -66,6 +69,7 @@ export default function EmiratesPage() {
   const [filterRegion, setFilterRegion] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [items, setItems] = useState<DisplayItem[]>([]);
+  const [emiratesPage, setEmiratesPage] = useState(1);
   // Initiatives for the currently selected emirate (shown in a dedicated
   // section once an emirate is picked from the dropdown or a card is opened).
   const [initiatives, setInitiatives] = useState<DisplayInitiative[]>([]);
@@ -84,6 +88,17 @@ export default function EmiratesPage() {
   const rawDateOptions = t.raw('dateOptions');
   const dateOptions = (Array.isArray(rawDateOptions) ? rawDateOptions : ['This Week', 'This Month', 'This Year']) as string[];
   const regionOptions = useMemo(() => items.map((item) => item.name), [items]);
+  const emiratesTotalPages = Math.max(1, Math.ceil(items.length / EMIRATES_PER_PAGE));
+  const safeEmiratesPage = Math.min(emiratesPage, emiratesTotalPages);
+  const pagedItems = items.slice(
+    (safeEmiratesPage - 1) * EMIRATES_PER_PAGE,
+    safeEmiratesPage * EMIRATES_PER_PAGE,
+  );
+
+  function goToEmiratesPage(p: number) {
+    setEmiratesPage(p);
+    document.getElementById('emirates-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   function mapDate(label: string): string {
     const mapping: Record<string, string> = {};
@@ -169,6 +184,11 @@ export default function EmiratesPage() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isArabic]);
+
+  // New result sets start on page one.
+  useEffect(() => {
+    setEmiratesPage(1);
+  }, [searchText, filterDate, filterRegion, isArabic]);
 
   function handleSearchWith(q: string) {
     setSearching(true);
@@ -465,14 +485,16 @@ export default function EmiratesPage() {
                 </button>
               </div>
             ) : (
+              <>
               <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                id="emirates-results"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 scroll-mt-28"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: false, margin: '-50px' }}
               >
-                {items.map((item) => (
+                {pagedItems.map((item) => (
                   <motion.div
                     key={item.slug}
                     variants={itemVariants}
@@ -510,6 +532,12 @@ export default function EmiratesPage() {
                   </motion.div>
                 ))}
               </motion.div>
+              {emiratesTotalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                  <Pagination page={safeEmiratesPage} totalPages={emiratesTotalPages} onChange={goToEmiratesPage} />
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>
@@ -737,10 +765,10 @@ export default function EmiratesPage() {
                       {faq.answer}
                     </p>
                   )}
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
         </div>
       </Reveal>
       )}

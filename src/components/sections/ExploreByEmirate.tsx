@@ -7,8 +7,11 @@ import { Link, useRouter } from '@/i18n/navigation';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Heading from '../shared/Heading';
+import Pagination from '../shared/Pagination';
 import { MapPin, Building2, ChevronRight } from 'lucide-react';
 import { getPublishedEmirates } from '@/lib/api/emirates';
+
+const EMIRATES_PER_PAGE = 6;
 
 const fallbackImages = [
   'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=800&auto=format&fit=crop',
@@ -36,8 +39,16 @@ export default function ExploreByEmirate() {
     image: fallbackImages[i % fallbackImages.length],
   }));
   const [items, setItems] = useState<EmirateItem[]>(fallbackItems);
+  const [page, setPage] = useState(1);
   const router = useRouter();
   const isCapital = (index: number) => index === 0;
+
+  const totalPages = Math.max(1, Math.ceil(items.length / EMIRATES_PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+  const pagedItems = items.slice(
+    (safePage - 1) * EMIRATES_PER_PAGE,
+    safePage * EMIRATES_PER_PAGE,
+  );
 
   const sectionTitle = localize(content?.emiratesTitle ?? '', content?.emiratesTitleAr ?? '') || t('emiratesTitle');
   const sectionSubtitle = localize(content?.emiratesSubtitle ?? '', content?.emiratesSubtitleAr ?? '') || t('emiratesSubtitle');
@@ -82,7 +93,7 @@ export default function ExploreByEmirate() {
 
       {/* Uniform Grid: All 7 Emirate Cards Share the Same Size on Every Breakpoint */}
       <div className="flex flex-wrap justify-center gap-5 sm:gap-6 max-w-[1280px] mx-auto">
-        {items.map((item, index) => (
+        {pagedItems.map((item, index) => (
           <Reveal key={index} delay={index * 0.1} direction="up" className="w-full sm:w-[calc(50%-12px)] lg:w-[calc((100%-48px)/3)]">
             <div
               role="link"
@@ -113,7 +124,7 @@ export default function ExploreByEmirate() {
               {/* Top Emirate Badge */}
               <div className="relative z-10 flex items-center justify-between gap-2">
                 <span className="rounded-full bg-[#781E36] px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-md">
-                  {isCapital(index) && `${capitalLabel} • `}
+                  {isCapital((safePage - 1) * EMIRATES_PER_PAGE + index) && `${capitalLabel} • `}
                   {item.name}
                 </span>
                 <span className="hidden items-center gap-1 text-xs font-semibold text-white/90 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 sm:flex">
@@ -140,6 +151,11 @@ export default function ExploreByEmirate() {
           </Reveal>
         ))}
       </div>
+      {totalPages > 1 && (
+        <div className="mt-10 flex justify-center">
+          <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+        </div>
+      )}
     </Section>
   );
 }

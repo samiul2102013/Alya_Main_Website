@@ -116,6 +116,11 @@ export default function InitiativesPage() {
     handleSearchWith(query.trim());
   }
 
+  function handlePageChange(p: number) {
+    setPage(p);
+    document.getElementById('initiatives-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function handleApplyFilters() {
     setSearching(true);
     getPublishedInitiativesPage(buildParams(query, emirate, category, 1))
@@ -373,7 +378,7 @@ export default function InitiativesPage() {
       </Reveal>
 
       <Reveal delay={0.15} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
+        <div id="initiatives-results" className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12 scroll-mt-28">
           {loading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
@@ -441,7 +446,7 @@ export default function InitiativesPage() {
           )}
           {!loading && meta.totalPages > 1 && (
             <div className="mt-8">
-              <Pagination page={page} totalPages={meta.totalPages} onChange={setPage} />
+              <Pagination page={page} totalPages={meta.totalPages} onChange={handlePageChange} />
             </div>
           )}
         </div>
