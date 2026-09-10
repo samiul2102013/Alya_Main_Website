@@ -96,7 +96,7 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-50 w-full translate-y-0 transition-all duration-300"
+      className="fixed top-0 inset-x-0 z-50 w-full translate-y-0 bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.08)] transition-all duration-300"
     >
       <Container className="grid h-[72px] md:h-[100px] grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-4 lg:gap-6 py-[10px] !max-w-[1440px] !px-3 sm:!px-4 lg:!px-6">
         {/* Brand Logo */}

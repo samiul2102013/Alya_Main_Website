@@ -28,6 +28,7 @@ html {
 
 html {
   overflow-x: hidden;
+  scroll-padding-top: 112px;
 }
 
 body {

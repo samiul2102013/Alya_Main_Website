@@ -57,7 +57,7 @@ export default async function LocaleLayout({
       <body className="min-h-full flex flex-col bg-white text-gray-900">
         <NextIntlClientProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pt-[72px] md:pt-[100px]">{children}</main>
           <Footer />
           <ScrollToTop />
         </NextIntlClientProvider>
