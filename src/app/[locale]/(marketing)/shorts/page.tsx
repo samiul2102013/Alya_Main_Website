@@ -10,6 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { SHORT_IMAGES, SHORTS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedShortsPage, type PublicShort } from '@/lib/api/shorts';
+import { localizeCategory } from '@/lib/localize-category';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const containerVariants = {
@@ -257,7 +258,7 @@ export default function ShortsPage() {
             </div>
           </div>
           <div className="flex flex-col p-4 gap-3 flex-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#989898]">{video.category || 'Video'}</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#989898]">{localizeCategory(video.category, isArabic) || (isArabic ? 'فيديو' : 'Video')}</span>
             <span className="text-[15px] font-bold leading-5 text-[#781E36]">{getTitle(video)}</span>
             <div className="flex items-center gap-3 mt-auto">
               <div className="flex items-center gap-1">

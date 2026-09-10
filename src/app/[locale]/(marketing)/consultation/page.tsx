@@ -10,6 +10,7 @@ import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { getPublishedConsultationsPage, type PublicConsultation } from '@/lib/api/consultations';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { CONSULTATION_HERO_IMAGE, CONSULTATION_IMAGES } from '@/lib/image-pools';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -516,7 +517,7 @@ function ConsultationPageInner() {
                   <div className="relative w-full h-[224px] overflow-hidden bg-[#FAEDE6]">
                     <Image
                       src={coverImg}
-                      alt={card.sessionTitle}
+                      alt={localizeTitle(card.sessionTitle, card.sessionTitleAr, isArabic)}
                       fill
                       className="object-cover"
                       sizes="400px"
@@ -527,11 +528,11 @@ function ConsultationPageInner() {
                   <div className="flex flex-col gap-4 p-5">
                     <div className="flex flex-col justify-between min-h-[110px]">
                       <h3 className="font-bold text-[#781E36] text-lg leading-[27px]">
-                        {card.sessionTitle}
+                        {localizeTitle(card.sessionTitle, card.sessionTitleAr, isArabic)}
                       </h3>
                       {card.category && (
                         <p className="text-sm font-normal text-[#6B5B57] leading-[20px]">
-                          {card.category}
+                          {localizeCategory(card.category, isArabic)}
                         </p>
                       )}
                     </div>

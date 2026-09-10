@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import Section from '../shared/Section';
@@ -12,15 +13,18 @@ import Heading from '../shared/Heading';
 import { Link } from '@/i18n/navigation';
 import { getFeaturedInitiative, type PublicInitiativeDetail } from '@/lib/api/initiatives';
 
-function formatDetails(initiative: PublicInitiativeDetail | null) {
+function formatDetails(initiative: PublicInitiativeDetail | null, isArabic: boolean) {
   if (!initiative) return '';
-  return [initiative.category, initiative.emirates, initiative.startDate, initiative.endDate]
+  const category = localizeCategory(initiative.category, isArabic);
+  return [category, initiative.emirates, initiative.startDate, initiative.endDate]
     .filter(Boolean)
     .join(' • ');
 }
 
 export default function UpcomingInitiatives() {
   const t = useTranslations('home');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const { content, localize, loading: homepageLoading } = useHomepageContent();
   const [initiative, setInitiative] = useState<PublicInitiativeDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,10 +63,12 @@ export default function UpcomingInitiatives() {
     ctaLabel: 'Learn More & Register',
   };
 
-  const title = initiative?.title || fallbackItem.title;
+  const title = initiative ? localizeTitle(initiative.title, initiative.titleAr, isArabic) : fallbackItem.title;
   const badge = initiative?.badge || fallbackItem.badge;
-  const description = initiative?.subtitle || initiative?.description || fallbackItem.description;
-  const details = initiative ? formatDetails(initiative) : fallbackItem.details;
+  const description = initiative
+    ? localizeTitle(initiative.subtitle || initiative.description, initiative.subtitleAr, isArabic) || fallbackItem.description
+    : fallbackItem.description;
+  const details = initiative ? formatDetails(initiative, isArabic) : fallbackItem.details;
   const image = initiative?.coverImage || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=900&auto=format&fit=crop';
   const ctaHref = initiative?.slug ? `/initiatives/${initiative.slug}` : '/initiatives';
 

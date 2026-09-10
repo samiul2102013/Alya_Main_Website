@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowRight, Search, ChevronDown, Building2, MapPin, Users, BadgeCheck, Globe, HelpCircle, BookOpen, Loader2, SlidersHorizontal, X } from 'lucide-react';
@@ -59,6 +59,7 @@ export default function EmiratesPage() {
   const t = useTranslations('emiratesPage');
   const tNav = useTranslations('nav');
   const locale = useLocale();
+  const router = useRouter();
   const isArabic = locale === 'ar';
   const [searchText, setSearchText] = useState('');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -472,8 +473,21 @@ export default function EmiratesPage() {
                 viewport={{ once: false, margin: '-50px' }}
               >
                 {items.map((item) => (
-                  <motion.div key={item.slug} variants={itemVariants} className="flex flex-col mx-auto w-full max-w-[400px] min-h-[370px] rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden">
-                    <div className="relative w-full h-[160px] shrink-0">
+                  <motion.div
+                    key={item.slug}
+                    variants={itemVariants}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`${item.name} — ${t('readMore')}`}
+                    onClick={() => router.push(`/emirates/${item.slug}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(`/emirates/${item.slug}`);
+                      }
+                    }}
+                    className="flex flex-col mx-auto w-full max-w-[400px] min-h-[370px] rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden cursor-pointer transition-colors hover:border-[#781E36] focus-visible:outline-2 focus-visible:outline-[#781E36]"
+                  >                    <div className="relative w-full h-[160px] shrink-0">
                       <Image src={item.image} alt={item.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" unoptimized />
                     </div>
                     <div className="flex flex-col flex-1 p-4 gap-3">

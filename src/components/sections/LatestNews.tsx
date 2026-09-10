@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -27,6 +28,7 @@ interface NewsDisplayItem {
 function useLatestNews(
   fallback: { tag: string; date: string; title: string; excerpt: string }[],
   fallbackImgs: string[],
+  isArabic: boolean,
 ): { items: NewsDisplayItem[]; page: number; totalPages: number; setPage: (p: number) => void } {
   const [items, setItems] = useState<NewsDisplayItem[]>(() =>
     fallback.map((n, i) => ({ ...n, image: fallbackImgs[i % fallbackImgs.length] })),
@@ -36,6 +38,7 @@ function useLatestNews(
 
   useEffect(() => {
     let cancelled = false;
+    const arabic = isArabic;
     // fallback / fallbackImgs are stable seed/translation data for when the API returns empty.
     getPublishedNewsPage({ page: String(page), perPage: String(ITEMS_PER_PAGE) })
       .then(({ data, meta }) => {
@@ -48,10 +51,10 @@ function useLatestNews(
           return;
         }
         const mapped: NewsDisplayItem[] = data.map((n) => ({
-          tag: n.category || 'News',
+          tag: localizeCategory(n.category, arabic) || (arabic ? 'الأخبار' : 'News'),
           date: n.publishedDate || new Date().toISOString().slice(0, 10),
-          title: n.articleTitle,
-          excerpt: n.articleTitle,
+          title: localizeTitle(n.articleTitle, n.articleTitleAr, arabic),
+          excerpt: localizeTitle(n.articleTitle, n.articleTitleAr, arabic),
           image: n.coverImage || fallbackImgs[0],
           slug: n.slug,
         }));
@@ -70,9 +73,11 @@ function useLatestNews(
 
 export default function LatestNews() {
   const t = useTranslations('home');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const { content, localize, loading: homepageLoading } = useHomepageContent();
   const fallbackItems = t.raw('news') as { tag: string; date: string; title: string; excerpt: string }[];
-  const { items, page, totalPages, setPage } = useLatestNews(fallbackItems, fallbackImages);
+  const { items, page, totalPages, setPage } = useLatestNews(fallbackItems, fallbackImages, isArabic);
   const onPageChange = useCallback((p: number) => setPage(p), [setPage]);
 
   const sectionTitle = localize(content?.newsTitle ?? '', content?.newsTitleAr ?? '') || t('newsTitle');

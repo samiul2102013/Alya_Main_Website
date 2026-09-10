@@ -17,7 +17,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  title: 'Alia — UAE Marriage Support Platform',
+  title: 'Wileef.ae',
   description:
     'Official UAE platform dedicated to empowering Emirati families through comprehensive marriage guidance, financial grants, and community support.',
   icons: {

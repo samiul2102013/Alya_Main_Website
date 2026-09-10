@@ -16,6 +16,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
+import { localizeCategory } from '@/lib/localize-category';
 import Reveal from '@/components/shared/Reveal';
 import Button from '@/components/shared/Button';
 import InitiativeApplicationForm from '@/components/InitiativeApplicationForm';
@@ -149,14 +150,21 @@ export default function InitiativeDetailsPage() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-[40px] text-sm text-white/90">
                     {initiative.category && (
                       <span className="flex items-center gap-2">
-                        <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">{initiative.category}</span>
+                        <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">{localizeCategory(initiative.category, isArabic)}</span>
                       </span>
                     )}
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-[#E8CFC1]" />
-                      {[formatDate(initiative.startDate), formatDate(initiative.endDate)].filter(Boolean).join(' — ') ||
-                        initiative.emirates}
-                    </span>
+                    {[formatDate(initiative.startDate), formatDate(initiative.endDate)].filter(Boolean).length > 0 && (
+                      <span className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-[#E8CFC1]" />
+                        {[formatDate(initiative.startDate), formatDate(initiative.endDate)].filter(Boolean).join(' — ')}
+                      </span>
+                    )}
+                    {initiative.emirates && (
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-[#E8CFC1]" />
+                        {initiative.emirates}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-[40px]">
                     {initiative.officialWebsiteUrl && (

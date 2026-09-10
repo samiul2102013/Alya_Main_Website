@@ -9,7 +9,7 @@ export const homeContent: HomeContent = {
     ctaPrimaryLabel: 'Explore Initiatives',
     ctaPrimaryHref: '#initiatives',
     ctaSecondaryLabel: 'Find Support',
-    ctaSecondaryHref: '#consultation',
+    ctaSecondaryHref: '/news',
     image: {
       src: '/Static/Home/Hero/Emirati couple looking at UAE skyline.png',
       alt: 'Emirati couple looking at UAE skyline',

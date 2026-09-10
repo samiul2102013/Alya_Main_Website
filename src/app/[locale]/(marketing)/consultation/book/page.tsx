@@ -2,7 +2,8 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeTitle } from '@/lib/localize-category';
 import { motion } from 'framer-motion';
 import {
   PaymentElement,
@@ -178,6 +179,8 @@ function BookingPageInner() {
   const t = useTranslations('booking');
   const tNav = useTranslations('nav');
   const tB = useTranslations('consultation');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const searchParams = useSearchParams();
   const router = useRouter();
   const slugParam = searchParams.get('slug');
@@ -272,16 +275,16 @@ function BookingPageInner() {
 
   const summary: SummaryItem[] = [
     { label: summaryLabels[0]?.label ?? '', value: session.counselor || '—' },
-    { label: summaryLabels[1]?.label ?? '', value: session.sessionTitle },
+    { label: summaryLabels[1]?.label ?? '', value: localizeTitle(session.sessionTitle, session.sessionTitleAr, isArabic) },
     { label: summaryLabels[2]?.label ?? '', value: session.duration || `${session.startTime} - ${session.endTime}` },
     {
       label: summaryLabels[3]?.label ?? '',
-      value: session.language === 'ar' ? 'Arabic' : session.language === 'en' ? 'English' : 'Both',
+      value: session.language === 'ar' ? t('langArabic') : session.language === 'en' ? t('langEnglish') : t('langBoth'),
     },
     { label: summaryLabels[4]?.label ?? '', value: session.date || '—' },
     {
       label: summaryLabels[5]?.label ?? '',
-      value: session.meetingFormat === 'onsite' ? 'Onsite' : 'Online',
+      value: session.meetingFormat === 'onsite' ? t('formatOnsite') : t('formatOnline'),
     },
   ];
 
@@ -289,10 +292,10 @@ function BookingPageInner() {
 
   function validateForm(): string | null {
     if (!form.fullName.trim() || !form.phone.trim() || !form.email.trim() || !form.country) {
-      return 'Please fill in all required fields.';
+      return t('validationRequired');
     }
     if (!session?.isFree && !agree) {
-      return 'Please agree to the terms and conditions.';
+      return t('validationTerms');
     }
     return null;
   }
@@ -393,7 +396,7 @@ function BookingPageInner() {
             <Reveal delay={0.1} direction="up">
               <div>
                 <h2 className="text-[#781E36] text-2xl md:text-[32px] font-semibold leading-[24px] md:leading-[36px] tracking-[0.1px]">
-                  {session.sessionTitle}
+                  {localizeTitle(session.sessionTitle, session.sessionTitleAr, isArabic)}
                 </h2>
                 <p className="text-[#6B5B57] mt-4 text-sm md:text-base leading-6">
                   {t('subtitle')}

@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import type { PublicShort, PublicShortDetail, ShortResource } from '@/lib/api/shorts';
+import { localizeCategory } from '@/lib/localize-category';
 import { getShortBySlug } from '@/lib/api/shorts';
 
 const FALLBACK_IMAGES = [
@@ -88,10 +89,10 @@ export default function VideoDetailsPage() {
 
   const details: DetailItem[] = video
     ? [
-        { label: t('category'), value: video.category },
+        { label: t('category'), value: localizeCategory(video.category, isArabic) },
         { label: t('organization'), value: video.organization },
         { label: t('maritalStage'), value: video.maritalStage },
-        { label: t('languageLabel'), value: video.language === 'ar' ? 'Arabic' : video.language === 'both' ? 'Both' : 'English' },
+        { label: t('languageLabel'), value: video.language === 'ar' ? t('langArabic') : video.language === 'both' ? t('langBoth') : t('langEnglish') },
         { label: t('duration'), value: video.duration },
         ...(video.showViews ? [{ label: t('views'), value: String(video.views ?? 0) }] : []),
         ...(video.showSpeaker ? [{ label: t('speaker'), value: video.speaker }] : []),

@@ -5,7 +5,8 @@ import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExternalLink, Link2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeTitle } from '@/lib/localize-category';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import { getPublishedNews, getNewsBySlug, type PublicNewsDetail, type PublicNews } from '@/lib/api/news';
@@ -60,6 +61,8 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
   showRelatedStories: boolean;
 } {
   const t = useTranslations('article');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
 
   const mockInfo = t.raw('infoValues') as InfoValues;
   const mockResources = t.raw('resources') as string[];
@@ -113,7 +116,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
         : mockResources;
 
       setState({
-        title: detail.articleTitle || fallbackTitle,
+        title: localizeTitle(detail.articleTitle, detail.articleTitleAr, isArabic) || fallbackTitle,
         content: paragraphs.length ? paragraphs : [t('p1'), t('p2'), t('p3'), t('p4')],
         cover: detail.coverImage || HERO_FALLBACK,
         info: {
@@ -127,7 +130,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
         stories:
           detail.relatedStories?.length
             ? detail.relatedStories.map((rs: PublicNews['id'] extends unknown ? any : any, i: number) => ({
-                title: rs.articleTitle,
+                title: localizeTitle(rs.articleTitle, rs.articleTitleAr, isArabic),
                 image: rs.coverImage || storyImages[i % storyImages.length],
                 slug: rs.slug,
               }))

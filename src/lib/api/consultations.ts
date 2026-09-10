@@ -2,6 +2,7 @@ export interface PublicConsultation {
   id: string;
   slug: string;
   sessionTitle: string;
+  sessionTitleAr?: string;
   category: string;
   sessionType: string;
   emirates: string;

@@ -62,7 +62,6 @@ export default function AboutPage() {
 
 	const heroTitle = localize(content?.title ?? '', content?.titleAr ?? '') || t('title');
 	const heroDescription = localize(content?.description ?? '', content?.descriptionAr ?? '') || t('description');
-	const browseSession = localize(content?.browseSession ?? '', content?.browseSessionAr ?? '') || t('browseSession');
 	const contactSupport = localize(content?.contactSupport ?? '', content?.contactSupportAr ?? '') || t('contactSupport');
 	const heroImage = content?.heroImage || FALLBACK_HERO_IMAGE;
 	const heroImageAlt = content?.heroImageAlt || heroTitle;
@@ -115,10 +114,7 @@ export default function AboutPage() {
 									{heroDescription}
 								</p>
 								<div className="flex flex-col sm:flex-row items-center gap-4 mt-2">
-									<Link href="/consultation" className="flex h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors">
-										{browseSession}
-									</Link>
-									<Link href="/consultation" className="flex h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] border-2 border-[#781E36] bg-transparent px-[10px] text-sm font-bold text-[#781E36] hover:bg-[#781E36] hover:text-white transition-colors">
+									<Link href="/contact" className="flex h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] border-2 border-[#781E36] bg-transparent px-[10px] text-sm font-bold text-[#781E36] hover:bg-[#781E36] hover:text-white transition-colors">
 										{contactSupport}
 									</Link>
 								</div>

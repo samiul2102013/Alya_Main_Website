@@ -88,16 +88,16 @@ function ConfirmationPageInner() {
         },
         {
           label: t.raw('bookingFields')[2].label,
-          value: booking.status === 'confirmed' ? 'Confirmed' : booking.status,
+          value: booking.status === 'confirmed' ? t('statusConfirmed') : booking.status,
         },
         {
           label: t.raw('bookingFields')[3].label,
-          value: booking.paymentSuccess ? 'Paid' : 'Pending',
+          value: booking.paymentSuccess ? t('statusPaid') : t('statusPending'),
         },
         { label: t.raw('bookingFields')[4].label, value: booking.fullName },
         { label: t.raw('bookingFields')[5].label, value: booking.email },
         { label: t.raw('bookingFields')[6].label, value: booking.contactNumber },
-        { label: t.raw('bookingFields')[7].label, value: booking.userType === 'individual' ? 'Individual' : booking.userType },
+        { label: t.raw('bookingFields')[7].label, value: booking.userType === 'individual' ? t('userIndividual') : booking.userType },
       ]
     : (t.raw('bookingFields') as FieldItem[]);
 
@@ -110,10 +110,10 @@ function ConfirmationPageInner() {
         { label: t.raw('sessionFields')[4].label, value: `${snap.date || ''}${snap.startTime ? ` - ${snap.startTime}` : ''}` },
         { label: t.raw('sessionFields')[5].label, value: snap.duration || '' },
         { label: t.raw('sessionFields')[6].label, value: '' },
-        { label: t.raw('sessionFields')[7].label, value: snap.meetingFormat === 'onsite' ? 'Onsite' : 'Online via Zoom' },
+        { label: t.raw('sessionFields')[7].label, value: snap.meetingFormat === 'onsite' ? t('formatOnsite') : t('formatOnlineZoom') },
         {
           label: t.raw('sessionFields')[8].label,
-          value: snap.meetingFormat === 'onsite' ? 'Onsite' : 'Online',
+          value: snap.meetingFormat === 'onsite' ? t('formatOnsite') : t('formatOnline'),
         },
       ]
     : (t.raw('sessionFields') as FieldItem[]);

@@ -3,7 +3,8 @@ import React, { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { motion } from 'framer-motion';
 import {
   Calendar,
@@ -76,6 +77,8 @@ function ConsultationDetailsInner() {
   const t = useTranslations('consultationDetails');
   const tNav = useTranslations('nav');
   const tB = useTranslations('consultation');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const searchParams = useSearchParams();
   const slugParam = searchParams.get('slug');
 
@@ -140,17 +143,21 @@ function ConsultationDetailsInner() {
 
   const counselorPhoto = session.counselorPhoto || FALLBACK_COUNSELOR;
 
+  const sessionTitle = session ? localizeTitle(session.sessionTitle, session.sessionTitleAr, isArabic) : '';
+  const formatValue = (format: string) =>
+    format === 'onsite' ? t('formatOnsite') : t('formatOnline');
+  const languageValue = (language: string) =>
+    language === 'ar' ? t('langArabic') : language === 'en' ? t('langEnglish') : t('langBoth');
   const metaItems: ScheduleItem[] = [
-    { label: 'Category', value: session.category || '—' },
+    { label: t('metaCategory'), value: localizeCategory(session.category, isArabic) || '—' },
     {
-      label: 'Format',
-      value: session.meetingFormat === 'onsite' ? 'Onsite' : 'Online',
+      label: t('metaFormat'),
+      value: formatValue(session.meetingFormat),
     },
-    { label: 'Duration', value: session.duration || '—' },
+    { label: t('metaDuration'), value: session.duration || '—' },
     {
-      label: 'Language',
-      value:
-        session.language === 'ar' ? 'Arabic' : session.language === 'en' ? 'English' : 'Both',
+      label: t('metaLanguage'),
+      value: languageValue(session.language),
     },
   ];
 
@@ -165,11 +172,11 @@ function ConsultationDetailsInner() {
     : [];
 
   const scheduleEntries: ScheduleItem[] = [
-    { label: 'Date', value: session.date || '—' },
-    { label: 'Start Time', value: session.startTime || '—' },
-    { label: 'Duration', value: session.duration || '—' },
-    { label: 'End Time', value: session.endTime || '—' },
-    { label: 'Time Zone', value: session.timeZone || '—' },
+    { label: t('schedDate'), value: session.date || '—' },
+    { label: t('schedStartTime'), value: session.startTime || '—' },
+    { label: t('schedDuration'), value: session.duration || '—' },
+    { label: t('schedEndTime'), value: session.endTime || '—' },
+    { label: t('schedTimeZone'), value: session.timeZone || '—' },
   ];
 
   const descriptionParagraphs = session.description
@@ -177,7 +184,7 @@ function ConsultationDetailsInner() {
     : [];
 
   const feeLabel =
-    session.isFree ? 'Free' : `AED ${session.fee}`;
+    session.isFree ? t('freeLabel') : `AED ${session.fee}`;
 
   return (
     <div className="bg-[#FAEDE6]">
@@ -186,7 +193,7 @@ function ConsultationDetailsInner() {
           <Breadcrumb items={[
             { label: tNav('home'), href: '/' },
             { label: tB('breadcrumbParent'), href: '/consultation' },
-            { label: session.sessionTitle },
+            { label: sessionTitle },
           ]} />
         </div>
       </Reveal>
@@ -202,7 +209,7 @@ function ConsultationDetailsInner() {
                   <div className="relative w-full h-[300px] sm:h-[420px] md:h-[520px] lg:h-[618px] rounded-[20px] overflow-hidden bg-gray-200">
                     <Image
                       src={images[activeImage]}
-                      alt={session.sessionTitle}
+                      alt={sessionTitle}
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 838px"
@@ -270,7 +277,7 @@ function ConsultationDetailsInner() {
                       <Globe className="h-5 w-5 text-[#781E36]" />
                     </div>
                     <span className="font-normal text-[#6B5B57] text-base md:text-lg leading-[30px] tracking-[0.1px]">
-                      {session.meetingFormat === 'onsite' ? 'Onsite' : 'Online via Zoom'}
+                      {session.meetingFormat === 'onsite' ? t('formatOnsite') : t('online')}
                     </span>
                   </motion.div>
 

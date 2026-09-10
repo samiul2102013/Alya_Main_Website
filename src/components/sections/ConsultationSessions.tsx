@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -31,12 +32,12 @@ type LocalizedSession = {
   image: string;
 };
 
-function toLocalized(s: PublicConsultation, index: number): LocalizedSession {
+function toLocalized(s: PublicConsultation, index: number, isArabic: boolean): LocalizedSession {
   return {
     id: s.id,
     slug: s.slug,
-    title: s.sessionTitle,
-    name: s.category || s.sessionType || s.emirates || '',
+    title: localizeTitle(s.sessionTitle, s.sessionTitleAr, isArabic),
+    name: localizeCategory(s.category || s.sessionType || s.emirates, isArabic),
     date: s.date || '',
     time: s.startTime ? `${s.startTime}${s.endTime ? ` - ${s.endTime}` : ''}` : s.duration || '',
     image: FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
@@ -45,6 +46,8 @@ function toLocalized(s: PublicConsultation, index: number): LocalizedSession {
 
 export default function ConsultationSessions() {
   const t = useTranslations('home');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const { content, localize, loading: homepageLoading } = useHomepageContent();
   const ctaLabelFallback = t.raw('consultations') as { ctaLabel: string }[];
   const cta = localize(content?.consultationsCtaLabel ?? '', content?.consultationsCtaLabelAr ?? '') || ctaLabelFallback?.[0]?.ctaLabel || 'Book Now';
@@ -69,7 +72,7 @@ export default function ConsultationSessions() {
         free: activeTab === 'free' ? '1' : '0',
       });
       if (cancelled) return;
-      setItems(result.data.map((s, i) => toLocalized(s, i)));
+      setItems(result.data.map((s, i) => toLocalized(s, i, isArabic)));
       setTotalPages(result.meta.totalPages);
       setLoading(false);
     }
@@ -77,7 +80,7 @@ export default function ConsultationSessions() {
     return () => {
       cancelled = true;
     };
-  }, [activeTab, page]);
+  }, [activeTab, page, isArabic]);
 
   const handleTabChange = useCallback((tab: 'free' | 'paid') => {
     setLoading(true);

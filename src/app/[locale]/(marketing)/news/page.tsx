@@ -10,6 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { NEWS_IMAGES, NEWS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedNewsPage, type PublicNews } from '@/lib/api/news';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const containerVariants = {
@@ -257,7 +258,7 @@ export default function NewsPage() {
 
   function articleCard(article: PublicNews, i: number) {
     const coverImg = article.coverImage || NEWS_IMAGES[i % NEWS_IMAGES.length];
-    const title = article.articleTitle;
+    const title = localizeTitle(article.articleTitle, article.articleTitleAr, isArabic);
     return (
       <motion.div key={article.id} variants={itemVariants}
         className="flex flex-col w-full rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden"
@@ -267,7 +268,7 @@ export default function NewsPage() {
           <div className="absolute inset-0" style={{ background: 'linear-gradient(0deg, rgba(120, 30, 54, 0.8) 0%, rgba(120, 30, 54, 0.2) 50%, rgba(120, 30, 54, 0) 100%)' }} />
           {article.category && (
             <div className="absolute top-3 left-3 rounded bg-black/60 px-1.5 py-0.5">
-              <span className="text-[10px] font-medium leading-[15px] text-white">{article.category}</span>
+              <span className="text-[10px] font-medium leading-[15px] text-white">{localizeCategory(article.category, isArabic)}</span>
             </div>
           )}
         </div>

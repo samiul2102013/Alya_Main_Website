@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Heading from '../shared/Heading';
@@ -19,6 +19,7 @@ const fallbackImages = [
 ];
 
 interface EmirateItem {
+  slug: string;
   name: string;
   title: string;
   centerCount: string;
@@ -28,12 +29,14 @@ interface EmirateItem {
 export default function ExploreByEmirate() {
   const t = useTranslations('home');
   const { content, localize, loading: homepageLoading } = useHomepageContent();
-  const fallback = t.raw('emirates') as { name: string; title: string; centerCount: string }[];
-  const fallbackItems = fallback.map((item, i) => ({
+  const fallback = t.raw('emirates') as { slug?: string; name: string; title: string; centerCount: string }[];
+  const fallbackItems: EmirateItem[] = fallback.map((item, i) => ({
+    slug: item.slug || item.name.toLowerCase().replace(/\s+/g, '-'),
     ...item,
     image: fallbackImages[i % fallbackImages.length],
   }));
   const [items, setItems] = useState<EmirateItem[]>(fallbackItems);
+  const router = useRouter();
   const isCapital = (index: number) => index === 0;
 
   const sectionTitle = localize(content?.emiratesTitle ?? '', content?.emiratesTitleAr ?? '') || t('emiratesTitle');
@@ -48,6 +51,7 @@ export default function ExploreByEmirate() {
       .then((list) => {
         if (cancelled || !list?.length) return;
         const mapped: EmirateItem[] = list.map((e, i) => ({
+          slug: e.slug,
           name: e.emiratesName,
           title: e.title || e.emiratesName,
           centerCount: e.centerCount || '',
@@ -80,7 +84,18 @@ export default function ExploreByEmirate() {
       <div className="flex flex-wrap justify-center gap-5 sm:gap-6 max-w-[1280px] mx-auto">
         {items.map((item, index) => (
           <Reveal key={index} delay={index * 0.1} direction="up" className="w-full sm:w-[calc(50%-12px)] lg:w-[calc((100%-48px)/3)]">
-            <div className="group relative flex h-[320px] sm:h-[340px] lg:h-[380px] w-full flex-col justify-between overflow-hidden rounded-[24px] bg-white p-6 transition-all duration-500 hover:-translate-y-1.5"
+            <div
+              role="link"
+              tabIndex={0}
+              aria-label={`${item.title} — ${ctaLabel}`}
+              onClick={() => router.push(item.slug ? `/emirates/${item.slug}` : '/emirates')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  router.push(item.slug ? `/emirates/${item.slug}` : '/emirates');
+                }
+              }}
+              className="group relative flex h-[320px] sm:h-[340px] lg:h-[380px] w-full flex-col justify-between overflow-hidden rounded-[24px] bg-white p-6 transition-all duration-500 hover:-translate-y-1.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-[#781E36]"
               style={{
                 boxShadow:
                   '0px 1px 2px -1px rgba(0, 0, 0, 0.1), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)',
@@ -116,7 +131,7 @@ export default function ExploreByEmirate() {
                   <Building2 className="h-4 w-4 text-[#E8CFC1] shrink-0" />
                   {item.centerCount}
                 </p>
-                <Link href="/emirates" className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
+                <Link href={item.slug ? `/emirates/${item.slug}` : '/emirates'} className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-[#E8CFC1] group-hover:translate-x-2 transition-transform">
                   <span>{ctaLabel}</span>
                   <ChevronRight className="h-5 w-5 rtl:rotate-180" />
                 </Link>

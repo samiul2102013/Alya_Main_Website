@@ -287,13 +287,13 @@ function cardMeta(
       return {
         href: item.slug ? `/news/article?slug=${encodeURIComponent(item.slug)}` : '/news',
         image: item.coverImage,
-        title: item.articleTitle,
+        title: isArabic && item.articleTitleAr ? item.articleTitleAr : item.articleTitle,
       };
     case 'consultations':
       return {
         href: `/consultation/details?slug=${item.slug}`,
         image: item.coverImage || '',
-        title: item.sessionTitle,
+        title: isArabic && item.sessionTitleAr ? item.sessionTitleAr : item.sessionTitle,
       };
     case 'shorts':
       return {

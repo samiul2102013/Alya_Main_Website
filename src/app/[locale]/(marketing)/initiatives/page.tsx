@@ -14,6 +14,7 @@ import {
   type PublicInitiative,
 } from '@/lib/api/initiatives';
 import { EMIRATES_OPTIONS } from '@/lib/constants';
+import { localizeCategory } from '@/lib/localize-category';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const PER_PAGE = 9;
@@ -426,7 +427,7 @@ export default function InitiativesPage() {
                     </div>
                     <div className="mt-auto flex items-center justify-between pt-3 border-t border-[#E8CFC1]">
                       <span className="text-xs font-semibold text-[#989898]">
-                        {item.category}
+                        {localizeCategory(item.category, isArabic)}
                       </span>
                       <span className="flex items-center gap-1 text-xs font-bold text-[#781E36]">
                         {t('viewDetails') ?? 'View details'}

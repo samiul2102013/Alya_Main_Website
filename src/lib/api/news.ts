@@ -2,6 +2,7 @@ export interface PublicNews {
   id: string;
   slug: string;
   articleTitle: string;
+  articleTitleAr?: string;
   category: string;
   source: string;
   coverImage: string;
@@ -13,6 +14,7 @@ export interface PublicNewsRelated {
   id: string;
   slug: string;
   articleTitle: string;
+  articleTitleAr?: string;
   category: string;
   coverImage: string;
   publishedDate: string | null;

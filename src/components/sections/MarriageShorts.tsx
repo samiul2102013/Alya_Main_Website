@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { localizeCategory, localizeTitle } from '@/lib/localize-category';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -20,6 +21,8 @@ const FALLBACK_IMAGES = [
 
 export default function MarriageShorts() {
   const t = useTranslations('home');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const { content, localize, loading: homepageLoading } = useHomepageContent();
   const [videos, setVideos] = useState<PublicShort[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +62,7 @@ export default function MarriageShorts() {
     videoTitleAr: '',
     slug: 'featured-marriage-guidance',
     category: item.category,
-    organization: 'UAE Marriage Support',
+    organization: 'Wileef.ae',
     maritalStage: 'All Stages',
     duration: item.duration,
     coverImage: FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length],
@@ -67,6 +70,9 @@ export default function MarriageShorts() {
     publishedAt: item.date,
     status: 'published',
   }));
+  const videoTitle = (short: { videoTitle: string; videoTitleAr?: string }) =>
+    localizeTitle(short.videoTitle, short.videoTitleAr, isArabic);
+  const videoCategory = (category: string) => localizeCategory(category, isArabic);
 
   return (
     <Section background="default" spacing="none" id="shorts" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
@@ -106,7 +112,7 @@ export default function MarriageShorts() {
                   {/* Full Background Image */}
                   <Image
                     src={short.coverImage || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]}
-                    alt={short.videoTitle}
+                    alt={videoTitle(short)}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, 295px"
@@ -120,7 +126,7 @@ export default function MarriageShorts() {
                     {/* Top Row: Category Badge + Duration */}
                     <div className="flex items-start justify-between">
                       <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-[#781E36] shadow-xs backdrop-blur-md">
-                        {short.category}
+                        {videoCategory(short.category)}
                       </span>
                       <span className="flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
                         <Clock className="h-3 w-3 text-[#E8CFC1]" />
@@ -138,7 +144,7 @@ export default function MarriageShorts() {
                     {/* Bottom Section: Title + Date/CTA */}
                     <div className="flex flex-col gap-4">
                       <h3 className="min-h-[50px] text-base font-bold leading-snug text-white group-hover:text-[#E8CFC1] transition-colors line-clamp-2">
-                        {short.videoTitle}
+                        {videoTitle(short)}
                       </h3>
                       <div className="flex items-center justify-between text-xs font-semibold text-white/80">
                         <span className="flex items-center gap-[4px] h-[20px]">
