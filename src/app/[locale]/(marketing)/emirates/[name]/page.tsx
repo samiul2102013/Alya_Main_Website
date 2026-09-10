@@ -65,6 +65,7 @@ interface DisplayInitiative {
   description: string;
   image: string;
   officialWebsiteUrl: string;
+  shareUrl: string;
 }
 
 export default function EmirateDetailPage() {
@@ -87,6 +88,7 @@ export default function EmirateDetailPage() {
       description: card.description,
       image: fallbackInitiativeImages[i % fallbackInitiativeImages.length],
       officialWebsiteUrl: '',
+      shareUrl: '',
     })),
   );
 
@@ -100,9 +102,10 @@ export default function EmirateDetailPage() {
           detail.initiatives.map((init: PublicEmirateInitiative, i: number) => ({
             slug: init.slug,
             title: init.title,
-            description: init.subtitle || init.title,
+            description: init.description || init.subtitle || init.title,
             image: init.coverImage || fallbackInitiativeImages[i % fallbackInitiativeImages.length],
             officialWebsiteUrl: init.officialWebsiteUrl || '',
+            shareUrl: init.shareUrl || '',
           })),
         );
       })
@@ -261,36 +264,16 @@ export default function EmirateDetailPage() {
                   <div className="relative w-full h-[200px] sm:h-[224px] rounded-t-[24px] overflow-hidden">
                     <Image src={card.image} alt={card.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" unoptimized />
                   </div>
-                  <div className="flex flex-col p-5 gap-[28px]">
-                    <div className="flex flex-col gap-[14px]">
-                      <span className="text-lg font-bold leading-6 text-[#781E36]">
-                        {card.title}
-                      </span>
-                      <p className="text-sm leading-5 text-[#6B5B57]">
-                        {card.description}
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-[16px] rounded-[16px] border border-[#E8CFC1] bg-[#FAEDE6] p-5">
+                    <div className="flex flex-col p-5 gap-[28px]">
                       <div className="flex flex-col gap-[14px]">
-                        <div className="flex items-center gap-2">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="#781E36" /></svg>
-                          <span className="text-sm font-semibold leading-5 text-[#781E36]">{t('eligibility')}</span>
-                        </div>
+                        <span className="text-lg font-bold leading-6 text-[#781E36]">
+                          {card.title}
+                        </span>
                         <p className="text-sm leading-5 text-[#6B5B57]">
-                          {t('eligibilityText')}
+                          {card.description}
                         </p>
                       </div>
-                      <div className="flex flex-col gap-[14px]">
-                        <div className="flex items-center gap-2">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="#781E36" /></svg>
-                          <span className="text-sm font-semibold leading-5 text-[#781E36]">{t('keyBenefits')}</span>
-                        </div>
-                        <p className="text-sm leading-5 text-[#6B5B57]">
-                          {t('benefitsText')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                       {card.slug ? (
                         <Link href={`/initiatives/${card.slug}`} className="flex-1 h-[48px] rounded-[12px] bg-[#781E36] text-white text-sm font-bold hover:bg-[#B83A4A] transition-colors items-center justify-center inline-flex">{t('viewDetails')}</Link>
                       ) : (

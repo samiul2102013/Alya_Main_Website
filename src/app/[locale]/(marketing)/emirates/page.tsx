@@ -48,8 +48,9 @@ interface DisplayItem {
 interface DisplayInitiative {
   slug: string;
   title: string;
-  subtitle: string;
+  description: string;
   image: string;
+  officialWebsiteUrl: string;
 }
 
 const fallbackImages = EMIRATES_IMAGES;
@@ -138,8 +139,9 @@ export default function EmiratesPage() {
           list.map((init) => ({
             slug: init.slug,
             title: init.title,
-            subtitle: init.subtitle || '',
+            description: (init as unknown as { description?: string }).description || init.subtitle || '',
             image: init.coverImage || '',
+            officialWebsiteUrl: init.officialWebsiteUrl || '',
           })),
         );
       })
@@ -542,12 +544,18 @@ export default function EmiratesPage() {
                     </div>
                     <div className="flex flex-col flex-1 p-4 gap-3">
                       <span className="text-sm font-bold text-[#781E36]">{init.title}</span>
-                      <p className="text-xs leading-4 text-[#6B5B57] line-clamp-2">{init.subtitle}</p>
-                      <div className="mt-auto pt-2 border-t border-[#E8CFC1]">
+                      <p className="text-xs leading-4 text-[#6B5B57] line-clamp-2">{init.description}</p>
+                      <div className="mt-auto pt-2 border-t border-[#E8CFC1] flex items-center gap-3">
                         <Link href={`/initiatives/${init.slug}`} className="flex items-center gap-1 text-xs font-bold text-[#781E36] hover:text-[#B83A4A] transition-colors">
                           {t('readMore')}
                           <ArrowRight className="h-3 w-3 rtl:rotate-180" />
                         </Link>
+                        {init.officialWebsiteUrl ? (
+                          <a href={init.officialWebsiteUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-bold text-[#781E36] hover:text-[#B83A4A] transition-colors">
+                            {t('officialWebsite')}
+                            <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+                          </a>
+                        ) : null}
                       </div>
                     </div>
                   </motion.div>

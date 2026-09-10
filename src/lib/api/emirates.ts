@@ -14,7 +14,7 @@ export interface PublicEmirateInitiative {
   slug: string;
   title: string;
   subtitle: string;
-  badge: string;
+  description: string;
   coverImage: string;
   officialWebsiteUrl: string;
   shareUrl: string;
