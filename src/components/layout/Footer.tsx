@@ -40,6 +40,13 @@ export default function Footer() {
   const phone = content?.phone || '+971 800 2542';
   const email = content?.email || 'support@alia.gov.ae';
   const address = content?.address ? localize(content.address, content.addressAr) : 'Abu Dhabi, UAE';
+  const copyrightText = content?.copyrightText
+    ? localize(content.copyrightText, content.copyrightTextAr ?? '')
+    : t('allRights');
+  const builtForText = content?.builtForText
+    ? localize(content.builtForText, content.builtForTextAr ?? '')
+    : t('builtFor');
+  const vis = content?.sectionVisibility ?? {};
   const linkLabel = (link: { label: string; labelAr?: string }) =>
     isArabic && link.labelAr ? link.labelAr : link.label;
   const quickLinks = content?.quickLinks?.length
@@ -72,6 +79,7 @@ export default function Footer() {
       <Container className="!max-w-[1440px]">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-12">
           {/* Column 1: Main Bio */}
+          {vis.brand !== false && (
           <motion.div
             custom={0}
             variants={columnVariants}
@@ -101,8 +109,10 @@ export default function Footer() {
               {governmentLabel}
             </motion.div>
           </motion.div>
+          )}
 
           {/* Column 2: Quick Links */}
+          {vis.quickLinks !== false && (
           <motion.div
             custom={1}
             variants={columnVariants}
@@ -131,8 +141,10 @@ export default function Footer() {
               ))}
             </ul>
           </motion.div>
+          )}
 
           {/* Column 3: Resources */}
+          {vis.resources !== false && (
           <motion.div
             custom={2}
             variants={columnVariants}
@@ -161,8 +173,10 @@ export default function Footer() {
               ))}
             </ul>
           </motion.div>
+          )}
 
           {/* Column 4: Contacts */}
+          {vis.contacts !== false && (
           <motion.div
             custom={3}
             variants={columnVariants}
@@ -199,26 +213,29 @@ export default function Footer() {
               </motion.div>
             </div>
           </motion.div>
+          )}
         </div>
 
         {/* Bottom Bar */}
+        {vis.bottomBar !== false && (
         <Reveal delay={0.3} direction="up">
           <motion.div
             className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-[#6B5B57]"
             whileHover={{ color: '#781E36' }}
             transition={{ duration: 0.3 }}
           >
-            <p>© {new Date().getFullYear()} {t('allRights')}</p>
+            <p>© {new Date().getFullYear()} {copyrightText}</p>
             <motion.div
               className="flex items-center gap-1.5 text-xs"
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <span>{t('builtFor')}</span>
+              <span>{builtForText}</span>
               <Heart className="h-3.5 w-3.5 fill-[#781E36] text-[#781E36]" />
             </motion.div>
           </motion.div>
         </Reveal>
+        )}
       </Container>
     </motion.footer>
   );

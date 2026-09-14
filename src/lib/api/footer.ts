@@ -16,7 +16,12 @@ export interface FooterContent {
   addressAr: string;
   quickLinks: FooterLink[];
   resourceLinks: FooterLink[];
+  copyrightText?: string;
+  copyrightTextAr?: string;
+  builtForText?: string;
+  builtForTextAr?: string;
   published: boolean;
+  sectionVisibility?: Record<string, boolean>;
 }
 
 const API_URL =
