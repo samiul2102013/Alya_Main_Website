@@ -46,6 +46,16 @@ export default function Footer() {
   const builtForText = content?.builtForText
     ? localize(content.builtForText, content.builtForTextAr ?? '')
     : t('builtFor');
+  const quickLinksHeading = content?.quickLinksHeading
+    ? localize(content.quickLinksHeading, content.quickLinksHeadingAr ?? '')
+    : t('quickLinks');
+  const resourceLinksHeading = content?.resourceLinksHeading
+    ? localize(content.resourceLinksHeading, content.resourceLinksHeadingAr ?? '')
+    : t('resources');
+  const contactsHeading = content?.contactsHeading
+    ? localize(content.contactsHeading, content.contactsHeadingAr ?? '')
+    : t('contacts');
+  const logoSrc = content?.logoUrl || '/Static/alia-logo.png';
   const vis = content?.sectionVisibility ?? {};
   const linkLabel = (link: { label: string; labelAr?: string }) =>
     isArabic && link.labelAr ? link.labelAr : link.label;
@@ -90,12 +100,13 @@ export default function Footer() {
           >
             <Link href="/" className="flex items-center">
               <Image
-                src="/Static/alia-logo.png"
+                src={logoSrc}
                 alt="ALIA Logo"
                 width={56}
                 height={56}
                 className="object-contain"
                 priority
+                unoptimized
               />
             </Link>
             <p className="text-xs md:text-sm leading-relaxed text-[#6B5B57]">
@@ -121,7 +132,7 @@ export default function Footer() {
             viewport={{ once: false, margin: '-30px' }}
             className="flex flex-col gap-[24px] lg:col-span-3 max-w-[272px] min-h-[236px]"
           >
-            <h4 className="text-base font-extrabold text-[#781E36] tracking-wide">{t('quickLinks')}</h4>
+            <h4 className="text-base font-extrabold text-[#781E36] tracking-wide">{quickLinksHeading}</h4>
             <ul className="flex flex-col gap-2.5 text-xs md:text-sm font-semibold">
               {quickLinks.map((item, i) => (
                 <motion.li
@@ -153,7 +164,7 @@ export default function Footer() {
             viewport={{ once: false, margin: '-30px' }}
             className="flex flex-col gap-[24px] lg:col-span-3 max-w-[272px] pb-[40px] min-h-[236px]"
           >
-            <h4 className="text-base font-extrabold text-[#781E36] tracking-wide">{t('resources')}</h4>
+            <h4 className="text-base font-extrabold text-[#781E36] tracking-wide">{resourceLinksHeading}</h4>
             <ul className="flex flex-col gap-2.5 text-xs md:text-sm font-semibold">
               {resourceLinks.map((item, i) => (
                 <motion.li
@@ -185,7 +196,7 @@ export default function Footer() {
             viewport={{ once: false, margin: '-30px' }}
             className="flex flex-col gap-[24px] lg:col-span-2 max-w-[272px] pb-[8px] min-h-[236px]"
           >
-            <h4 className="text-base font-extrabold text-[#781E36] tracking-wide">{t('contacts')}</h4>
+            <h4 className="text-base font-extrabold text-[#781E36] tracking-wide">{contactsHeading}</h4>
             <div className="flex flex-col gap-3 text-xs md:text-sm font-semibold">
               <motion.div
                 className="flex items-center gap-2.5"
