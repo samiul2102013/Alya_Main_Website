@@ -27,11 +27,11 @@ const linkVariants = {
   }),
 };
 
-export default function Footer() {
+export default function Footer({ initialContent }: { initialContent?: import('@/lib/api/footer').FooterContent | null } = {}) {
   const t = useTranslations('footer');
   const locale = useLocale();
   const isArabic = locale === 'ar';
-  const { content, localize } = useFooterContent();
+  const { content, localize } = useFooterContent(initialContent);
 
   const brand = content?.brandText ? localize(content.brandText, content.brandTextAr) : t('brand');
   const governmentLabel = content?.governmentLabel

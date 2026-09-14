@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ScrollToTop from '@/components/shared/ScrollToTop';
 import { routing } from '@/i18n/routing';
+import { getFooterContent } from '@/lib/api/footer';
 import '../globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -42,6 +43,10 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
+  // Server-prefetch footer DB content (like homepage/about/contact) so admin
+  // edits via /api/admin/footer are rendered on first paint — no client flicker.
+  const footerContent = await getFooterContent().catch(() => null);
+
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
@@ -58,7 +63,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider>
           <Navbar />
           <main className="flex-1 pt-[72px] md:pt-[100px]">{children}</main>
-          <Footer />
+          <Footer initialContent={footerContent} />
           <ScrollToTop />
         </NextIntlClientProvider>
       </body>

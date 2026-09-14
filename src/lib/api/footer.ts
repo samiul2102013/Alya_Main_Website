@@ -37,7 +37,11 @@ const API_URL =
 export async function getFooterContent(): Promise<FooterContent | null> {
   try {
     const res = await fetch(`${API_URL}/footer`, {
-      cache: 'no-store',
+      // Prefetch footer DB data on the server (layout.tsx) like all other CMS
+      // models (homepage/about/contact). ISR 60s keeps routes statically
+      // generated while admin edits appear within a minute; tag allows
+      // on-demand revalidation via POST /api/revalidate?tag=footer if needed.
+      next: { revalidate: 60, tags: ['footer'] },
     });
     if (!res.ok) return null;
     return (await res.json()) as FooterContent;
