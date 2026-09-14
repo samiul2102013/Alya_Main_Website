@@ -101,8 +101,8 @@ export default function EmirateDetailPage() {
         setInitiatives(
           detail.initiatives.map((init: PublicEmirateInitiative, i: number) => ({
             slug: init.slug,
-            title: init.title,
-            description: init.description || init.subtitle || init.title,
+            title: isArabic && (init as any).titleAr ? (init as any).titleAr : init.title,
+            description: isArabic && ((init as any).subtitleAr || (init as any).descriptionAr) ? ((init as any).subtitleAr || (init as any).descriptionAr) : (init.description || init.subtitle || init.title),
             image: init.coverImage || fallbackInitiativeImages[i % fallbackInitiativeImages.length],
             officialWebsiteUrl: init.officialWebsiteUrl || '',
             shareUrl: init.shareUrl || '',
@@ -119,7 +119,7 @@ export default function EmirateDetailPage() {
     ? emirate.emiratesNameAr
     : emirate?.title || emirate?.emiratesName || fallbackEntry.title.split('—')[0].trim();
   const emirateImage = emirate?.image || emirateImages[name] || emirateImages['abu-dhabi'];
-  const emirateSubtitle = emirate?.description || fallbackEntry.subtitle;
+  const emirateSubtitle = isArabic && (emirate as any)?.descriptionAr ? (emirate as any).descriptionAr : (emirate?.description || fallbackEntry.subtitle);
   const orgs = t.raw('orgs') as Org[];
 
   return (

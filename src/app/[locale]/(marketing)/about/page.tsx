@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { Check, Heart, Eye, Target, BookOpen, MessageCircle, Newspaper, MapPin, Users } from 'lucide-react';
@@ -31,6 +31,8 @@ const FALLBACK_HERO_IMAGE =
 export default function AboutPage() {
 	const t = useTranslations('about');
 	const tNav = useTranslations('nav');
+	const locale = useLocale();
+	const isArabic = locale === 'ar';
 	const { content, localize, localizeOffering, localizeImpact } = useAboutContent();
 
 	const fallbackObjectives = t.raw('objectives') as string[];
@@ -39,15 +41,38 @@ export default function AboutPage() {
 	const fallbackWhyValues = t.raw('whyValues') as string[];
 	const fallbackCoreValueList = t.raw('coreValueList') as string[];
 
-	const objectives = (content?.objectives && content.objectives.length > 0) ? content.objectives : fallbackObjectives;
-	const offerings = (content?.offerings && content.offerings.length > 0)
-		? content.offerings.map(localizeOffering)
-		: fallbackOfferings;
-	const impact = (content?.impact && content.impact.length > 0)
-		? content.impact.map(localizeImpact)
-		: fallbackImpact;
-	const whyValues = (content?.whyValues && content.whyValues.length > 0) ? content.whyValues : fallbackWhyValues;
-	const coreValueList = (content?.coreValueList && content.coreValueList.length > 0) ? content.coreValueList : fallbackCoreValueList;
+	// Locale-aware: prefer Ar arrays when Arabic locale; backend auto-translates when Ar blank
+	const objectives = (() => {
+		const ar = (content as any)?.objectivesAr as string[] | undefined;
+		const en = content?.objectives;
+		if (isArabic && ar && ar.length > 0) return ar;
+		if (en && en.length > 0) return isArabic ? ar || en : en;
+		return fallbackObjectives;
+	})();
+	const offerings = (() => {
+		const ar = (content as any)?.offeringsAr as any[] | undefined;
+		if (isArabic && ar && ar.length > 0) return ar.map(localizeOffering);
+		if (content?.offerings && content.offerings.length > 0) return content.offerings.map(localizeOffering);
+		return fallbackOfferings;
+	})();
+	const impact = (() => {
+		const ar = (content as any)?.impactAr as any[] | undefined;
+		if (isArabic && ar && ar.length > 0) return ar.map(localizeImpact);
+		if (content?.impact && content.impact.length > 0) return content.impact.map(localizeImpact);
+		return fallbackImpact;
+	})();
+	const whyValues = (() => {
+		const ar = (content as any)?.whyValuesAr as string[] | undefined;
+		if (isArabic && ar && ar.length > 0) return ar;
+		if (content?.whyValues && content.whyValues.length > 0) return content.whyValues;
+		return fallbackWhyValues;
+	})();
+	const coreValueList = (() => {
+		const ar = (content as any)?.coreValueListAr as string[] | undefined;
+		if (isArabic && ar && ar.length > 0) return ar;
+		if (content?.coreValueList && content.coreValueList.length > 0) return content.coreValueList;
+		return fallbackCoreValueList;
+	})();
 
 	const secVis = content?.sectionVisibility ?? {};
 	const showHero         = true;

@@ -144,6 +144,9 @@ function ConsultationDetailsInner() {
   const counselorPhoto = session.counselorPhoto || FALLBACK_COUNSELOR;
 
   const sessionTitle = session ? localizeTitle(session.sessionTitle, session.sessionTitleAr, isArabic) : '';
+  const counselorName = session ? localizeTitle(session.counselor, (session as any).counselorAr, isArabic) : '';
+  const counselorTitle = session ? localizeTitle(session.counselorTitle, (session as any).counselorTitleAr, isArabic) : '';
+  const counselorBio = session ? localizeTitle(session.counselorBio || '', (session as any).counselorBioAr, isArabic) : '';
   const formatValue = (format: string) =>
     format === 'onsite' ? t('formatOnsite') : t('formatOnline');
   const languageValue = (language: string) =>
@@ -161,15 +164,21 @@ function ConsultationDetailsInner() {
     },
   ];
 
-  const objectives = session.objectives && session.objectives.length
-    ? session.objectives
-    : [];
-  const learn = session.whatYouWillLearn && session.whatYouWillLearn.length
-    ? session.whatYouWillLearn
-    : [];
-  const attend = session.whoShouldAttend && session.whoShouldAttend.length
-    ? session.whoShouldAttend
-    : [];
+  const objectives = (() => {
+    const ar = (session as any).objectivesAr as string[] | undefined;
+    if (isArabic && ar && ar.length) return ar;
+    return session.objectives && session.objectives.length ? session.objectives : [];
+  })();
+  const learn = (() => {
+    const ar = (session as any).whatYouWillLearnAr as string[] | undefined;
+    if (isArabic && ar && ar.length) return ar;
+    return session.whatYouWillLearn && session.whatYouWillLearn.length ? session.whatYouWillLearn : [];
+  })();
+  const attend = (() => {
+    const ar = (session as any).whoShouldAttendAr as string[] | undefined;
+    if (isArabic && ar && ar.length) return ar;
+    return session.whoShouldAttend && session.whoShouldAttend.length ? session.whoShouldAttend : [];
+  })();
 
   const scheduleEntries: ScheduleItem[] = [
     { label: t('schedDate'), value: session.date || '—' },
@@ -179,8 +188,9 @@ function ConsultationDetailsInner() {
     { label: t('schedTimeZone'), value: session.timeZone || '—' },
   ];
 
-  const descriptionParagraphs = session.description
-    ? session.description.split(/\n\n+/).filter(Boolean)
+  const rawDescription = isArabic ? ((session as any).descriptionAr || session.description) : session.description;
+  const descriptionParagraphs = rawDescription
+    ? rawDescription.split(/\n\n+/).filter(Boolean)
     : [];
 
   const feeLabel =
@@ -337,13 +347,13 @@ function ConsultationDetailsInner() {
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-lg font-bold text-[#781E36]">{session.counselor || 'Counselor'}</span>
-                        <span className="text-sm font-medium text-[#6B5B57]">{session.counselorTitle}</span>
+                        <span className="text-lg font-bold text-[#781E36]">{counselorName || 'Counselor'}</span>
+                        <span className="text-sm font-medium text-[#6B5B57]">{counselorTitle}</span>
                       </div>
                     </motion.div>
-                    {session.counselorBio && (
+                    {counselorBio && (
                       <motion.p variants={itemVariants} className="max-w-[373px] text-[#6B5B57] text-sm md:text-base leading-relaxed">
-                        {session.counselorBio}
+                        {counselorBio}
                       </motion.p>
                     )}
                   </div>
@@ -391,7 +401,7 @@ function ConsultationDetailsInner() {
             <div className="h-auto rounded-[12px] bg-white p-[10px]">
               <div className="flex flex-col gap-4 w-full max-w-[1237px] mx-auto">
                 <SectionHeader>{t('aboutTitle')}</SectionHeader>
-                {descriptionParagraphs.map((p, i) => (
+                {descriptionParagraphs.map((p: string, i: number) => (
                   <p key={i} className="text-[#757575] text-sm md:text-base leading-[30px] tracking-[0.1px] max-w-[1206px]">
                     {p}
                   </p>

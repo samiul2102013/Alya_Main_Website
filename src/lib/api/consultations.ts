@@ -39,10 +39,14 @@ export interface PublicConsultationDetail extends PublicConsultation {
   description: string;
   descriptionAr: string;
   objectives: string[];
+  objectivesAr: string[];
   whatYouWillLearn: string[];
+  whatYouWillLearnAr: string[];
   whoShouldAttend: string[];
+  whoShouldAttendAr: string[];
   schedule: Record<string, string>;
   bookingNotice: string;
+  bookingNoticeAr: string;
   showDoctor: boolean;
   showLearnMore: boolean;
   showGallery: boolean;

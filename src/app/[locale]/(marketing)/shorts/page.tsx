@@ -133,18 +133,20 @@ export default function ShortsPage() {
   const i18nContributors = t.raw('contributorList') as string[];
   const i18nFaqs = t.raw('faqs') as Faq[];
 
-  // Hybrid content resolution: CMS wins, i18n is the fallback.
+  // Hybrid content resolution: CMS wins, i18n is the fallback. Arabic picks *Ar when present (backend auto-translates when admin left blank).
   const topics: Topic[] =
     (presentation.presentation?.topics?.length &&
       presentation.presentation.topics.map((topic) => ({
-        title: topic.title,
+        title: isArabic && (topic as any).titleAr ? (topic as any).titleAr : topic.title,
         videos: topic.videos ?? '',
       }))) ||
     i18nTopics;
-  const contributorList: string[] =
-    (presentation.presentation?.contributors?.length &&
-      presentation.presentation.contributors) ||
-    i18nContributors;
+  const contributorList: string[] = (() => {
+    const p = presentation.presentation;
+    if (isArabic && p?.contributorsAr?.length) return p.contributorsAr;
+    if (p?.contributors?.length) return p.contributors;
+    return i18nContributors;
+  })();
   const faqs: Faq[] =
     (presentation.presentation?.faqs?.length &&
       presentation.presentation.faqs.map((faq) => ({

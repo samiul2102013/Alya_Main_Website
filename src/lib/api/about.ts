@@ -45,30 +45,35 @@ export interface AboutContent {
   ourObjectiveText: string;
   ourObjectiveTextAr: string;
   objectives: string[];
+  objectivesAr: string[];
 
   whatWeOffer: string;
   whatWeOfferAr: string;
   whatWeOfferText: string;
   whatWeOfferTextAr: string;
   offerings: AboutOffering[];
+  offeringsAr: AboutOffering[];
 
   ourImpact: string;
   ourImpactAr: string;
   ourImpactText: string;
   ourImpactTextAr: string;
   impact: AboutImpact[];
+  impactAr: AboutImpact[];
 
   whyChoose: string;
   whyChooseAr: string;
   whyChooseText: string;
   whyChooseTextAr: string;
   whyValues: string[];
+  whyValuesAr: string[];
 
   coreValues: string;
   coreValuesAr: string;
   coreValuesText: string;
   coreValuesTextAr: string;
   coreValueList: string[];
+  coreValueListAr: string[];
 
   sectionVisibility?: Record<string, boolean>;
 }

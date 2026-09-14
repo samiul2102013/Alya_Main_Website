@@ -175,14 +175,15 @@ export default function InitiativesPage() {
   const topics: Topic[] =
     (presentation.presentation?.initiativesTopics?.length
       ? presentation.presentation.initiativesTopics.map((topic) => ({
-          title: topic.title,
+          title: isArabic && (topic as any).titleAr ? (topic as any).titleAr : topic.title,
           videos: topic.videos ?? '',
         }))
       : i18nTopics) || [];
-  const contributorList: string[] =
-    (presentation.presentation?.initiativesContributors?.length
-      ? presentation.presentation.initiativesContributors
-      : []) || [];
+  const contributorList: string[] = (() => {
+    const p = presentation.presentation;
+    if (isArabic && (p as any)?.initiativesContributorsAr?.length) return (p as any).initiativesContributorsAr;
+    return (p?.initiativesContributors?.length ? p.initiativesContributors : []) || [];
+  })();
   const faqs: Faq[] =
     (presentation.presentation?.initiativesFaqs?.length
       ? presentation.presentation.initiativesFaqs.map((faq) => ({

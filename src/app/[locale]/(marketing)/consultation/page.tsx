@@ -270,10 +270,11 @@ function ConsultationPageInner() {
           videos: topic.videos ?? '',
         }))
       : i18nTopics) || [];
-  const contributorList: string[] =
-    (presentation.presentation?.consultationContributors?.length
-      ? presentation.presentation.consultationContributors
-      : []) || [];
+  const contributorList: string[] = (() => {
+    const p = presentation.presentation;
+    if (isArabic && (p as any)?.consultationContributorsAr?.length) return (p as any).consultationContributorsAr;
+    return (p?.consultationContributors?.length ? p.consultationContributors : []) || [];
+  })();
   const faqs: Faq[] =
     (presentation.presentation?.consultationFaqs?.length
       ? presentation.presentation.consultationFaqs.map((faq) => ({

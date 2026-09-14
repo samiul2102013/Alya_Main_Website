@@ -78,23 +78,28 @@ export interface PagePresentation {
   published: boolean;
   topics: PresentationTopic[];
   contributors: string[];
+  contributorsAr?: string[];
   faqs: PresentationFaq[];
   shortsCta?: ShortsCta;
   sectionVisibility: ShortsSectionVisibility;
   initiativesTopics: PresentationTopic[];
   initiativesContributors: string[];
+  initiativesContributorsAr?: string[];
   initiativesFaqs: PresentationFaq[];
   initiativesSectionVisibility: InitiativesSectionVisibility;
   consultationTopics: PresentationTopic[];
   consultationContributors: string[];
+  consultationContributorsAr?: string[];
   consultationFaqs: PresentationFaq[];
   consultationSectionVisibility: ConsultationSectionVisibility;
   emiratesTopics: PresentationTopic[];
   emiratesContributors: string[];
+  emiratesContributorsAr?: string[];
   emiratesFaqs: PresentationFaq[];
   emiratesSectionVisibility: EmiratesSectionVisibility;
   newsTopics: PresentationTopic[];
   newsContributors: string[];
+  newsContributorsAr?: string[];
   newsFaqs: PresentationFaq[];
   newsSectionVisibility: NewsSectionVisibility;
 }

@@ -120,9 +120,9 @@ export default function EmiratesPage() {
       const display: DisplayItem[] = list.map((emi, i) => ({
         slug: emi.slug,
         image: emi.image || fallbackImages[i % fallbackImages.length],
-        name: (isArabic && (emi as any).emiratesNameAr ? (emi as any).emiratesNameAr : '') || emi.title || emi.emiratesName,
-        description: emi.description || '',
-        count: emi.centerCount || '',
+        name: (isArabic && ((emi as any).emiratesNameAr || (emi as any).titleAr) ? ((emi as any).emiratesNameAr || (emi as any).titleAr) : '') || (isArabic ? (emi.title || emi.emiratesName) : (emi.title || emi.emiratesName)),
+        description: isArabic && (emi as any).descriptionAr ? (emi as any).descriptionAr : (emi.description || ''),
+        count: isArabic && (emi as any).centerCountAr ? (emi as any).centerCountAr : (emi.centerCount || ''),
       }));
       if (!r) return display;
       const needle = r.trim().toLowerCase();
@@ -244,10 +244,11 @@ export default function EmiratesPage() {
           videos: topic.videos ?? '',
         }))
       : i18nTopics) || [];
-  const contributorList: string[] =
-    (presentation.presentation?.emiratesContributors?.length
-      ? presentation.presentation.emiratesContributors
-      : []) || [];
+  const contributorList: string[] = (() => {
+    const p = presentation.presentation;
+    if (isArabic && (p as any)?.emiratesContributorsAr?.length) return (p as any).emiratesContributorsAr;
+    return (p?.emiratesContributors?.length ? p.emiratesContributors : []) || [];
+  })();
   const faqs: Faq[] =
     (presentation.presentation?.emiratesFaqs?.length
       ? presentation.presentation.emiratesFaqs.map((faq) => ({
