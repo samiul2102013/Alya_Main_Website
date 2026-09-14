@@ -2,9 +2,13 @@ export interface PublicEmirate {
   id: string;
   slug: string;
   emiratesName: string;
+  emiratesNameAr: string;
   title: string;
+  titleAr: string;
   description: string;
+  descriptionAr: string;
   centerCount: string;
+  centerCountAr: string;
   image: string;
   status: string;
 }
@@ -13,7 +17,9 @@ export interface PublicEmirateInitiative {
   id: string;
   slug: string;
   title: string;
+  titleAr: string;
   subtitle: string;
+  subtitleAr: string;
   description: string;
   coverImage: string;
   officialWebsiteUrl: string;
@@ -21,7 +27,6 @@ export interface PublicEmirateInitiative {
 }
 
 export interface PublicEmirateDetail extends PublicEmirate {
-  emiratesNameAr: string;
   dateTime: string | null;
   contactPhone: string;
   serviceCenters: number;

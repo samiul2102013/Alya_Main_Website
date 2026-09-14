@@ -85,7 +85,8 @@ export default function VideoDetailsPage() {
 
   const isArabic = locale === 'ar';
   const title = video ? (isArabic && video.videoTitleAr ? video.videoTitleAr : video.videoTitle) : '';
-  const description = video?.description || '';
+  const description = video ? (isArabic ? (video.descriptionAr || video.description) : video.description) : '';
+  const speakerName = video ? (isArabic ? (video.speakerAr || video.speaker) : video.speaker) : '';
 
   const details: DetailItem[] = video
     ? [
@@ -95,7 +96,7 @@ export default function VideoDetailsPage() {
         { label: t('languageLabel'), value: video.language === 'ar' ? t('langArabic') : video.language === 'both' ? t('langBoth') : t('langEnglish') },
         { label: t('duration'), value: video.duration },
         ...(video.showViews ? [{ label: t('views'), value: String(video.views ?? 0) }] : []),
-        ...(video.showSpeaker ? [{ label: t('speaker'), value: video.speaker }] : []),
+        ...(video.showSpeaker ? [{ label: t('speaker'), value: speakerName }] : []),
         { label: t('publishedDate'), value: video.publishedAt ? new Date(video.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar-AE' : 'en-US') : '' },
       ].filter((d) => d.value)
     : [];

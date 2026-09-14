@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { localizeCategory, localizeTitle } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, formatLocalizedDate } from '@/lib/localize-category';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -150,13 +150,7 @@ export default function MarriageShorts() {
                         <span className="flex items-center gap-[4px] h-[20px]">
                           <Calendar className="h-3.5 w-3.5 text-[#E8CFC1]" />
                           <span className="leading-none">
-                            {short.publishedAt
-                              ? new Date(short.publishedAt).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                })
-                              : ''}
+                            {formatLocalizedDate(short.publishedAt, isArabic)}
                           </span>
                         </span>
                         <span className="inline-flex items-center gap-1 font-bold text-[#E8CFC1] group-hover:underline h-[20px] leading-none">

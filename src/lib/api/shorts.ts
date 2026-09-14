@@ -24,7 +24,9 @@ export interface PublicShortDetail extends PublicShort {
   language: string;
   videoUrl: string;
   speaker: string;
+  speakerAr: string;
   description: string;
+  descriptionAr: string;
   keyTopics: string[];
   resources: ShortResource[];
   shareUrl: string;

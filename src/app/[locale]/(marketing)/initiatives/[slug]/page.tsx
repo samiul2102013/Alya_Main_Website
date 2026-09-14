@@ -38,11 +38,11 @@ const SUPPORT_INDEX: Record<string, number> = {
   pre_marital_preparation: 4,
 };
 
-function formatDate(value: string | null | undefined) {
+function formatDate(value: string | null | undefined, isArabic?: boolean) {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return date.toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export default function InitiativeDetailsPage() {
@@ -76,6 +76,10 @@ export default function InitiativeDetailsPage() {
       ? initiative.titleAr
       : initiative.title
     : '';
+  const subtitle = initiative ? (isArabic ? (initiative.subtitleAr || initiative.subtitle) : initiative.subtitle) : '';
+  const description = initiative ? (isArabic ? (initiative.descriptionAr || initiative.description) : initiative.description) : '';
+  const purpose = initiative ? (isArabic ? (initiative.purposeAr || initiative.purpose) : initiative.purpose) : '';
+  const badge = initiative ? (isArabic ? (initiative.badgeAr || initiative.badge) : initiative.badge) : '';
 
   const supports = t.raw('supports') as string[];
   const supportList = initiative
@@ -86,8 +90,8 @@ export default function InitiativeDetailsPage() {
     : [];
 
   const basicInfo = initiative?.basicInformation?.length ? initiative.basicInformation : [];
-  const objectives = initiative?.objectives?.length ? initiative.objectives : [];
-  const benefits = initiative?.benefits?.length ? initiative.benefits : [];
+  const objectives = initiative ? (isArabic ? (initiative.objectivesAr?.length ? initiative.objectivesAr : initiative.objectives) : initiative.objectives) : [];
+  const benefits = initiative ? (isArabic ? (initiative.benefitsAr?.length ? initiative.benefitsAr : initiative.benefits) : initiative.benefits) : [];
   const contacts = initiative?.contact?.length ? initiative.contact : [];
 
   return (
@@ -128,9 +132,9 @@ export default function InitiativeDetailsPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="relative z-10 flex h-full flex-col justify-end gap-5 p-6 sm:p-10">
                   <div className="flex flex-wrap items-center gap-3">
-                    {initiative.badge && (
+                    {badge && (
                       <span className="rounded-full bg-[#781E36] px-4 py-1.5 text-xs font-bold text-white shadow-md">
-                        {initiative.badge}
+                        {badge}
                       </span>
                     )}
                     {initiative.isFeatured && (
@@ -142,9 +146,9 @@ export default function InitiativeDetailsPage() {
                   <h1 className="max-w-[872px] text-3xl sm:text-4xl lg:text-[40px] font-bold text-white leading-tight tracking-tight">
                     {title}
                   </h1>
-                  {initiative.subtitle && (
+                  {subtitle && (
                     <p className="max-w-[872px] text-sm md:text-base leading-relaxed text-white/90">
-                      {isArabic && initiative.subtitleAr ? initiative.subtitleAr : initiative.subtitle}
+                      {subtitle}
                     </p>
                   )}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-[40px] text-sm text-white/90">
@@ -153,10 +157,10 @@ export default function InitiativeDetailsPage() {
                         <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">{localizeCategory(initiative.category, isArabic)}</span>
                       </span>
                     )}
-                    {[formatDate(initiative.startDate), formatDate(initiative.endDate)].filter(Boolean).length > 0 && (
+                    {[formatDate(initiative.startDate, isArabic), formatDate(initiative.endDate, isArabic)].filter(Boolean).length > 0 && (
                       <span className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-[#E8CFC1]" />
-                        {[formatDate(initiative.startDate), formatDate(initiative.endDate)].filter(Boolean).join(' — ')}
+                        {[formatDate(initiative.startDate, isArabic), formatDate(initiative.endDate, isArabic)].filter(Boolean).join(' — ')}
                       </span>
                     )}
                     {initiative.emirates && (
@@ -196,13 +200,13 @@ export default function InitiativeDetailsPage() {
                   <div className="border-b border-[#E8CFC1] pb-[10px] mb-6">
                     <h2 className="text-2xl font-bold text-[#781E36]">{t('aboutTitle')}</h2>
                   </div>
-                  {initiative.description && (
-                    <p className="text-base leading-[30px] text-[#757575]">{initiative.description}</p>
+                  {description && (
+                    <p className="text-base leading-[30px] text-[#757575]">{description}</p>
                   )}
-                  {initiative.purpose && (
+                  {purpose && (
                     <>
                       <h3 className="mt-8 text-xl font-semibold text-black leading-[30px]">{t('purpose')}</h3>
-                      <p className="mt-1 text-base leading-[30px] text-[#757575]">{initiative.purpose}</p>
+                      <p className="mt-1 text-base leading-[30px] text-[#757575]">{purpose}</p>
                     </>
                   )}
                   {objectives.length > 0 && (

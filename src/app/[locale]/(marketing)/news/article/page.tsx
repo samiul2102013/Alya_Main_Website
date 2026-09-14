@@ -105,8 +105,9 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
 
       if (cancelled || !detail) return;
 
-      const paragraphs = detail.content
-        ? detail.content.split(/\n\n+/).filter(Boolean)
+      const rawContent = isArabic ? (detail.contentAr || detail.content) : detail.content;
+      const paragraphs = rawContent
+        ? rawContent.split(/\n\n+/).filter(Boolean)
         : [t('p1'), t('p2'), t('p3'), t('p4')];
 
       const resourceTitles = Array.isArray(detail.resources)
@@ -123,7 +124,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
           org: detail.organization || mockInfo.org,
           city: detail.city || mockInfo.city,
           emirates: detail.emirate || mockInfo.emirates,
-          author: detail.author || mockInfo.author,
+          author: (isArabic ? (detail.authorAr || detail.author) : detail.author) || mockInfo.author,
           published: detail.publishedDate || mockInfo.published,
         },
         resources: resourceTitles.length ? resourceTitles : mockResources,

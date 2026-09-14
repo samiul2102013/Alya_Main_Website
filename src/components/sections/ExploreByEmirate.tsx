@@ -1,9 +1,10 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Link, useRouter } from '@/i18n/navigation';
+import { localizeTitle } from '@/lib/localize-category';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
 import Heading from '../shared/Heading';
@@ -31,6 +32,8 @@ interface EmirateItem {
 
 export default function ExploreByEmirate() {
   const t = useTranslations('home');
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const { content, localize, loading: homepageLoading } = useHomepageContent();
   const fallback = t.raw('emirates') as { slug?: string; name: string; title: string; centerCount: string }[];
   const fallbackItems: EmirateItem[] = fallback.map((item, i) => ({
@@ -63,9 +66,9 @@ export default function ExploreByEmirate() {
         if (cancelled || !list?.length) return;
         const mapped: EmirateItem[] = list.map((e, i) => ({
           slug: e.slug,
-          name: e.emiratesName,
-          title: e.title || e.emiratesName,
-          centerCount: e.centerCount || '',
+          name: localizeTitle(e.emiratesName, e.emiratesNameAr, isArabic),
+          title: localizeTitle(e.title || e.emiratesName, e.titleAr || e.emiratesNameAr, isArabic),
+          centerCount: localizeTitle(e.centerCount, e.centerCountAr, isArabic),
           image: e.image || fallbackImages[i % fallbackImages.length],
         }));
         setItems(mapped);
@@ -74,7 +77,7 @@ export default function ExploreByEmirate() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isArabic]);
 
   return (
     <Section background="default" spacing="none" id="emirates" className="py-[64px] sm:py-[80px]">

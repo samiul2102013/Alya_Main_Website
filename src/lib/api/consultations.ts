@@ -2,7 +2,7 @@ export interface PublicConsultation {
   id: string;
   slug: string;
   sessionTitle: string;
-  sessionTitleAr?: string;
+  sessionTitleAr: string;
   category: string;
   sessionType: string;
   emirates: string;
@@ -20,7 +20,6 @@ export interface PublicConsultation {
 }
 
 export interface PublicConsultationDetail extends PublicConsultation {
-  sessionTitleAr: string;
   publishedDate: string | null;
   timeZone: string;
   meetingFormat: string;
@@ -29,12 +28,16 @@ export interface PublicConsultationDetail extends PublicConsultation {
   processingFee: string;
   discount: string;
   counselor: string;
+  counselorAr: string;
   counselorPhoto: string;
   counselorTitle: string;
+  counselorTitleAr: string;
   counselorBio: string;
+  counselorBioAr: string;
   learnMore: unknown;
   gallery: string[];
   description: string;
+  descriptionAr: string;
   objectives: string[];
   whatYouWillLearn: string[];
   whoShouldAttend: string[];

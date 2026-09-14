@@ -2,7 +2,7 @@ export interface PublicInitiative {
   id: string;
   slug: string;
   title: string;
-  titleAr?: string;
+  titleAr: string;
   subtitle?: string;
   subtitleAr?: string;
   category: string;
@@ -11,6 +11,7 @@ export interface PublicInitiative {
   endDate: string | null;
   coverImage: string;
   badge: string;
+  badgeAr: string;
   officialWebsiteUrl: string;
   shareUrl: string;
   isFeatured: boolean;
@@ -20,11 +21,15 @@ export interface PublicInitiative {
 
 export interface PublicInitiativeDetail extends PublicInitiative {
   description: string;
+  descriptionAr: string;
   purpose: string;
+  purposeAr: string;
   objectives: string[];
+  objectivesAr: string[];
   basicInformation: string[];
   supportOffered: Record<string, boolean>;
   benefits: string[];
+  benefitsAr: string[];
   contact: string[];
   showAbout: boolean;
   showSupportOffered: boolean;
