@@ -1,5 +1,6 @@
 export interface ShortResource {
   title?: string;
+  titleAr?: string;
   url?: string;
   type?: string;
 }
@@ -31,7 +32,9 @@ export interface PublicShortDetail extends PublicShort {
   description: string;
   descriptionAr: string;
   keyTopics: string[];
+  keyTopicsAr?: string[];
   resources: ShortResource[];
+  resourcesAr?: ShortResource[];
   shareUrl: string;
   lastUpdated: string | null;
   showKeyTopics: boolean;
@@ -84,8 +87,9 @@ export async function getPublishedShortsPage(
   };
 }
 
-export async function getShortBySlug(slug: string): Promise<PublicShortDetail> {
-  const res = await fetch(`${API_URL}/shorts/${slug}`, { cache: 'no-store' });
+export async function getShortBySlug(slug: string, locale?: string): Promise<PublicShortDetail> {
+  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : '';
+  const res = await fetch(`${API_URL}/shorts/${slug}${qs}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to load short (${res.status})`);
   return res.json();
 }

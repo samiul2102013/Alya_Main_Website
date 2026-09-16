@@ -56,7 +56,7 @@ export default function VideoDetailsPage() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    getShortBySlug(slug)
+    getShortBySlug(slug, locale)
       .then((item) => {
         if (mounted) setVideo(item);
       })
@@ -67,7 +67,7 @@ export default function VideoDetailsPage() {
     return () => {
       mounted = false;
     };
-  }, [slug]);
+  }, [slug, locale]);
 
   const handleCopyLink = async () => {
     try {
@@ -102,14 +102,22 @@ export default function VideoDetailsPage() {
       ].filter((d) => d.value)
     : [];
 
-  const keyTopics = video?.keyTopics?.length ? video.keyTopics : [];
-  const resourcesList = video?.resources?.length
-    ? video.resources.map((r) => {
-        if (typeof r === 'string') return { title: r, url: '' };
-        const res = r as ShortResource;
-        return { title: res.title || '', url: res.url || '' };
-      })
-    : [];
+  const keyTopics = isArabic && (video as any)?.keyTopicsAr?.length
+    ? (video as any).keyTopicsAr
+    : (video?.keyTopics?.length ? video.keyTopics : []);
+
+  const rawResources = isArabic && (video as any)?.resourcesAr?.length
+    ? (video as any).resourcesAr
+    : (video?.resources?.length ? video.resources : []);
+
+  const resourcesList = rawResources.map((r: any) => {
+    if (typeof r === 'string') return { title: r, url: '' };
+    const res = r as ShortResource;
+    const itemTitle = isArabic
+      ? (res.titleAr || res.title || '')
+      : (res.title || res.titleAr || '');
+    return { title: itemTitle, url: res.url || '' };
+  });
   const relatedVideos = video?.relatedVideos?.length ? video.relatedVideos : [];
 
   return (
