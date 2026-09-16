@@ -156,7 +156,7 @@ export default function LatestNews() {
           </Reveal>
         ))}
       </div>
-      {totalPages > 1 && (
+      {items.length > 0 && (
         <Reveal direction="up">
           <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
         </Reveal>
