@@ -9,7 +9,8 @@ import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import type { PublicShort, PublicShortDetail, ShortResource } from '@/lib/api/shorts';
-import { localizeCategory } from '@/lib/localize-category';
+import { localizeCategory, localizeMaritalStage, localizeOrganization } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { getShortBySlug } from '@/lib/api/shorts';
 
 const FALLBACK_IMAGES = [
@@ -84,15 +85,15 @@ export default function VideoDetailsPage() {
   };
 
   const isArabic = locale === 'ar';
-  const title = video ? (isArabic && video.videoTitleAr ? video.videoTitleAr : video.videoTitle) : '';
-  const description = video ? (isArabic ? (video.descriptionAr || video.description) : video.description) : '';
-  const speakerName = video ? (isArabic ? (video.speakerAr || video.speaker) : video.speaker) : '';
+  const title = video ? pickLocalized(video.videoTitle, video.videoTitleAr, isArabic) : '';
+  const description = video ? pickLocalized(video.description, (video as any).descriptionAr, isArabic) : '';
+  const speakerName = video ? pickLocalized(video.speaker, (video as any).speakerAr, isArabic) : '';
 
   const details: DetailItem[] = video
     ? [
         { label: t('category'), value: localizeCategory(video.category, isArabic) },
-        { label: t('organization'), value: video.organization },
-        { label: t('maritalStage'), value: video.maritalStage },
+        { label: t('organization'), value: (video as any).organizationAr ? pickLocalized(video.organization, (video as any).organizationAr, isArabic) : localizeOrganization(video.organization, isArabic) },
+        { label: t('maritalStage'), value: (video as any).maritalStageAr ? pickLocalized(video.maritalStage, (video as any).maritalStageAr, isArabic) : localizeMaritalStage(video.maritalStage, isArabic) },
         { label: t('languageLabel'), value: video.language === 'ar' ? t('langArabic') : video.language === 'both' ? t('langBoth') : t('langEnglish') },
         { label: t('duration'), value: video.duration },
         ...(video.showViews ? [{ label: t('views'), value: String(video.views ?? 0) }] : []),
@@ -379,9 +380,9 @@ export default function VideoDetailsPage() {
                             </div>
                           </div>
                           <div className="flex flex-col p-4 gap-3 flex-1">
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#989898]">{card.category}</span>
+                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#989898]">{localizeCategory(card.category, isArabic) || (isArabic ? 'فيديو' : 'Video')}</span>
                             <span className="text-[15px] font-bold leading-5 text-[#781E36]">
-                              {isArabic && card.videoTitleAr ? card.videoTitleAr : card.videoTitle}
+                              {pickLocalized(card.videoTitle, card.videoTitleAr, isArabic)}
                             </span>
                             <div className="flex items-center gap-3 mt-auto">
                               <div className="flex items-center gap-1">

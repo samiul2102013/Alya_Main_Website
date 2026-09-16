@@ -10,8 +10,11 @@ export interface PublicShort {
   videoTitleAr: string;
   slug: string;
   category: string;
+  categoryAr?: string;
   organization: string;
+  organizationAr?: string;
   maritalStage: string;
+  maritalStageAr?: string;
   duration: string;
   coverImage: string;
   views: number;
