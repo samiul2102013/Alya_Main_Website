@@ -102,15 +102,15 @@ export default function VideoDetailsPage() {
       ].filter((d) => d.value)
     : [];
 
-  const keyTopics = isArabic && (video as any)?.keyTopicsAr?.length
-    ? (video as any).keyTopicsAr
+  const keyTopics: string[] = isArabic && video?.keyTopicsAr?.length
+    ? video.keyTopicsAr
     : (video?.keyTopics?.length ? video.keyTopics : []);
 
-  const rawResources = isArabic && (video as any)?.resourcesAr?.length
-    ? (video as any).resourcesAr
+  const rawResources: ShortResource[] = isArabic && video?.resourcesAr?.length
+    ? video.resourcesAr
     : (video?.resources?.length ? video.resources : []);
 
-  const resourcesList = rawResources.map((r: any) => {
+  const resourcesList = rawResources.map((r: ShortResource | string) => {
     if (typeof r === 'string') return { title: r, url: '' };
     const res = r as ShortResource;
     const itemTitle = isArabic
@@ -243,7 +243,7 @@ export default function VideoDetailsPage() {
                         {t('keyTopics')}
                       </motion.span>
                       <motion.div className="flex flex-wrap gap-3" variants={containerVariants}>
-                        {keyTopics.map((topic, i) => (
+                        {keyTopics.map((topic: string, i: number) => (
                           <motion.div key={i} variants={itemVariants} className="flex items-center rounded-full border border-[#E8CFC180] bg-[#FAEDE6] px-4 py-2">
                             <span className="text-sm font-medium leading-5 text-[#781E36]">{topic}</span>
                           </motion.div>
