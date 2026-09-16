@@ -1,57 +1,75 @@
 /**
- * Client-side auto-translate fallback.
- * Backend already auto-translates _ar on read (single DB + runtime fallback).
- * This client helper is a second safety net: if an Ar field is still empty/English,
- * translate it in the browser so Arabic mode is never English.
+ * Synchronous localized-value helper for CMS/database content.
+ * Backend persists Arabic and provides `*ArIsMachine` flags; frontend must not
+ * call browser-side translation providers (MyMemory etc.).
  *
- * Uses MyMemory free API with localStorage cache. No key required.
- * Mirrors backend/content/translation.py behavior.
+ * Contract:
+ *  - Arabic locale: Arabic value if present (non-blank), otherwise English/source value.
+ *  - English locale: English value if present (non-blank), otherwise Arabic/source value.
+ *  - Never returns "[object Object]" or blank when a fallback exists.
+ *  - Trims whitespace; treats blank strings as missing.
  */
-const CACHE_PREFIX = 'alia_translate:';
 
-function isArabic(text: string): boolean {
-  if (!text) return false;
-  const arabic = [...text].filter((c) => c >= '\u0600' && c <= '\u06FF').length;
-  return arabic / Math.max(text.length, 1) > 0.3;
+function toDisplayString(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  // Prevent "[object Object]" for objects/arrays
+  if (typeof value === 'object') return '';
+  return String(value);
 }
 
-function cacheKey(text: string): string {
-  return `${CACHE_PREFIX}en:ar:${text}`;
+function isNonBlank(value: string): boolean {
+  return value.trim().length > 0;
 }
 
-export async function clientTranslate(text: string): Promise<string> {
-  if (!text || !text.trim()) return '';
-  if (isArabic(text)) return text;
-  try {
-    const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey(text)) : null;
-    if (cached) return cached;
-  } catch {}
+export function pickLocalized(
+  en: unknown,
+  ar: unknown,
+  isArabic: boolean,
+): string {
+  const enStr = toDisplayString(en).trim();
+  const arStr = toDisplayString(ar).trim();
 
-  try {
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ar`,
-    );
-    if (res.ok) {
-      const data = await res.json();
-      const t = (data?.responseData?.translatedText as string) || '';
-      if (t && !t.includes('MYMEMORY WARNING') && t.trim() !== text.trim()) {
-        try {
-          localStorage.setItem(cacheKey(text), t.trim());
-        } catch {}
-        return t.trim();
-      }
-      if (t && isArabic(t)) return t.trim();
-    }
-  } catch {}
-  return text; // fallback to original
+  const enValid = isNonBlank(enStr);
+  const arValid = isNonBlank(arStr);
+
+  if (isArabic) {
+    if (arValid) return arStr;
+    if (enValid) return enStr;
+    return arStr || enStr;
+  }
+  if (enValid) return enStr;
+  if (arValid) return arStr;
+  return enStr || arStr;
 }
 
 /**
- * Synchronous helper — returns ar if present, else en.
- * For async auto-translate, use `useAutoTranslated` hook below.
+ * Locale-aware helper that mirrors `pickLocalized` but accepts locale string.
  */
-export function pickLocalized(en: string, ar: string | undefined | null, isArabic: boolean): string {
-  if (isArabic && ar && ar.trim()) return ar;
-  if (isArabic && en && !ar) return en; // backend already translated; if still English, async hook will replace
-  return en || ar || '';
+export function localizedValue(
+  en: unknown,
+  ar: unknown,
+  locale: string,
+): string {
+  return pickLocalized(en, ar, locale === 'ar');
+}
+
+/**
+ * Safe helper for arrays of localized strings.
+ * Returns the appropriate array based on locale, with fallback.
+ */
+export function pickLocalizedArray(
+  en: unknown,
+  ar: unknown,
+  isArabic: boolean,
+): string[] {
+  const enArr = Array.isArray(en) ? en.filter((v) => typeof v === 'string' && v.trim()) : [];
+  const arArr = Array.isArray(ar) ? ar.filter((v) => typeof v === 'string' && v.trim()) : [];
+  if (isArabic) {
+    if (arArr.length > 0) return arArr;
+    return enArr;
+  }
+  if (enArr.length > 0) return enArr;
+  return arArr;
 }
