@@ -1,25 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Button from '@/components/shared/Button';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
 
-const USER_TYPE_OPTIONS = [
-  { value: 'individual', label: 'Individual' },
-  { value: 'couple', label: 'Couple' },
-  { value: 'organization', label: 'Organization' },
-];
-
 const EMIRATE_OPTIONS = [
-  { value: 'Abu Dhabi', label: 'Abu Dhabi' },
-  { value: 'Dubai', label: 'Dubai' },
-  { value: 'Sharjah', label: 'Sharjah' },
-  { value: 'Ajman', label: 'Ajman' },
-  { value: 'Umm Al Quwain', label: 'Umm Al Quwain' },
-  { value: 'Ras Al Khaimah', label: 'Ras Al Khaimah' },
-  { value: 'Fujairah', label: 'Fujairah' },
+  'Abu Dhabi',
+  'Dubai',
+  'Sharjah',
+  'Ajman',
+  'Umm Al Quwain',
+  'Ras Al Khaimah',
+  'Fujairah',
 ];
 
 interface InitiativeApplicationFormProps {
@@ -27,6 +22,8 @@ interface InitiativeApplicationFormProps {
 }
 
 export default function InitiativeApplicationForm({ initiativeId }: InitiativeApplicationFormProps) {
+  const t = useTranslations('applyForm');
+
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -43,10 +40,16 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
+  const USER_TYPE_OPTIONS = [
+    { value: 'individual', label: t('individual') },
+    { value: 'couple', label: t('couple') },
+    { value: 'organization', label: t('organization') },
+  ];
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!fullName.trim() || !phone.trim()) {
-      setError('Full name and phone are required.');
+      setError(t('validationError'));
       return;
     }
     setSubmitting(true);
@@ -75,7 +78,7 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
       }
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : t('genericError'));
     } finally {
       setSubmitting(false);
     }
@@ -85,8 +88,8 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
     return (
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <CheckCircle2 className="h-12 w-12 text-green-600" />
-        <p className="text-lg font-semibold text-[#781E36]">Application Submitted Successfully</p>
-        <p className="text-sm text-[#6B5B57]">We will review your application and get back to you soon.</p>
+        <p className="text-lg font-semibold text-[#781E36]">{t('successTitle')}</p>
+        <p className="text-sm text-[#6B5B57]">{t('successMessage')}</p>
       </div>
     );
   }
@@ -102,24 +105,24 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Full Name <span className="text-red-500">*</span></label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('fullName')} <span className="text-red-500">*</span></label>
           <input
             type="text"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Enter full name"
+            placeholder={t('fullNamePlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Phone <span className="text-red-500">*</span></label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('phone')} <span className="text-red-500">*</span></label>
           <input
             type="tel"
             required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+971 50 000 0000"
+            placeholder={t('phonePlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
@@ -127,23 +130,23 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Email</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('email')}</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@example.com"
+            placeholder={t('emailPlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">User Type</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('userType')}</label>
           <select
             value={userType}
             onChange={(e) => setUserType(e.target.value)}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           >
-            <option value="">Select type</option>
+            <option value="">{t('selectType')}</option>
             {USER_TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -153,24 +156,24 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Marital Status</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('maritalStatus')}</label>
           <input
             type="text"
             value={maritalStatus}
             onChange={(e) => setMaritalStatus(e.target.value)}
-            placeholder="e.g. Single, Married"
+            placeholder={t('maritalStatusPlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Age</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('age')}</label>
           <input
             type="number"
             min={0}
             max={120}
             value={age}
             onChange={(e) => setAge(e.target.value)}
-            placeholder="Enter age"
+            placeholder={t('agePlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
@@ -178,25 +181,25 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Emirate</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('emirate')}</label>
           <select
             value={emirate}
             onChange={(e) => setEmirate(e.target.value)}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           >
-            <option value="">Select emirate</option>
-            {EMIRATE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option value="">{t('selectEmirate')}</option>
+            {EMIRATE_OPTIONS.map((em) => (
+              <option key={em} value={em}>{em}</option>
             ))}
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Income</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('income')}</label>
           <input
             type="text"
             value={income}
             onChange={(e) => setIncome(e.target.value)}
-            placeholder="e.g. Monthly income range"
+            placeholder={t('incomePlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
@@ -204,35 +207,35 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Family Members</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('familyMembers')}</label>
           <input
             type="number"
             min={0}
             value={familyMembers}
             onChange={(e) => setFamilyMembers(e.target.value)}
-            placeholder="Number of family members"
+            placeholder={t('familyMembersPlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-[#781E36]">Nationality</label>
+          <label className="text-sm font-semibold text-[#781E36]">{t('nationality')}</label>
           <input
             type="text"
             value={nationality}
             onChange={(e) => setNationality(e.target.value)}
-            placeholder="Enter nationality"
+            placeholder={t('nationalityPlaceholder')}
             className="h-[48px] rounded-[10px] border border-[#E8CFC1] bg-white px-3 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-[#781E36]">Notes</label>
+        <label className="text-sm font-semibold text-[#781E36]">{t('notes')}</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
-          placeholder="Any additional information..."
+          placeholder={t('notesPlaceholder')}
           className="rounded-[10px] border border-[#E8CFC1] bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#781E36] transition-colors resize-none"
         />
       </div>
@@ -242,10 +245,10 @@ export default function InitiativeApplicationForm({ initiativeId }: InitiativeAp
           {submitting ? (
             <span className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Submitting...
+              {t('submitting')}
             </span>
           ) : (
-            'Submit Application'
+            t('submit')
           )}
         </Button>
       </div>
