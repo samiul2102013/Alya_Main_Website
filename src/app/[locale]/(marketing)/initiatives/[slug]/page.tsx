@@ -16,7 +16,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
-import { localizeCategory } from '@/lib/localize-category';
+import { localizeCategory, localizeEmirate, localizeBasicInfo, localizeBenefit, localizeObjective, localizeContact } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import Reveal from '@/components/shared/Reveal';
 import Button from '@/components/shared/Button';
@@ -86,23 +86,28 @@ export default function InitiativeDetailsPage() {
         .filter(Boolean)
     : [];
 
-  const basicInfo = initiative?.basicInformation?.length ? initiative.basicInformation : [];
+  const basicInfo = (() => {
+    const list = initiative?.basicInformation?.length ? initiative.basicInformation : [];
+    return isArabic ? list.map((v) => localizeBasicInfo(v, true)) : list;
+  })();
   const objectives = (() => {
     if (!initiative) return [];
     const ar = (initiative as any).objectivesAr as string[] | undefined;
     if (isArabic && ar?.length) return ar;
-    if (initiative.objectives?.length) return initiative.objectives;
-    if (isArabic && initiative.objectives?.length) return initiative.objectives;
-    return [];
+    const list = (initiative.objectives ?? []) as string[];
+    return isArabic ? list.map((v) => localizeObjective(v, true)) : list;
   })();
-  const benefits = (() => {
+  const benefits: string[] = (() => {
     if (!initiative) return [];
     const ar = (initiative as any).benefitsAr as string[] | undefined;
     if (isArabic && ar?.length) return ar;
-    if (initiative.benefits?.length) return initiative.benefits;
-    return [];
+    const list = (initiative.benefits ?? []) as string[];
+    return isArabic ? list.map((v) => localizeBenefit(v, true)) : list;
   })();
-  const contacts = initiative?.contact?.length ? initiative.contact : [];
+  const contacts = (() => {
+    const list = initiative?.contact?.length ? initiative.contact : [];
+    return isArabic ? list.map((v) => localizeContact(String(v), true)) : list;
+  })();
 
   return (
     <div className="bg-[#FAEDE6] min-h-screen">
@@ -176,7 +181,7 @@ export default function InitiativeDetailsPage() {
                     {initiative.emirates && (
                       <span className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-[#E8CFC1]" />
-                        {initiative.emirates}
+                        {localizeEmirate(initiative.emirates, isArabic)}
                       </span>
                     )}
                   </div>
@@ -281,7 +286,7 @@ export default function InitiativeDetailsPage() {
                     <h2 className="text-2xl font-bold text-[#781E36]">{t('benefits')}</h2>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {benefits.map((benefit, i) => (
+                    {benefits.map((benefit: string, i: number) => (
                       <div key={i} className="flex gap-[10px] rounded-[16px] border border-[#E8CFC1] bg-white p-[10px]">
                         <CheckCircle2 className="h-5 w-5 shrink-0 text-[#781E36] mt-1" />
                         <span className="text-base font-semibold text-[#781E36] leading-[30px]">{benefit}</span>

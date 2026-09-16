@@ -93,6 +93,37 @@ const RESOURCE_AR: Record<string, string> = {
   'related initiative': 'مبادرة ذات صلة',
 };
 
+const BENEFIT_AR: Record<string, string> = {
+  'financial support': 'الدعم المالي',
+  'housing support': 'الدعم السكني',
+  'educational support': 'الدعم التعليمي',
+  'marriage training program': 'برنامج التدريب على الزواج',
+  'pre-marital preparation': 'التحضير قبل الزواج',
+  'pre_marital_preparation': 'التحضير قبل الزواج',
+  'family mediation program': 'برنامج الوساطة الأسرية',
+  'receive financial support to help reduce marriage-related expenses.': 'الحصول على دعم مالي للمساعدة في تقليل نفقات الزواج.',
+  'professional consulting and strengthening relationships and resolving challenges.': 'استشارة مهنية وتقوية العلاقات وحل التحديات.',
+  'access dedicated funding programs for eligible couples.': 'الوصول إلى برامج تمويل مخصصة للأزواج المؤهلين.',
+  'access expert advice on building healthy and successful families.': 'الوصول إلى مشورة الخبراء حول بناء أسر صحية وناجحة.',
+  'join educational courses that focus on marriage, family, and personal development.': 'الانضمام إلى دورات تعليمية تركز على الزواج والأسرة والتنمية الشخصية.',
+  'connect with community initiatives and promote family well-being.': 'التواصل مع المبادرات المجتمعية وتعزيز رفاهية الأسرة.',
+};
+
+const OBJECTIVE_AR: Record<string, string> = {
+  'provide financial support for eligible couples.': 'توفير الدعم المالي للأزواج المؤهلين.',
+  'offer pre-marital counseling and educational workshops.': 'تقديم إرشاد ما قبل الزواج وورش عمل تعليمية.',
+  'promote family stability and long-term social well-being.': 'تعزيز الاستقرار الأسري والرفاه الاجتماعي طويل المدى.',
+  'encourage healthy marriages across the uae community.': 'تشجيع الزواج الصحي في جميع أنحاء المجتمع الإماراتي.',
+};
+
+const CONTACT_LABEL_AR: Record<string, string> = {
+  'organization name': 'اسم المؤسسة',
+  'phone number': 'رقم الهاتف',
+  'email address': 'البريد الإلكتروني',
+  'office address': 'العنوان',
+  'working hours': 'ساعات العمل',
+};
+
 function safeString(value: unknown): string {
   if (value == null) return '';
   if (typeof value === 'string') return value.trim();
@@ -159,6 +190,66 @@ export function localizeResource(value: unknown, isArabic: boolean): string {
   if (!isArabic) return raw;
   const key = raw.toLowerCase().trim();
   return RESOURCE_AR[key] ?? raw;
+}
+
+export function localizeBenefit(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  return BENEFIT_AR[key] ?? raw;
+}
+
+export function localizeObjective(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  return OBJECTIVE_AR[key] ?? raw;
+}
+
+export function localizeContact(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  // Handle "Label: Value" format
+  if (raw.includes(':')) {
+    const [label, ...rest] = raw.split(':');
+    const val = rest.join(':').trim();
+    const labelKey = label.toLowerCase().trim();
+    const localizedLabel = CONTACT_LABEL_AR[labelKey] ?? label;
+    // Try to localize value part if it's an organization/emirate
+    const localizedVal = ORGANIZATION_AR[val.toLowerCase()] ?? EMIRATE_AR[val.toLowerCase()] ?? val;
+    return `${localizedLabel}: ${localizedVal}`;
+  }
+  const key = raw.toLowerCase().trim();
+  return ORGANIZATION_AR[key] ?? EMIRATE_AR[key] ?? raw;
+}
+
+export function localizeBasicInfo(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  // Basic info often "Label: Value"
+  if (raw.includes(':')) {
+    const [label, ...rest] = raw.split(':');
+    const val = rest.join(':').trim();
+    const labelKey = label.toLowerCase().trim();
+    // Try to map label
+    const labelMap: Record<string, string> = {
+      organizer: 'المنظم',
+      category: 'الفئة',
+      'program type': 'نوع البرنامج',
+      eligibility: 'الأهلية',
+      'support type': 'نوع الدعم',
+    };
+    const localizedLabel = labelMap[labelKey] ?? CONTACT_LABEL_AR[labelKey] ?? label;
+    const key = val.toLowerCase().trim();
+    const localizedVal = CATEGORY_AR[key] ?? ORGANIZATION_AR[key] ?? EMIRATE_AR[key] ?? val;
+    return `${localizedLabel}: ${localizedVal}`;
+  }
+  const key = raw.toLowerCase().trim();
+  return CATEGORY_AR[key] ?? ORGANIZATION_AR[key] ?? EMIRATE_AR[key] ?? raw;
 }
 
 /**
