@@ -230,8 +230,32 @@ function BookingPageInner() {
     };
   }, [slugParam]);
 
-  const countries = t.raw('countries') as string[];
-  const languages = t.raw('languages') as string[];
+  let countries: string[] = [];
+  let languages: string[] = [];
+  let summaryLabels: { label: string; value: string }[] = [];
+  try {
+    const c = t.raw('countries');
+    countries = Array.isArray(c) ? (c as string[]) : [];
+  } catch { countries = []; }
+  try {
+    const l = t.raw('languages');
+    languages = Array.isArray(l) ? (l as string[]) : [];
+  } catch { languages = []; }
+  try {
+    const s = t.raw('summary');
+    summaryLabels = Array.isArray(s) ? (s as { label: string; value: string }[]) : [];
+  } catch { summaryLabels = []; }
+  // Fallbacks if translation missing (prevents hard crash on MISSING_MESSAGE)
+  if (!countries.length) countries = ["United Arab Emirates", "Saudi Arabia", "Qatar", "Kuwait", "Bahrain", "Oman"];
+  if (!languages.length) languages = ["Arabic", "English"];
+  if (!summaryLabels.length) summaryLabels = [
+    { label: "Counselor", value: "" },
+    { label: "Session Title", value: "" },
+    { label: "Duration", value: "" },
+    { label: "Language", value: "" },
+    { label: "Date", value: "" },
+    { label: "Location", value: "" },
+  ];
 
   if (loading) {
     return (
@@ -270,8 +294,6 @@ function BookingPageInner() {
   const processingFee = Number(session.processingFee) || 0;
   const discount = Number(session.discount) || 0;
   const total = session.isFree ? 0 : Math.max(fee + processingFee - discount, 0);
-
-  const summaryLabels = t.raw('summary') as { label: string; value: string }[];
 
   const summary: SummaryItem[] = [
     { label: summaryLabels[0]?.label ?? '', value: session.counselor || '—' },
