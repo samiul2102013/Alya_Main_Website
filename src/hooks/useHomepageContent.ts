@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { pickLocalized } from '@/lib/auto-translate';
 import {
   DEFAULT_SECTION_VISIBILITY,
   getHomepageContent,
@@ -14,8 +15,9 @@ import {
 export interface HomepageData {
   content: HomepageContent | null;
   loading: boolean;
+  notFound: boolean;
   /** Locale-aware helper: returns Arabic value if locale is 'ar' and Arabic value exists, else English */
-  localize: (en: string, ar: string) => string;
+  localize: (en: unknown, ar: unknown) => string;
   /** Get stats array, returns empty array if no content */
   stats: StatItem[];
   /** Get floating cards, returns empty array if no content */
@@ -35,20 +37,27 @@ export function useHomepageContent(): HomepageData {
 
   const [content, setContent] = useState<HomepageContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    getHomepageContent()
-      .then((c) => { if (mounted) setContent(c); })
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
+    fetch(`${API_URL}/homepage`, { cache: 'no-store' })
+      .then((res) => {
+        if (res.status === 404) {
+          if (mounted) setNotFound(true);
+          return null;
+        }
+        if (!res.ok) return null;
+        return res.json() as Promise<HomepageContent>;
+      })
+      .then((c) => { if (mounted && c) setContent(c); })
       .catch(() => {})
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
 
-  const localize = (en: string, ar: string): string => {
-    if (isArabic && ar) return ar;
-    return en || '';
-  };
+  const localize = (en: unknown, ar: unknown): string => pickLocalized(en, ar, isArabic);
 
   const sectionVisibility = useMemo<SectionVisibility>(
     () => resolveSectionVisibility(content?.sectionVisibility ?? null),
@@ -58,6 +67,7 @@ export function useHomepageContent(): HomepageData {
   return {
     content,
     loading,
+    notFound,
     localize,
     stats: content?.stats ?? [],
     floatingCards: content?.heroFloatingCards ?? [],

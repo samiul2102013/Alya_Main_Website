@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { pickLocalized } from '@/lib/auto-translate';
 import { getFooterContent, type FooterContent } from '@/lib/api/footer';
 
 export function useFooterContent(initialContent?: FooterContent | null): {
@@ -24,10 +25,7 @@ export function useFooterContent(initialContent?: FooterContent | null): {
     return () => { mounted = false; };
   }, [initialContent]);
 
-  const localize = (en: string, ar: string): string => {
-    if (isArabic && ar) return ar;
-    return en || '';
-  };
+  const localize = (en: unknown, ar: unknown): string => pickLocalized(en, ar, isArabic);
 
   return { content, localize };
 }

@@ -11,6 +11,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { getPublishedConsultationsPage, type PublicConsultation } from '@/lib/api/consultations';
 import { localizeCategory, localizeTitle } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { CONSULTATION_HERO_IMAGE, CONSULTATION_IMAGES } from '@/lib/image-pools';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -266,20 +267,21 @@ function ConsultationPageInner() {
   const topics: Topic[] =
     (presentation.presentation?.consultationTopics?.length
       ? presentation.presentation.consultationTopics.map((topic) => ({
-          title: (isArabic && topic.titleAr ? topic.titleAr : topic.title) || topic.title,
+          title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
           videos: topic.videos ?? '',
         }))
       : i18nTopics) || [];
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && (p as any)?.consultationContributorsAr?.length) return (p as any).consultationContributorsAr;
-    return (p?.consultationContributors?.length ? p.consultationContributors : []) || [];
+    if (p?.consultationContributors?.length) return p.consultationContributors;
+    return [];
   })();
   const faqs: Faq[] =
     (presentation.presentation?.consultationFaqs?.length
       ? presentation.presentation.consultationFaqs.map((faq) => ({
-          question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
-          answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+          question: pickLocalized(faq.question, faq.questionAr, isArabic) || faq.question,
+          answer: pickLocalized(faq.answer, faq.answerAr, isArabic) || faq.answer,
         }))
       : i18nFaqs) || [];
 
@@ -290,6 +292,15 @@ function ConsultationPageInner() {
   const showContributors = secVis.contributors !== false;
   const showFaqs = secVis.faqs !== false;
   const showCta = secVis.cta !== false;
+
+  if ((presentation as any).notFound) {
+    return (
+      <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-base font-normal text-[#6B5B57]">{isArabic ? 'المحتوى غير متوفر.' : 'This content is not available.'}</p>
+        <Link href="/" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">{tNav('home')}</Link>
+      </div>
+    );
+  }
 
   const topicIcons = [BookOpen, Users, HelpCircle, BadgeCheck];
   const contributorIcons = [BadgeCheck, User, Building2, Globe];

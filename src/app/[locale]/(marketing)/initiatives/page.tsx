@@ -15,6 +15,7 @@ import {
 } from '@/lib/api/initiatives';
 import { EMIRATES_OPTIONS } from '@/lib/constants';
 import { localizeCategory } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const PER_PAGE = 9;
@@ -158,12 +159,10 @@ export default function InitiativesPage() {
   }, []);
 
   function getTitle(item: PublicInitiative): string {
-    if (isArabic && item.titleAr) return item.titleAr;
-    return item.title;
+    return pickLocalized(item.title, item.titleAr, isArabic) || item.title;
   }
   function getSubtitle(item: PublicInitiative): string {
-    if (isArabic && item.subtitleAr) return item.subtitleAr;
-    return item.subtitle ?? '';
+    return pickLocalized(item.subtitle, item.subtitleAr, isArabic) || item.subtitle || '';
   }
 
   // Hybrid content resolution: CMS wins, i18n is the fallback.
@@ -175,20 +174,21 @@ export default function InitiativesPage() {
   const topics: Topic[] =
     (presentation.presentation?.initiativesTopics?.length
       ? presentation.presentation.initiativesTopics.map((topic) => ({
-          title: isArabic && (topic as any).titleAr ? (topic as any).titleAr : topic.title,
+          title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
           videos: topic.videos ?? '',
         }))
       : i18nTopics) || [];
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && (p as any)?.initiativesContributorsAr?.length) return (p as any).initiativesContributorsAr;
-    return (p?.initiativesContributors?.length ? p.initiativesContributors : []) || [];
+    if (p?.initiativesContributors?.length) return p.initiativesContributors;
+    return [];
   })();
   const faqs: Faq[] =
     (presentation.presentation?.initiativesFaqs?.length
       ? presentation.presentation.initiativesFaqs.map((faq) => ({
-          question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
-          answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+          question: pickLocalized(faq.question, faq.questionAr, isArabic) || faq.question,
+          answer: pickLocalized(faq.answer, faq.answerAr, isArabic) || faq.answer,
         }))
       : i18nFaqs) || [];
 
@@ -199,6 +199,15 @@ export default function InitiativesPage() {
   const showContributors = secVis.contributors !== false;
   const showFaqs = secVis.faqs !== false;
   const showCta = secVis.cta !== false;
+
+  if ((presentation as any).notFound) {
+    return (
+      <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-base font-normal text-[#6B5B57]">{isArabic ? 'المحتوى غير متوفر.' : 'This content is not available.'}</p>
+        <Link href="/" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">{nav('home')}</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#FAEDE6] min-h-screen">

@@ -11,6 +11,7 @@ import Pagination from '@/components/shared/Pagination';
 import { SHORT_IMAGES, SHORTS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedShortsPage, type PublicShort } from '@/lib/api/shorts';
 import { localizeCategory } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const containerVariants = {
@@ -137,7 +138,7 @@ export default function ShortsPage() {
   const topics: Topic[] =
     (presentation.presentation?.topics?.length &&
       presentation.presentation.topics.map((topic) => ({
-        title: isArabic && (topic as any).titleAr ? (topic as any).titleAr : topic.title,
+        title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
         videos: topic.videos ?? '',
       }))) ||
     i18nTopics;
@@ -150,17 +151,17 @@ export default function ShortsPage() {
   const faqs: Faq[] =
     (presentation.presentation?.faqs?.length &&
       presentation.presentation.faqs.map((faq) => ({
-        question: isArabic && faq.questionAr ? faq.questionAr : faq.question,
-        answer: isArabic && faq.answerAr ? faq.answerAr : faq.answer,
+        question: pickLocalized(faq.question, faq.questionAr, isArabic) || faq.question,
+        answer: pickLocalized(faq.answer, faq.answerAr, isArabic) || faq.answer,
       }))) ||
     i18nFaqs;
 
   // CTA banner text: CMS wins, i18n is the fallback (same pattern as topics/faqs).
   const ctaContent = {
-    title: (isArabic ? presentation.presentation?.shortsCta?.titleAr : presentation.presentation?.shortsCta?.title) || t('ctaTitle'),
-    text: (isArabic ? presentation.presentation?.shortsCta?.textAr : presentation.presentation?.shortsCta?.text) || t('ctaText'),
-    browseLabel: (isArabic ? presentation.presentation?.shortsCta?.browseLabelAr : presentation.presentation?.shortsCta?.browseLabel) || t('ctaBrowse'),
-    exploreLabel: (isArabic ? presentation.presentation?.shortsCta?.exploreLabelAr : presentation.presentation?.shortsCta?.exploreLabel) || t('ctaExplore'),
+    title: pickLocalized(presentation.presentation?.shortsCta?.title, presentation.presentation?.shortsCta?.titleAr, isArabic) || t('ctaTitle'),
+    text: pickLocalized(presentation.presentation?.shortsCta?.text, presentation.presentation?.shortsCta?.textAr, isArabic) || t('ctaText'),
+    browseLabel: pickLocalized(presentation.presentation?.shortsCta?.browseLabel, presentation.presentation?.shortsCta?.browseLabelAr, isArabic) || t('ctaBrowse'),
+    exploreLabel: pickLocalized(presentation.presentation?.shortsCta?.exploreLabel, presentation.presentation?.shortsCta?.exploreLabelAr, isArabic) || t('ctaExplore'),
   };
 
   // Section visibility — default all to true if not set
@@ -170,6 +171,15 @@ export default function ShortsPage() {
   const showContributors = secVis.contributors !== false;
   const showFaqs         = secVis.faqs         !== false;
   const showCta          = secVis.cta          !== false;
+
+  if (presentation.notFound) {
+    return (
+      <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-base font-normal text-[#6B5B57]">{isArabic ? 'المحتوى غير متوفر.' : 'This content is not available.'}</p>
+        <Link href="/" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">{tNav('home')}</Link>
+      </div>
+    );
+  }
 
   const filters = [
     { name: 'marital', label: t('marital'), isDropdown: true, options: maritalOptions },

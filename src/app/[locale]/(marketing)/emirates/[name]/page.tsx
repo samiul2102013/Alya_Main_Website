@@ -8,6 +8,7 @@ import { ArrowRight } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
+import { pickLocalized } from '@/lib/auto-translate';
 import {
   getEmirateBySlug,
   type PublicEmirateDetail,
@@ -81,6 +82,7 @@ export default function EmirateDetailPage() {
   const fallbackEntry = emiratesData[name] || emiratesData[Object.keys(emiratesData)[0]];
 
   const [emirate, setEmirate] = useState<PublicEmirateDetail | null>(null);
+  const [notFoundState, setNotFoundState] = useState(false);
   const [initiatives, setInitiatives] = useState<DisplayInitiative[]>(() =>
     (t.raw('initiatives') as { title: string; description: string }[]).map((card, i) => ({
       slug: '',
@@ -94,33 +96,47 @@ export default function EmirateDetailPage() {
 
   useEffect(() => {
     let cancelled = false;
+    setNotFoundState(false);
     getEmirateBySlug(name)
       .then((detail) => {
-        if (cancelled || !detail) return;
+        if (cancelled) return;
+        if (!detail) {
+          setNotFoundState(true);
+          return;
+        }
         setEmirate(detail);
         setInitiatives(
           detail.initiatives.map((init: PublicEmirateInitiative, i: number) => ({
             slug: init.slug,
-            title: isArabic && (init as any).titleAr ? (init as any).titleAr : init.title,
-            description: isArabic && ((init as any).subtitleAr || (init as any).descriptionAr) ? ((init as any).subtitleAr || (init as any).descriptionAr) : (init.description || init.subtitle || init.title),
+            title: pickLocalized(init.title, (init as any).titleAr, isArabic) || init.title,
+            description: pickLocalized((init as any).subtitle || (init as any).description, (init as any).subtitleAr || (init as any).descriptionAr, isArabic) || init.description || init.subtitle || init.title,
             image: init.coverImage || fallbackInitiativeImages[i % fallbackInitiativeImages.length],
             officialWebsiteUrl: init.officialWebsiteUrl || '',
             shareUrl: init.shareUrl || '',
           })),
         );
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setNotFoundState(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [name]);
+  }, [name, isArabic]);
 
-  const displayName = isArabic && emirate?.emiratesNameAr
-    ? emirate.emiratesNameAr
-    : emirate?.title || emirate?.emiratesName || fallbackEntry.title.split('—')[0].trim();
+  const displayName = pickLocalized(emirate?.emiratesName, emirate?.emiratesNameAr, isArabic) || pickLocalized(emirate?.title, (emirate as any)?.titleAr, isArabic) || fallbackEntry.title.split('—')[0].trim();
   const emirateImage = emirate?.image || emirateImages[name] || emirateImages['abu-dhabi'];
-  const emirateSubtitle = isArabic && (emirate as any)?.descriptionAr ? (emirate as any).descriptionAr : (emirate?.description || fallbackEntry.subtitle);
+  const emirateSubtitle = pickLocalized((emirate as any)?.description, (emirate as any)?.descriptionAr, isArabic) || emirate?.description || fallbackEntry.subtitle;
   const orgs = t.raw('orgs') as Org[];
+
+  if (notFoundState) {
+    return (
+      <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-base font-normal text-[#6B5B57]">{isArabic ? 'المحتوى غير متوفر.' : 'This content is not available.'}</p>
+        <Link href="/emirates" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">{tNav('emirates')}</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#FAEDE6]">

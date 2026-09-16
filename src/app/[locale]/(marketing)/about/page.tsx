@@ -33,7 +33,16 @@ export default function AboutPage() {
 	const tNav = useTranslations('nav');
 	const locale = useLocale();
 	const isArabic = locale === 'ar';
-	const { content, localize, localizeOffering, localizeImpact } = useAboutContent();
+	const { content, notFound, localize, localizeOffering, localizeImpact } = useAboutContent();
+
+	if (notFound) {
+		return (
+			<div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+				<p className="text-base font-normal text-[#6B5B57]">{isArabic ? 'المحتوى غير متوفر.' : 'This content is not available.'}</p>
+				<Link href="/" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">{tNav('home')}</Link>
+			</div>
+		);
+	}
 
 	const fallbackObjectives = t.raw('objectives') as string[];
 	const fallbackOfferings = t.raw('offerings') as { title: string; desc: string }[];

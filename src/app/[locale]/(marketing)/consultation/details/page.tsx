@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { localizeCategory, localizeTitle } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { motion } from 'framer-motion';
 import {
   Calendar,
@@ -143,10 +144,10 @@ function ConsultationDetailsInner() {
 
   const counselorPhoto = session.counselorPhoto || FALLBACK_COUNSELOR;
 
-  const sessionTitle = session ? localizeTitle(session.sessionTitle, session.sessionTitleAr, isArabic) : '';
-  const counselorName = session ? localizeTitle(session.counselor, (session as any).counselorAr, isArabic) : '';
-  const counselorTitle = session ? localizeTitle(session.counselorTitle, (session as any).counselorTitleAr, isArabic) : '';
-  const counselorBio = session ? localizeTitle(session.counselorBio || '', (session as any).counselorBioAr, isArabic) : '';
+  const sessionTitle = session ? pickLocalized(session.sessionTitle, session.sessionTitleAr, isArabic) : '';
+  const counselorName = session ? pickLocalized(session.counselor, (session as any).counselorAr, isArabic) : '';
+  const counselorTitle = session ? pickLocalized(session.counselorTitle, (session as any).counselorTitleAr, isArabic) : '';
+  const counselorBio = session ? pickLocalized(session.counselorBio, (session as any).counselorBioAr, isArabic) : '';
   const formatValue = (format: string) =>
     format === 'onsite' ? t('formatOnsite') : t('formatOnline');
   const languageValue = (language: string) =>
@@ -188,7 +189,7 @@ function ConsultationDetailsInner() {
     { label: t('schedTimeZone'), value: session.timeZone || '—' },
   ];
 
-  const rawDescription = isArabic ? ((session as any).descriptionAr || session.description) : session.description;
+  const rawDescription = pickLocalized(session.description, (session as any).descriptionAr, isArabic);
   const descriptionParagraphs = rawDescription
     ? rawDescription.split(/\n\n+/).filter(Boolean)
     : [];

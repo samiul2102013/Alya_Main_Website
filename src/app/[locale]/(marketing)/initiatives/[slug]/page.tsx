@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import { localizeCategory } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import Reveal from '@/components/shared/Reveal';
 import Button from '@/components/shared/Button';
 import InitiativeApplicationForm from '@/components/InitiativeApplicationForm';
@@ -71,15 +72,11 @@ export default function InitiativeDetailsPage() {
   }, [slug]);
 
   const isArabic = locale === 'ar';
-  const title = initiative
-    ? isArabic && initiative.titleAr
-      ? initiative.titleAr
-      : initiative.title
-    : '';
-  const subtitle = initiative ? (isArabic ? (initiative.subtitleAr || initiative.subtitle) : initiative.subtitle) : '';
-  const description = initiative ? (isArabic ? (initiative.descriptionAr || initiative.description) : initiative.description) : '';
-  const purpose = initiative ? (isArabic ? (initiative.purposeAr || initiative.purpose) : initiative.purpose) : '';
-  const badge = initiative ? (isArabic ? (initiative.badgeAr || initiative.badge) : initiative.badge) : '';
+  const title = initiative ? pickLocalized(initiative.title, initiative.titleAr, isArabic) : '';
+  const subtitle = initiative ? pickLocalized(initiative.subtitle, (initiative as any).subtitleAr, isArabic) : '';
+  const description = initiative ? pickLocalized(initiative.description, (initiative as any).descriptionAr, isArabic) : '';
+  const purpose = initiative ? pickLocalized(initiative.purpose, (initiative as any).purposeAr, isArabic) : '';
+  const badge = initiative ? pickLocalized(initiative.badge, (initiative as any).badgeAr, isArabic) : '';
 
   const supports = t.raw('supports') as string[];
   const supportList = initiative
@@ -90,8 +87,21 @@ export default function InitiativeDetailsPage() {
     : [];
 
   const basicInfo = initiative?.basicInformation?.length ? initiative.basicInformation : [];
-  const objectives = initiative ? (isArabic ? (initiative.objectivesAr?.length ? initiative.objectivesAr : initiative.objectives) : initiative.objectives) : [];
-  const benefits = initiative ? (isArabic ? (initiative.benefitsAr?.length ? initiative.benefitsAr : initiative.benefits) : initiative.benefits) : [];
+  const objectives = (() => {
+    if (!initiative) return [];
+    const ar = (initiative as any).objectivesAr as string[] | undefined;
+    if (isArabic && ar?.length) return ar;
+    if (initiative.objectives?.length) return initiative.objectives;
+    if (isArabic && initiative.objectives?.length) return initiative.objectives;
+    return [];
+  })();
+  const benefits = (() => {
+    if (!initiative) return [];
+    const ar = (initiative as any).benefitsAr as string[] | undefined;
+    if (isArabic && ar?.length) return ar;
+    if (initiative.benefits?.length) return initiative.benefits;
+    return [];
+  })();
   const contacts = initiative?.contact?.length ? initiative.contact : [];
 
   return (

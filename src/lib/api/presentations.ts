@@ -23,17 +23,13 @@ export interface ShortsCta {
 }
 
 export interface ShortsSectionVisibility {
-  hero?: boolean;
   topics?: boolean;
   contributors?: boolean;
   faqs?: boolean;
   cta?: boolean;
-  categories?: boolean;
-  orgs?: boolean;
 }
 
 export interface InitiativesSectionVisibility {
-  hero?: boolean;
   topics?: boolean;
   contributors?: boolean;
   faqs?: boolean;
@@ -41,7 +37,6 @@ export interface InitiativesSectionVisibility {
 }
 
 export interface ConsultationSectionVisibility {
-  hero?: boolean;
   topics?: boolean;
   contributors?: boolean;
   faqs?: boolean;
@@ -49,7 +44,6 @@ export interface ConsultationSectionVisibility {
 }
 
 export interface EmiratesSectionVisibility {
-  hero?: boolean;
   topics?: boolean;
   contributors?: boolean;
   faqs?: boolean;
@@ -57,7 +51,6 @@ export interface EmiratesSectionVisibility {
 }
 
 export interface NewsSectionVisibility {
-  hero?: boolean;
   topics?: boolean;
   contributors?: boolean;
   faqs?: boolean;

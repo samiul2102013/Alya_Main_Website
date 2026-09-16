@@ -56,19 +56,37 @@ export default function Navbar() {
   const [hiddenPages, setHiddenPages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    getPresentations().then((list) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
+    Promise.allSettled([
+      getPresentations(),
+      fetch(`${API_URL}/about`, { cache: 'no-store' }).then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API_URL}/contact`, { cache: 'no-store' }).then((r) => r.ok ? r.json() : null).catch(() => null),
+    ]).then((results) => {
+      const list = results[0].status === 'fulfilled' ? (results[0].value as any) : [];
+      const aboutData = results[1].status === 'fulfilled' ? results[1].value : null;
+      const contactData = results[2].status === 'fulfilled' ? results[2].value : null;
+      const presentKeys = new Set((list as any[]).map((p: any) => p.key));
+      const publishedMap = new Map((list as any[]).map((p: any) => [p.key, p.published !== false]));
+      const allPresentationKeys = ['shorts', 'news', 'initiatives', 'consultation', 'emirates'];
       const hidden = new Set<string>();
-      list.forEach((p) => {
-        if (p.published === false) hidden.add(p.key);
+      allPresentationKeys.forEach((key) => {
+        // Backend excludes unpublished from public lists, so missing key means unpublished
+        if (!presentKeys.has(key)) hidden.add(key);
+        else if (publishedMap.get(key) === false) hidden.add(key);
       });
+      // About / Contact are hidden when API returns 404 (null) or published === false
+      if (!aboutData) hidden.add('about');
+      else if ((aboutData as any).published === false) hidden.add('about');
+      if (!contactData) hidden.add('contact');
+      else if ((contactData as any).published === false) hidden.add('contact');
       setHiddenPages(hidden);
     }).catch(() => {/* silently ignore */});
   }, []);
 
   const allNavLinks = [
     { label: t('home'),         href: '/',            key: null },
-    { label: t('about'),        href: '/about',        key: null },
-    { label: t('contact'),      href: '/contact',      key: null },
+    { label: t('about'),        href: '/about',        key: 'about' },
+    { label: t('contact'),      href: '/contact',      key: 'contact' },
     { label: t('shorts'),       href: '/shorts',       key: 'shorts' },
     { label: t('news'),         href: '/news',         key: 'news' },
     { label: t('initiatives'),  href: '/initiatives',  key: 'initiatives' },

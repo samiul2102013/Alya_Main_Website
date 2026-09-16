@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { pickLocalized } from '@/lib/auto-translate';
 import { getPresentation, type PagePresentation } from '@/lib/api/presentations';
 
 export interface PresentationFallback {
@@ -16,6 +17,7 @@ export interface PagePresentationData {
   heroImage: string;
   badge: string | null;
   loading: boolean;
+  notFound: boolean;
   presentation: PagePresentation | null;
 }
 
@@ -37,6 +39,7 @@ export function usePagePresentation(
     heroImage: fallback.heroImage,
     badge: fallback.badge ?? null,
     loading: true,
+    notFound: false,
     presentation: null,
   });
 
@@ -47,19 +50,28 @@ export function usePagePresentation(
 
   useEffect(() => {
     let mounted = true;
-    getPresentation(key)
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
+    fetch(`${API_URL}/presentations/${encodeURIComponent(key)}`, { cache: 'no-store' })
+      .then((res) => {
+        if (res.status === 404) {
+          if (mounted) setData((s) => ({ ...s, loading: false, notFound: true }));
+          return null;
+        }
+        if (!res.ok) {
+          if (mounted) setData((s) => ({ ...s, loading: false }));
+          return null;
+        }
+        return res.json() as Promise<PagePresentation>;
+      })
       .then((p) => {
         if (!mounted || !p) return;
         setData({
-          title: (isArabic && p.titleAr ? p.titleAr : p.title) || fallbackTitle,
-          description: (isArabic && p.descriptionAr
-            ? p.descriptionAr
-            : p.description) || fallbackDescription,
+          title: pickLocalized(p.title, p.titleAr, isArabic) || fallbackTitle,
+          description: pickLocalized(p.description, p.descriptionAr, isArabic) || fallbackDescription,
           heroImage: p.heroImage || fallbackHero,
           badge: p.badge || fallbackBadge || null,
-          loading: false
-          
-          ,
+          loading: false,
+          notFound: false,
           presentation: p,
         });
       })
