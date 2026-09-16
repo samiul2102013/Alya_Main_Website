@@ -44,15 +44,53 @@ const ORGANIZATION_AR: Record<string, string> = {
   'marage health': 'مرج الصحية',
   'marage support': 'دعم مرج',
   'marage': 'مرج',
+  'marage editorial team': 'فريق تحرير مرج',
   'ministry of community development': 'وزارة تنمية المجتمع',
   'family development foundation': 'مؤسسة التنمية الأسرية',
   'dubai economy': 'اقتصادية دبي',
   'emirates health services': 'مؤسسة الإمارات للخدمات الصحية',
   'umm al quwain government': 'حكومة أم القيوين',
+  'zayed house for islamic culture': 'بيت زايد للثقافة الإسلامية',
+  'emirates foundation': 'مؤسسة الإمارات',
   organizations: 'المؤسسات',
   organization: 'المؤسسة',
   academic: 'الأكاديمية',
   marriage: 'الزواج',
+};
+
+const EMIRATE_AR: Record<string, string> = {
+  'abu dhabi': 'أبوظبي',
+  'abudhabi': 'أبوظبي',
+  'abu-dhabi': 'أبوظبي',
+  'dubai': 'دبي',
+  'sharjah': 'الشارقة',
+  'ajman': 'عجمان',
+  'ras al khaimah': 'رأس الخيمة',
+  'rasalkhaimah': 'رأس الخيمة',
+  'ras-al-khaimah': 'رأس الخيمة',
+  'fujairah': 'الفجيرة',
+  'umm al quwain': 'أم القيوين',
+  'ummalquwain': 'أم القيوين',
+  'umm-al-quwain': 'أم القيوين',
+  'umm al-quwain': 'أم القيوين',
+};
+
+const SOURCE_AR: Record<string, string> = {
+  government: 'حكومي',
+  ngo: 'منظمة غير حكومية',
+  private: 'خاص',
+};
+
+const RESOURCE_AR: Record<string, string> = {
+  'official website': 'الموقع الرسمي',
+  'government resources': 'الموارد الحكومية',
+  'government resource': 'مورد حكومي',
+  'educational resources': 'الموارد التعليمية',
+  'related initiatives': 'مبادرات ذات صلة',
+  'application guide': 'دليل التقديم',
+  'program details': 'تفاصيل البرنامج',
+  'book a session': 'احجز جلسة',
+  'related initiative': 'مبادرة ذات صلة',
 };
 
 function safeString(value: unknown): string {
@@ -91,6 +129,36 @@ export function localizeOrganization(value: unknown, isArabic: boolean): string 
   if (!isArabic) return raw;
   const key = raw.toLowerCase().trim();
   return ORGANIZATION_AR[key] ?? raw;
+}
+
+export function localizeEmirate(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  const compact = key.replace(/\s+/g, ' ').replace(/-/g, ' ').trim().replace(/\s+/g, ' ');
+  return EMIRATE_AR[key] ?? EMIRATE_AR[compact] ?? EMIRATE_AR[key.replace(/-/g, '')] ?? raw;
+}
+
+export function localizeCity(value: unknown, isArabic: boolean): string {
+  // City names overlap with emirate names in UAE
+  return localizeEmirate(value, isArabic);
+}
+
+export function localizeSource(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  return SOURCE_AR[key] ?? raw;
+}
+
+export function localizeResource(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  return RESOURCE_AR[key] ?? raw;
 }
 
 /**

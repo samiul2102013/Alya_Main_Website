@@ -4,9 +4,10 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ExternalLink, Link2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { localizeTitle } from '@/lib/localize-category';
+import { localizeTitle, localizeEmirate, localizeCity, localizeOrganization, localizeResource, formatLocalizedDate } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import { getPublishedNews, getNewsBySlug, type PublicNewsDetail, type PublicNews } from '@/lib/api/news';
@@ -59,6 +60,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
   showRelatedResources: boolean;
   showShare: boolean;
   showRelatedStories: boolean;
+  notFound: boolean;
 } {
   const t = useTranslations('article');
   const locale = useLocale();
@@ -82,6 +84,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
     showRelatedResources: true,
     showShare: true,
     showRelatedStories: true,
+    notFound: false,
   });
 
   useEffect(() => {
@@ -92,8 +95,11 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
       try {
         if (slugParam) {
           detail = await getNewsBySlug(slugParam);
-        }
-        if (!detail) {
+          if (!detail) {
+            if (!cancelled) setState((s) => ({ ...s, notFound: true }));
+            return;
+          }
+        } else {
           const list = await getPublishedNews();
           if (list?.[0]) {
             detail = await getNewsBySlug(list[0].slug);
@@ -105,7 +111,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
 
       if (cancelled || !detail) return;
 
-      const rawContent = isArabic ? (detail.contentAr || detail.content) : detail.content;
+      const rawContent = pickLocalized(detail.content, (detail as any).contentAr, isArabic);
       const paragraphs = rawContent
         ? rawContent.split(/\n\n+/).filter(Boolean)
         : [t('p1'), t('p2'), t('p3'), t('p4')];
@@ -117,21 +123,21 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
         : mockResources;
 
       setState({
-        title: localizeTitle(detail.articleTitle, detail.articleTitleAr, isArabic) || fallbackTitle,
+        title: pickLocalized(detail.articleTitle, detail.articleTitleAr, isArabic) || fallbackTitle,
         content: paragraphs.length ? paragraphs : [t('p1'), t('p2'), t('p3'), t('p4')],
         cover: detail.coverImage || HERO_FALLBACK,
         info: {
           org: detail.organization || mockInfo.org,
           city: detail.city || mockInfo.city,
           emirates: detail.emirate || mockInfo.emirates,
-          author: (isArabic ? (detail.authorAr || detail.author) : detail.author) || mockInfo.author,
+          author: pickLocalized(detail.author, (detail as any).authorAr, isArabic) || mockInfo.author,
           published: detail.publishedDate || mockInfo.published,
         },
         resources: resourceTitles.length ? resourceTitles : mockResources,
         stories:
           detail.relatedStories?.length
             ? detail.relatedStories.map((rs: PublicNews['id'] extends unknown ? any : any, i: number) => ({
-                title: localizeTitle(rs.articleTitle, rs.articleTitleAr, isArabic),
+                title: pickLocalized(rs.articleTitle, rs.articleTitleAr, isArabic),
                 image: rs.coverImage || storyImages[i % storyImages.length],
                 slug: rs.slug,
               }))
@@ -140,6 +146,7 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
         showRelatedResources: detail.showRelatedResources ?? true,
         showShare: detail.showShare ?? true,
         showRelatedStories: detail.showRelatedStories ?? true,
+        notFound: false,
       });
     }
 
@@ -173,18 +180,30 @@ function ArticlePageInner() {
   const searchParams = useSearchParams();
   const slugParam = searchParams.get('slug');
 
-  const { title, content, cover, info, resources, stories, showArticleInfo, showRelatedResources, showShare, showRelatedStories } = useArticle(
+  const { title, content, cover, info, resources, stories, showArticleInfo, showRelatedResources, showShare, showRelatedStories, notFound } = useArticle(
     slugParam,
     t('title'),
   );
 
+  if (notFound) {
+    return (
+      <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-base font-normal text-[#6B5B57]">{t('title')} unavailable.</p>
+        <Link href="/news" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">Back to News</Link>
+      </div>
+    );
+  }
+
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const infoRows = [
-    { label: t('org'), value: info.org },
-    { label: t('city'), value: info.city },
-    { label: t('emirates'), value: info.emirates },
+    { label: t('org'), value: localizeOrganization(info.org, isArabic) },
+    { label: t('city'), value: localizeCity(info.city, isArabic) },
+    { label: t('emirates'), value: localizeEmirate(info.emirates, isArabic) },
     { label: t('author'), value: info.author },
-    { label: t('published'), value: info.published },
+    { label: t('published'), value: formatLocalizedDate(info.published, isArabic) || info.published },
   ];
+  const localizedResources = resources.map((r) => localizeResource(r, isArabic));
 
   return (
     <div className="bg-[#FAEDE6] min-h-screen">
@@ -278,7 +297,7 @@ function ArticlePageInner() {
                   <motion.span variants={itemVariants} className="text-base font-semibold text-[#781E36]">
                     {t('relatedResources')}
                   </motion.span>
-                  {resources.map((res, i) => (
+                  {localizedResources.map((res, i) => (
                     <motion.div key={i} variants={itemVariants}
                       className="flex items-center justify-between w-full py-2 border-b border-[#E8CFC1] last:border-b-0">
                       <span className="text-[13px] font-normal text-[#6B5B57] leading-snug">{res}</span>
@@ -290,46 +309,7 @@ function ArticlePageInner() {
             </Reveal>
             )}
 
-            {showShare && (
-            <Reveal delay={0.3} direction="right">
-              <div className="flex flex-col gap-3 w-full rounded-[20px] border border-[#E8CFC1] bg-white p-5"
-                style={{ boxShadow: '0px 2px 8px 0px #781E3605' }}>
-                <motion.div
-                  className="flex flex-col gap-3"
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: false, margin: '-30px' }}
-                >
-                  <motion.span variants={itemVariants} className="text-base font-semibold text-[#781E36]">
-                    {t('share')}
-                  </motion.span>
-                  <motion.div className="flex flex-wrap gap-2" variants={containerVariants}>
-                    <motion.button variants={itemVariants} type="button"
-                      className="flex items-center gap-[6px] h-[30px] rounded-[8px] bg-[#FAEDE6] border border-[#E8CFC1] px-3 py-[6px] hover:border-[#781E36] transition-colors">
-                      <Link2 className="h-[14px] w-[14px] text-[#781E36]" />
-                      <span className="text-xs font-medium text-[#781E36] leading-tight">{t('copyLink')}</span>
-                    </motion.button>
-                    <motion.button variants={itemVariants} type="button"
-                      className="flex items-center gap-[6px] h-[30px] rounded-[8px] bg-[#FAEDE6] border border-[#E8CFC1] px-3 py-[6px] hover:border-[#781E36] transition-colors">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#781E36"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3V2z" /></svg>
-                      <span className="text-xs font-medium text-[#781E36] leading-tight">{t('facebook')}</span>
-                    </motion.button>
-                    <motion.button variants={itemVariants} type="button"
-                      className="flex items-center gap-[6px] h-[30px] rounded-[8px] bg-[#FAEDE6] border border-[#E8CFC1] px-3 py-[6px] hover:border-[#781E36] transition-colors">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#781E36"><path d="M4 4l6.5 8.5L4 20h1.5l5.5-7 4.5 7H20l-7-9.5L19.5 4H18l-5 6.5L8.5 4H4zM6.5 5.5h1.5l9 13h-1.5l-9-13z" /></svg>
-                      <span className="text-xs font-medium text-[#781E36] leading-tight">{t('x')}</span>
-                    </motion.button>
-                    <motion.button variants={itemVariants} type="button"
-                      className="flex items-center gap-[6px] h-[30px] rounded-[8px] bg-[#FAEDE6] border border-[#E8CFC1] px-3 py-[6px] hover:border-[#781E36] transition-colors">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#781E36"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" /></svg>
-                      <span className="text-xs font-medium text-[#781E36] leading-tight">{t('linkedin')}</span>
-                    </motion.button>
-                  </motion.div>
-                </motion.div>
-              </div>
-            </Reveal>
-            )}
+
 
             {showRelatedStories && (
             <Reveal delay={0.35} direction="right">

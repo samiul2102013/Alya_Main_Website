@@ -10,7 +10,8 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { NEWS_IMAGES, NEWS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedNewsPage, type PublicNews } from '@/lib/api/news';
-import { localizeCategory, localizeTitle } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeSource } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
 const containerVariants = {
@@ -100,6 +101,15 @@ export default function NewsPage() {
   const showFaqs       = secVis.faqs       !== false;
   const showCta        = secVis.cta        !== false;
 
+  if ((presentation as any).notFound) {
+    return (
+      <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-base font-normal text-[#6B5B57]">{isArabic ? 'المحتوى غير متوفر.' : 'This content is not available.'}</p>
+        <Link href="/" className="flex h-[52px] items-center justify-center rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">{tNav('home')}</Link>
+      </div>
+    );
+  }
+
   const catOptions = t.raw('catOptions') as string[];
   const dateOptions = t.raw('dateOptions') as string[];
   const srcOptions = t.raw('sourceOptions') as string[];
@@ -112,15 +122,17 @@ export default function NewsPage() {
   const topics: TopicItem[] =
     (presentation.presentation?.newsTopics?.length &&
       presentation.presentation.newsTopics.map((topic) => ({
-        title: topic.title,
+        title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
         videos: topic.videos ?? '',
       }))) ||
     i18nTopics;
 
-  const contributorList: string[] =
-    (presentation.presentation?.newsContributors?.length &&
-      presentation.presentation.newsContributors) ||
-    [];
+  const contributorList: string[] = (() => {
+    const p = presentation.presentation;
+    if (isArabic && (p as any)?.newsContributorsAr?.length) return (p as any).newsContributorsAr;
+    if (p?.newsContributors?.length) return p.newsContributors;
+    return [];
+  })();
 
   const faqs: FaqItem[] =
     (presentation.presentation?.newsFaqs?.length &&
@@ -276,7 +288,7 @@ export default function NewsPage() {
           <div className="flex flex-col gap-3">
             <h3 className="text-lg font-semibold text-[#781E36] leading-snug">{title}</h3>
             {article.source && (
-              <span className="text-[11px] font-normal text-[#989898]">{article.source}</span>
+              <span className="text-[11px] font-normal text-[#989898]">{localizeSource(article.source, isArabic)}</span>
             )}
           </div>
           <div className="flex flex-col gap-3 mt-auto">
