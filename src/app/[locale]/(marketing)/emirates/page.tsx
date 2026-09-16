@@ -10,6 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { getPublishedEmirates, type PublicEmirate } from '@/lib/api/emirates';
 import { getPublishedInitiatives, type PublicInitiative } from '@/lib/api/initiatives';
+import { localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { EMIRATES_IMAGES, EMIRATES_HERO_IMAGE } from '@/lib/image-pools';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
@@ -240,15 +241,18 @@ export default function EmiratesPage() {
 
   const topics: Topic[] =
     (presentation.presentation?.emiratesTopics?.length
-      ? presentation.presentation.emiratesTopics.map((topic) => ({
-          title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
-          videos: topic.videos ?? '',
-        }))
+      ? presentation.presentation.emiratesTopics.map((topic) => {
+          const baseTitle = pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title;
+          const title = isArabic && !(topic as any).titleAr ? localizeTopicTitle(baseTitle, true) : baseTitle;
+          const videosRaw = topic.videos ?? '';
+          const videos = isArabic ? localizeVideosCount(videosRaw, true) : videosRaw;
+          return { title, videos };
+        })
       : i18nTopics) || [];
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && (p as any)?.emiratesContributorsAr?.length) return (p as any).emiratesContributorsAr;
-    if (p?.emiratesContributors?.length) return p.emiratesContributors;
+    if (p?.emiratesContributors?.length) return isArabic ? p.emiratesContributors.map((c) => localizeContributor(c, true)) : p.emiratesContributors;
     return [];
   })();
   const faqs: Faq[] =

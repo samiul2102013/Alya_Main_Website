@@ -10,7 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { NEWS_IMAGES, NEWS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedNewsPage, type PublicNews } from '@/lib/api/news';
-import { localizeCategory, localizeTitle, localizeSource } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeSource, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -118,19 +118,22 @@ export default function NewsPage() {
   const i18nOrgs = t.raw('orgs') as OrgItem[];
   const i18nTopics = (t.raw('topics') ?? []) as TopicItem[];
 
-  // Hybrid content resolution: CMS wins, i18n is the fallback
+  // Hybrid content resolution: CMS wins, i18n is the fallback — with Arabic mapping when titleAr missing
   const topics: TopicItem[] =
     (presentation.presentation?.newsTopics?.length &&
-      presentation.presentation.newsTopics.map((topic) => ({
-        title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
-        videos: topic.videos ?? '',
-      }))) ||
+      presentation.presentation.newsTopics.map((topic) => {
+        const baseTitle = pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title;
+        const title = isArabic && !(topic as any).titleAr ? localizeTopicTitle(baseTitle, true) : baseTitle;
+        const videosRaw = topic.videos ?? '';
+        const videos = isArabic ? localizeVideosCount(videosRaw, true) : videosRaw;
+        return { title, videos };
+      })) ||
     i18nTopics;
 
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && (p as any)?.newsContributorsAr?.length) return (p as any).newsContributorsAr;
-    if (p?.newsContributors?.length) return p.newsContributors;
+    if (p?.newsContributors?.length) return isArabic ? p.newsContributors.map((c) => localizeContributor(c, true)) : p.newsContributors;
     return [];
   })();
 

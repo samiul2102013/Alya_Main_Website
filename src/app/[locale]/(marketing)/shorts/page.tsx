@@ -10,7 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { SHORT_IMAGES, SHORTS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedShortsPage, type PublicShort } from '@/lib/api/shorts';
-import { localizeCategory } from '@/lib/localize-category';
+import { localizeCategory, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -134,18 +134,21 @@ export default function ShortsPage() {
   const i18nContributors = t.raw('contributorList') as string[];
   const i18nFaqs = t.raw('faqs') as Faq[];
 
-  // Hybrid content resolution: CMS wins, i18n is the fallback. Arabic picks *Ar when present (backend auto-translates when admin left blank).
+  // Hybrid content resolution: CMS wins, i18n is the fallback. Arabic picks *Ar when present, otherwise maps English to Arabic.
   const topics: Topic[] =
     (presentation.presentation?.topics?.length &&
-      presentation.presentation.topics.map((topic) => ({
-        title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
-        videos: topic.videos ?? '',
-      }))) ||
+      presentation.presentation.topics.map((topic) => {
+        const baseTitle = pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title;
+        const title = isArabic && !(topic as any).titleAr ? localizeTopicTitle(baseTitle, true) : baseTitle;
+        const videosRaw = topic.videos ?? '';
+        const videos = isArabic ? localizeVideosCount(videosRaw, true) : videosRaw;
+        return { title, videos };
+      })) ||
     i18nTopics;
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && p?.contributorsAr?.length) return p.contributorsAr;
-    if (p?.contributors?.length) return p.contributors;
+    if (p?.contributors?.length) return isArabic ? p.contributors.map((c) => localizeContributor(c, true)) : p.contributors;
     return i18nContributors;
   })();
   const faqs: Faq[] =

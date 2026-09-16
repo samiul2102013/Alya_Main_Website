@@ -124,6 +124,62 @@ const CONTACT_LABEL_AR: Record<string, string> = {
   'working hours': 'ساعات العمل',
 };
 
+const TOPIC_TITLE_AR: Record<string, string> = {
+  // Shorts
+  'marriage preparation': 'التحضير للزواج',
+  'relationship advice': 'نصائح العلاقات',
+  'financial planning': 'التخطيط المالي',
+  'family well-being': 'رفاهية الأسرة',
+  'family wellbeing': 'رفاهية الأسرة',
+  counseling: 'الإرشاد',
+  parenting: 'التربية',
+  // News
+  'marriage law updates': 'مستجدات قانون الزواج',
+  'community events': 'الفعاليات المجتمعية',
+  'success stories': 'قصص النجاح',
+  'expert opinions': 'آراء الخبراء',
+  'government programs': 'البرامج الحكومية',
+  'family wellness': 'العافية الأسرية',
+  // Consultation
+  'marriage counseling': 'الاستشارات الزوجية',
+  'premarital guidance': 'التوجيه قبل الزواج',
+  'family mediation': 'الوساطة الأسرية',
+  'financial counseling': 'الاستشارات المالية',
+  'parenting support': 'دعم الأبوة والأمومة',
+  // Emirates (topic titles are emirate names, handled by EMIRATE_AR)
+  'abu dhabi': 'أبوظبي',
+  'dubai': 'دبي',
+  'sharjah': 'الشارقة',
+  'ajman': 'عجمان',
+  'fujairah': 'الفجيرة',
+  'ras al khaimah': 'رأس الخيمة',
+  'umm al quwain': 'أم القيوين',
+};
+
+const CONTRIBUTOR_AR: Record<string, string> = {
+  // Shorts
+  'government programs': 'البرامج الحكومية',
+  'family court experts': 'خبراء محاكم الأسرة',
+  'certified counselors': 'مستشارون معتمدون',
+  'ngo partners': 'شركاء منظمات غير حكومية',
+  // News
+  'ministry of justice': 'وزارة العدل',
+  'national media council': 'المجلس الوطني للإعلام',
+  'family development authority': 'هيئة تنمية الأسرة',
+  'community development department': 'دائرة التنمية المجتمعية',
+  'uae marriage support': 'دعم الزواج الإماراتي',
+  // Consultation
+  'licensed marriage counselors': 'مستشارو زواج مرخصون',
+  'family therapists': 'معالجون أسريون',
+  'certified coaches': 'مدربون معتمدون',
+  'sharia experts': 'خبراء الشريعة',
+  // Emirates
+  'abu dhabi family development': 'تنمية الأسرة أبوظبي',
+  'dubai marriage support center': 'مركز دعم الزواج دبي',
+  'sharjah social services': 'الخدمات الاجتماعية الشارقة',
+  'community development authority': 'هيئة تنمية المجتمع',
+};
+
 function safeString(value: unknown): string {
   if (value == null) return '';
   if (typeof value === 'string') return value.trim();
@@ -250,6 +306,38 @@ export function localizeBasicInfo(value: unknown, isArabic: boolean): string {
   }
   const key = raw.toLowerCase().trim();
   return CATEGORY_AR[key] ?? ORGANIZATION_AR[key] ?? EMIRATE_AR[key] ?? raw;
+}
+
+export function localizeTopicTitle(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  return TOPIC_TITLE_AR[key] ?? EMIRATE_AR[key] ?? raw;
+}
+
+export function localizeContributor(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const key = raw.toLowerCase().trim();
+  return CONTRIBUTOR_AR[key] ?? ORGANIZATION_AR[key] ?? raw;
+}
+
+export function localizeVideosCount(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  if (!isArabic) return raw;
+  const lower = raw.toLowerCase();
+  const num = raw.match(/\d+/)?.[0] ?? '';
+  if (lower.includes('video')) return num ? `${num} فيديو` : raw;
+  if (lower.includes('session')) return num ? `${num} جلسة` : raw;
+  if (lower.includes('article')) return num ? `${num} مقالاً` : raw;
+  if (lower.includes('center')) return num ? `${num} مركزاً` : raw;
+  if (lower.includes('program')) return num ? `${num} برنامجاً` : raw;
+  if (lower.includes('expert')) return num ? `${num} خبيراً` : raw;
+  if (lower.includes('all')) return 'الكل';
+  return raw;
 }
 
 /**

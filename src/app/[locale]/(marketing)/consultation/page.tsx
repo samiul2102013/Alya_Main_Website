@@ -10,7 +10,7 @@ import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { getPublishedConsultationsPage, type PublicConsultation } from '@/lib/api/consultations';
-import { localizeCategory, localizeTitle } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { CONSULTATION_HERO_IMAGE, CONSULTATION_IMAGES } from '@/lib/image-pools';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
@@ -266,15 +266,18 @@ function ConsultationPageInner() {
 
   const topics: Topic[] =
     (presentation.presentation?.consultationTopics?.length
-      ? presentation.presentation.consultationTopics.map((topic) => ({
-          title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
-          videos: topic.videos ?? '',
-        }))
+      ? presentation.presentation.consultationTopics.map((topic) => {
+          const baseTitle = pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title;
+          const title = isArabic && !(topic as any).titleAr ? localizeTopicTitle(baseTitle, true) : baseTitle;
+          const videosRaw = topic.videos ?? '';
+          const videos = isArabic ? localizeVideosCount(videosRaw, true) : videosRaw;
+          return { title, videos };
+        })
       : i18nTopics) || [];
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && (p as any)?.consultationContributorsAr?.length) return (p as any).consultationContributorsAr;
-    if (p?.consultationContributors?.length) return p.consultationContributors;
+    if (p?.consultationContributors?.length) return isArabic ? p.consultationContributors.map((c) => localizeContributor(c, true)) : p.consultationContributors;
     return [];
   })();
   const faqs: Faq[] =

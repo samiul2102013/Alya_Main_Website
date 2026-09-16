@@ -14,7 +14,7 @@ import {
   type PublicInitiative,
 } from '@/lib/api/initiatives';
 import { EMIRATES_OPTIONS } from '@/lib/constants';
-import { localizeCategory } from '@/lib/localize-category';
+import { localizeCategory, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -173,15 +173,18 @@ export default function InitiativesPage() {
 
   const topics: Topic[] =
     (presentation.presentation?.initiativesTopics?.length
-      ? presentation.presentation.initiativesTopics.map((topic) => ({
-          title: pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title,
-          videos: topic.videos ?? '',
-        }))
+      ? presentation.presentation.initiativesTopics.map((topic) => {
+          const baseTitle = pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title;
+          const title = isArabic && !(topic as any).titleAr ? localizeTopicTitle(baseTitle, true) : baseTitle;
+          const videosRaw = topic.videos ?? '';
+          const videos = isArabic ? localizeVideosCount(videosRaw, true) : videosRaw;
+          return { title, videos };
+        })
       : i18nTopics) || [];
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && (p as any)?.initiativesContributorsAr?.length) return (p as any).initiativesContributorsAr;
-    if (p?.initiativesContributors?.length) return p.initiativesContributors;
+    if (p?.initiativesContributors?.length) return isArabic ? p.initiativesContributors.map((c) => localizeContributor(c, true)) : p.initiativesContributors;
     return [];
   })();
   const faqs: Faq[] =
