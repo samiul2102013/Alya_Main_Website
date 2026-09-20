@@ -117,8 +117,8 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
         : [t('p1'), t('p2'), t('p3'), t('p4')];
 
       const resourceTitles = Array.isArray(detail.resources)
-        ? (detail.resources as { title?: string; url?: string }[])
-            .map((r) => r.title || r.url || '')
+        ? detail.resources
+            .map((r) => (isArabic && r.titleAr ? r.titleAr : r.title || r.url || ''))
             .filter(Boolean)
         : mockResources;
 
@@ -127,8 +127,8 @@ function useArticle(slugParam: string | null, fallbackTitle: string): {
         content: paragraphs.length ? paragraphs : [t('p1'), t('p2'), t('p3'), t('p4')],
         cover: detail.coverImage || HERO_FALLBACK,
         info: {
-          org: detail.organization || mockInfo.org,
-          city: detail.city || mockInfo.city,
+          org: (isArabic ? detail.organizationAr : '') || detail.organization || mockInfo.org,
+          city: (isArabic ? detail.cityAr : '') || detail.city || mockInfo.city,
           emirates: detail.emirate || mockInfo.emirates,
           author: pickLocalized(detail.author, (detail as any).authorAr, isArabic) || mockInfo.author,
           published: detail.publishedDate || mockInfo.published,

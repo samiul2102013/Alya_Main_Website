@@ -20,6 +20,13 @@ export interface PublicNewsRelated {
   publishedDate: string | null;
 }
 
+export interface NewsResource {
+  title?: string;
+  titleAr?: string;
+  url?: string;
+  type?: string;
+}
+
 export interface PublicNewsDetail extends PublicNews {
   language: string;
   content: string;
@@ -28,11 +35,13 @@ export interface PublicNewsDetail extends PublicNews {
   authorAr: string;
   editorialTeam: string;
   organization: string;
+  organizationAr: string;
   moc: string;
   city: string;
+  cityAr: string;
   emirate: string;
   updatedDate: string | null;
-  resources: unknown[];
+  resources: NewsResource[];
   shareUrl: string;
   showArticleInfo: boolean;
   showRelatedResources: boolean;
