@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Link2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { localizeTitle, localizeEmirate, localizeCity, localizeOrganization, localizeResource, formatLocalizedDate } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
@@ -185,6 +185,24 @@ function ArticlePageInner() {
     t('title'),
   );
 
+  const [copied, setCopied] = useState(false);
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+    } catch {
+      const input = document.createElement('textarea');
+      input.value = currentUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
+
   if (notFound) {
     return (
       <div className="bg-[#FAEDE6] min-h-screen flex flex-col items-center justify-center gap-4 p-8">
@@ -310,6 +328,63 @@ function ArticlePageInner() {
             )}
 
 
+
+            {showShare && (
+            <Reveal delay={0.3} direction="right">
+              <div className="flex flex-col gap-3 w-full rounded-[20px] border border-[#E8CFC1] bg-white p-5"
+                style={{ boxShadow: '0px 2px 8px 0px #781E3605' }}>
+                <motion.div
+                  className="flex flex-col gap-3"
+                  variants={containerVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: false, margin: '-30px' }}
+                >
+                  <motion.span variants={itemVariants} className="text-base font-semibold text-[#781E36]">
+                    {t('share')}
+                  </motion.span>
+                  <motion.div className="flex flex-wrap items-center gap-4 mt-1" variants={containerVariants}>
+                    <motion.a
+                      variants={itemVariants}
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex flex-col items-center gap-2 cursor-pointer group"
+                    >
+                      <span className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-[#FAEDE6] border border-[#E8CFC1] group-hover:border-[#781E36] transition-colors">
+                        <svg className="h-5 w-5 text-[#781E36]" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+                      </span>
+                      <span className="text-xs font-medium text-[#6B5B57]">{t('facebook')}</span>
+                    </motion.a>
+                    <motion.a
+                      variants={itemVariants}
+                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex flex-col items-center gap-2 cursor-pointer group"
+                    >
+                      <span className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-[#FAEDE6] border border-[#E8CFC1] group-hover:border-[#781E36] transition-colors">
+                        <svg className="h-5 w-5 text-[#781E36]" viewBox="0 0 24 24" fill="currentColor"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" /></svg>
+                      </span>
+                      <span className="text-xs font-medium text-[#6B5B57]">{t('x')}</span>
+                    </motion.a>
+                    <motion.button
+                      type="button"
+                      onClick={handleCopyLink}
+                      aria-label={t('copyLink')}
+                      variants={itemVariants}
+                      className="flex flex-col items-center gap-2 cursor-pointer group"
+                    >
+                      <span className="flex items-center justify-center h-[48px] w-[48px] rounded-full bg-[#FAEDE6] border border-[#E8CFC1] group-hover:border-[#781E36] transition-colors">
+                        <Link2 className="h-5 w-5 text-[#781E36]" />
+                      </span>
+                      <span className="text-xs font-medium text-[#6B5B57]">{copied ? t('copied') : t('copyLink')}</span>
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </Reveal>
+            )}
 
             {showRelatedStories && (
             <Reveal delay={0.35} direction="right">
