@@ -27,10 +27,12 @@ export interface PublicInitiativeDetail extends PublicInitiative {
   objectives: string[];
   objectivesAr: string[];
   basicInformation: string[];
+  basicInformationAr: string[];
   supportOffered: Record<string, boolean>;
   benefits: string[];
   benefitsAr: string[];
   contact: string[];
+  contactAr: string[];
   showAbout: boolean;
   showSupportOffered: boolean;
   showBenefits: boolean;

@@ -87,7 +87,10 @@ export default function InitiativeDetailsPage() {
     : [];
 
   const basicInfo = (() => {
-    const list = initiative?.basicInformation?.length ? initiative.basicInformation : [];
+    if (!initiative) return [];
+    const ar = initiative.basicInformationAr;
+    if (isArabic && ar?.length) return ar;
+    const list = initiative.basicInformation?.length ? initiative.basicInformation : [];
     return isArabic ? list.map((v) => localizeBasicInfo(v, true)) : list;
   })();
   const objectives = (() => {
@@ -105,7 +108,10 @@ export default function InitiativeDetailsPage() {
     return isArabic ? list.map((v) => localizeBenefit(v, true)) : list;
   })();
   const contacts = (() => {
-    const list = initiative?.contact?.length ? initiative.contact : [];
+    if (!initiative) return [];
+    const ar = initiative.contactAr;
+    if (isArabic && ar?.length) return ar;
+    const list = initiative.contact?.length ? initiative.contact : [];
     return isArabic ? list.map((v) => localizeContact(String(v), true)) : list;
   })();
 

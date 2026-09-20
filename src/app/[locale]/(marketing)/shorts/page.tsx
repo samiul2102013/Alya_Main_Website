@@ -10,7 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { SHORT_IMAGES, SHORTS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedShortsPage, type PublicShort } from '@/lib/api/shorts';
-import { localizeCategory, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
+import { localizeCategory, localizeContributor } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -42,11 +42,6 @@ function buildShortParams(
   if (language) params.language = language;
   if (date) params.date = date;
   return params;
-}
-
-interface Topic {
-  title: string;
-  videos: string;
 }
 
 interface Faq {
@@ -147,21 +142,10 @@ export default function ShortsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isArabic]);
 
-  const i18nTopics = t.raw('topics') as Topic[];
   const i18nContributors = t.raw('contributorList') as string[];
   const i18nFaqs = t.raw('faqs') as Faq[];
 
   // Hybrid content resolution: CMS wins, i18n is the fallback. Arabic picks *Ar when present, otherwise maps English to Arabic.
-  const topics: Topic[] =
-    (presentation.presentation?.topics?.length &&
-      presentation.presentation.topics.map((topic) => {
-        const baseTitle = pickLocalized(topic.title, (topic as any).titleAr, isArabic) || topic.title;
-        const title = isArabic && !(topic as any).titleAr ? localizeTopicTitle(baseTitle, true) : baseTitle;
-        const videosRaw = topic.videos ?? '';
-        const videos = isArabic ? localizeVideosCount(videosRaw, true) : videosRaw;
-        return { title, videos };
-      })) ||
-    i18nTopics;
   const contributorList: string[] = (() => {
     const p = presentation.presentation;
     if (isArabic && p?.contributorsAr?.length) return p.contributorsAr;
@@ -187,7 +171,6 @@ export default function ShortsPage() {
   // Section visibility — default all to true if not set
   const secVis = presentation.presentation?.sectionVisibility ?? {};
   const showHero         = true;
-  const showTopics       = secVis.topics       !== false;
   const showContributors = secVis.contributors !== false;
   const showFaqs         = secVis.faqs         !== false;
   const showCta          = secVis.cta          !== false;
@@ -459,37 +442,6 @@ export default function ShortsPage() {
           )}
         </div>
       </Reveal>
-
-      {showTopics && (
-      <Reveal delay={0.35} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
-          <div className="flex flex-col gap-6 w-full bg-white border-t border-b border-[#E8CFC1] py-8 px-4 sm:px-8">
-            <div className="flex flex-col gap-[6px] px-4">
-              <span className="text-xl font-bold leading-7 text-[#781E36]">{t('exploreTopics')}</span>
-              <span className="text-sm font-normal text-[#6B5B57]">{t('exploreTopicsText')}</span>
-            </div>
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false, margin: '-50px' }}
-            >
-              {topics.map((topic, i) => (
-                <motion.div key={i} variants={itemVariants}
-                  className="flex flex-col items-center gap-3 w-full h-auto min-h-[125px] rounded-[16px] border border-[#E8CFC1] bg-white p-4 cursor-pointer hover:border-[#781E36] transition-colors">
-                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#FAEDE6]">
-                    <svg width="18" height="16" viewBox="0 0 18 16" fill="none"><path d="M9 0L11.59 5.41L17 6.18L13 10.64L14.18 16L9 13.77L3.82 16L5 10.64L1 6.18L6.41 5.41L9 0Z" fill="#781E36" /></svg>
-                  </div>
-                  <span className="text-center text-base font-semibold leading-4 text-[#781E36]">{topic.title}</span>
-                  <span className="text-center text-base font-normal leading-[15px] text-[#6B5B57]">{topic.videos}</span>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </Reveal>
-      )}
 
       {showContributors && (
       <Reveal delay={0.4} direction="up">
