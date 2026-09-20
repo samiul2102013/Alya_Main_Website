@@ -86,8 +86,7 @@ export default function Hero() {
   const heroImage = content?.heroImage || '/Static/Home/Hero/Emirati couple looking at UAE skyline.png';
   const heroImageAlt = content?.heroImageAlt || 'Emirati couple looking at UAE skyline';
   const primaryCtaLink = content?.heroPrimaryCtaLink || '/initiatives';
-  // Support button must always land on the News page.
-  const secondaryCtaLink = '/news';
+  const secondaryCtaLink = content?.heroSecondaryCtaLink || '/news';
 
   return (
     <Section background="default" spacing="none" containerClassName="!max-w-[1440px]" className="pt-[56px] sm:pt-[96px] pb-[80px] sm:pb-[146px] overflow-hidden relative">

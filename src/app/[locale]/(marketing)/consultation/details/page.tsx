@@ -12,6 +12,7 @@ import {
   Clock,
   Globe,
   ArrowRight,
+  ExternalLink,
   Hourglass,
   AlarmClock,
   BadgeCheck,
@@ -322,6 +323,20 @@ function ConsultationDetailsInner() {
                         {t('bookNow')}
                         <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                       </Link>
+                    </motion.div>
+                  )}
+
+                  {session.sessionLink && (
+                    <motion.div variants={itemVariants}>
+                      <a
+                        href={session.sessionLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full h-[60px] rounded-[10px] border-2 border-[#781E36] bg-white px-[10px] text-base font-bold text-[#781E36] hover:bg-[#FAEDE6] transition-colors"
+                      >
+                        {t('joinSession')}
+                        <ExternalLink className="h-5 w-5" />
+                      </a>
                     </motion.div>
                   )}
                 </div>

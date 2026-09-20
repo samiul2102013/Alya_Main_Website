@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { useTranslations, useLocale } from 'next-intl';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
@@ -161,11 +161,22 @@ export default function EmirateDetailPage() {
                 <p className="font-normal text-[#6B5B57] text-base sm:text-lg md:text-[22px] leading-relaxed md:leading-[32px] max-w-[640px]">
                   {emirateSubtitle}
                 </p>
-                <div className="flex items-center gap-4 mt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2">
                   <Link href="/initiatives" className="flex h-[56px] sm:h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors">
                     {t('browseInitiatives')}
                     <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                   </Link>
+                  {emirate?.websiteUrl && (
+                    <a
+                      href={emirate.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-[56px] sm:h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] border-2 border-[#781E36] bg-white px-[10px] text-sm font-bold text-[#781E36] hover:bg-[#FAEDE6] transition-colors"
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                      {t('officialWebsite')}
+                    </a>
+                  )}
                 </div>
               </div>
 
