@@ -60,6 +60,8 @@ function ConsultationPageInner() {
   const tNav = useTranslations('nav');
   const locale = useLocale();
   const isArabic = locale === 'ar';
+  // Arabic mode: filter dropdowns are disabled — every session is shown instead.
+  const filtersDisabled = isArabic;
   const searchParams = useSearchParams();
 
   const [sessions, setSessions] = useState<PublicConsultation[]>([]);
@@ -197,6 +199,32 @@ function ConsultationPageInner() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentPage]);
+
+  // Arabic mode: filters are disabled — drop any active filters/search and
+  // reload the unfiltered list so Arabic users always see every session.
+  useEffect(() => {
+    if (!isArabic) return;
+    const f = filters;
+    if (!f.marital && !f.language && !f.date && !f.sessionType && !f.emirate && !searchText) return;
+    setSearchText('');
+    setFilters({ marital: '', language: '', date: '', sessionType: '', emirate: '' });
+    setOpenDropdown(null);
+    setCurrentPage(1);
+    // The main fetch effect only re-runs on tab/page change, so refetch
+    // explicitly when already on page 1 to drop previously filtered results.
+    if (currentPage === 1) {
+      getPublishedConsultationsPage({ page: '1', perPage: String(perPage) })
+        .then((pageRes) => {
+          setSessions(pageRes.data);
+          setTotalPages(pageRes.meta?.totalPages ?? 1);
+        })
+        .catch(() => {
+          setSessions([]);
+          setTotalPages(1);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isArabic]);
 
   const toggleDropdown = (name: string) => {
     setOpenDropdown(openDropdown === name ? null : name);
@@ -408,7 +436,10 @@ function ConsultationPageInner() {
                       <button
                         type="button"
                         onClick={() => toggleDropdown(filter.name)}
-                        className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                        disabled={filtersDisabled}
+                        className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] transition-colors bg-white ${
+                          filtersDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                        } ${
                           active || openDropdown === filter.name
                             ? 'border-[#781E36]'
                             : 'border-[#E8CFC1] hover:border-[#781E36]'
@@ -423,7 +454,7 @@ function ConsultationPageInner() {
                           />
                         )}
                       </button>
-                      {filter.isDropdown && openDropdown === filter.name && (
+                      {filter.isDropdown && !filtersDisabled && openDropdown === filter.name && (
                         <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
                           {filter.options.map((opt) => (
                             <button
@@ -449,7 +480,8 @@ function ConsultationPageInner() {
                 <button
                   type="button"
                   onClick={handleApplyFilters}
-                  className="h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors flex items-center justify-center gap-2"
+                  disabled={filtersDisabled}
+                  className={`h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white transition-colors flex items-center justify-center gap-2 ${filtersDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#B83A4A]'}`}
                 >
                   <SlidersHorizontal className="h-4 w-4 shrink-0" />
                   {t('search')}
@@ -492,10 +524,10 @@ function ConsultationPageInner() {
       <Reveal delay={0.3} direction="up">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
           {!loaded ? (
-            <p className="text-center text-base font-normal text-[#6B5B57] py-10">Loading...</p>
+            <p className="text-center text-base font-normal text-[#6B5B57] py-10">{t('loading')}</p>
           ) : paged.length === 0 ? (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <p className="text-base font-normal text-[#6B5B57]">No sessions found.</p>
+              <p className="text-base font-normal text-[#6B5B57]">{t('noResults')}</p>
               <button
                 type="button"
                 onClick={() => {
@@ -506,7 +538,7 @@ function ConsultationPageInner() {
                 }}
                 className="h-[52px] rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors"
               >
-                Clear filters
+                {t('clearFilters')}
               </button>
             </div>
           ) : (

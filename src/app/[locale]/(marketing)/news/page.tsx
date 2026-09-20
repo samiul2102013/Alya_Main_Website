@@ -10,7 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { NEWS_IMAGES, NEWS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedNewsPage, type PublicNews } from '@/lib/api/news';
-import { localizeCategory, localizeTitle, localizeSource, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeSource, localizeEmirate, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -68,6 +68,8 @@ export default function NewsPage() {
   const tNav = useTranslations('nav');
   const locale = useLocale();
   const isArabic = locale === 'ar';
+  // Arabic mode: filter dropdowns are disabled — every article is shown instead.
+  const filtersDisabled = isArabic;
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -179,11 +181,39 @@ export default function NewsPage() {
     return () => { mounted = false; };
   }, [currentPage]);
 
+  // Arabic mode: filters are disabled — drop any active filters/search and
+  // reload the unfiltered list so Arabic users always see every article.
+  useEffect(() => {
+    if (!isArabic) return;
+    if (!category && !source && !date && !emirate && !query) return;
+    setCategory('');
+    setSource('');
+    setDate('');
+    setEmirate('');
+    setQuery('');
+    setOpenDropdown(null);
+    setCurrentPage(1);
+    // The main fetch effect only re-runs on page change, so refetch
+    // explicitly when already on page 1 to drop previously filtered results.
+    if (currentPage === 1) {
+      getPublishedNewsPage({ page: '1', perPage: String(PER_PAGE) })
+        .then(({ data, meta }) => {
+          setArticles(data);
+          setTotalPages(meta.totalPages);
+        })
+        .catch(() => {
+          setArticles([]);
+          setTotalPages(1);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isArabic]);
+
   const filters = [
     { name: 'category', label: t('category'), isDropdown: true, options: catOptions },
     { name: 'source', label: t('source'), isDropdown: true, options: srcOptions },
     { name: 'date', label: t('date'), isDropdown: true, options: dateOptions },
-    { name: 'emirate', label: 'Emirate', isDropdown: true, options: emirateOptions },
+    { name: 'emirate', label: t('emirate'), isDropdown: true, options: emirateOptions.map((e) => localizeEmirate(e, isArabic)) },
   ];
 
   const getSelectedLabel = (name: string): string | null => {
@@ -201,7 +231,7 @@ export default function NewsPage() {
     }
     if (name === 'emirate') {
       const idx = emirateOptions.indexOf(emirate);
-      return idx >= 0 ? emirateOptions[idx] : null;
+      return idx >= 0 ? localizeEmirate(emirateOptions[idx], isArabic) : null;
     }
     return null;
   };
@@ -402,13 +432,14 @@ export default function NewsPage() {
                     <div key={filter.name} className="relative w-full">
                       <button type="button"
                         onClick={() => setOpenDropdown(openDropdown === filter.name ? null : filter.name)}
-                        className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${active || openDropdown === filter.name ? 'border-[#781E36]' : 'border-[#E8CFC1] hover:border-[#781E36]'}`}>
+                        disabled={filtersDisabled}
+                        className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] transition-colors bg-white ${filtersDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${active || openDropdown === filter.name ? 'border-[#781E36]' : 'border-[#E8CFC1] hover:border-[#781E36]'}`}>
                         <span className={`text-sm truncate ${active ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
                           {selected || filter.label}
                         </span>
                         <ChevronDown className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === filter.name ? 'rotate-180' : ''}`} />
                       </button>
-                      {openDropdown === filter.name && (
+                      {!filtersDisabled && openDropdown === filter.name && (
                         <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
                           {filter.options.map((opt, index) => (
                             <button key={opt} type="button" onClick={() => handleOptionSelect(filter.name, index)}
@@ -424,7 +455,8 @@ export default function NewsPage() {
                 <button
                   type="button"
                   onClick={handleApplyFilters}
-                  className="h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors flex items-center justify-center gap-2"
+                  disabled={filtersDisabled}
+                  className={`h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white transition-colors flex items-center justify-center gap-2 ${filtersDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#B83A4A]'}`}
                 >
                   <SlidersHorizontal className="h-4 w-4 shrink-0" />
                   {t('search')}
@@ -452,7 +484,7 @@ export default function NewsPage() {
             </div>
           ) : articles.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="text-sm font-normal text-[#6B5B57]">No articles found matching your search or filters.</p>
+              <p className="text-sm font-normal text-[#6B5B57]">{t('noResults')}</p>
               <button type="button" onClick={handleResetFilters}
                 className="h-[48px] rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors">
                 {t('reset')}

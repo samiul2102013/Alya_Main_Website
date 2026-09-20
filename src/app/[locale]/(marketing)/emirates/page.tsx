@@ -66,6 +66,8 @@ export default function EmiratesPage() {
   const locale = useLocale();
   const router = useRouter();
   const isArabic = locale === 'ar';
+  // Arabic mode: filter dropdowns are disabled — every emirate is shown instead.
+  const filtersDisabled = isArabic;
   const [searchText, setSearchText] = useState('');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [filterRegion, setFilterRegion] = useState('');
@@ -191,6 +193,17 @@ export default function EmiratesPage() {
   useEffect(() => {
     setEmiratesPage(1);
   }, [searchText, filterDate, filterRegion, isArabic]);
+
+  // Arabic mode: filters are disabled — clear any active filters so every
+  // emirate shows. The fetch effect above re-runs on the cleared state.
+  useEffect(() => {
+    if (!isArabic) return;
+    if (!filterDate && !filterRegion) return;
+    setFilterDate('');
+    setFilterRegion('');
+    setOpenDropdown(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isArabic]);
 
   function handleSearchWith(q: string) {
     setSearching(true);
@@ -379,27 +392,30 @@ export default function EmiratesPage() {
                     <button
                       type="button"
                       onClick={() => setOpenDropdown(openDropdown === 'region' ? null : 'region')}
-                      className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                      disabled={filtersDisabled}
+                      className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] transition-colors bg-white ${
+                        filtersDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      } ${
                         filterRegion || openDropdown === 'region'
                           ? 'border-[#781E36]'
                           : 'border-[#E8CFC1] hover:border-[#781E36]'
                       }`}
                     >
                       <span className={`text-sm truncate ${filterRegion ? 'font-semibold text-[#781E36]' : 'font-medium text-[#6B5B57]'}`}>
-                        {filterRegion || 'All Emirates'}
+                        {filterRegion || t('allEmirates')}
                       </span>
                       <ChevronDown
                         className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === 'region' ? 'rotate-180' : ''}`}
                       />
                     </button>
-                    {openDropdown === 'region' && (
+                    {!filtersDisabled && openDropdown === 'region' && (
                       <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
                         <button
                           type="button"
                           onClick={() => { setFilterRegion(''); setOpenDropdown(null); }}
                           className="w-full px-[10px] py-2 text-left text-sm font-medium text-[#6B5B57] hover:bg-[#FAEDE6] hover:text-[#781E36] transition-colors"
                         >
-                          All Emirates
+                          {t('allEmirates')}
                         </button>
                         {regionOptions.map((opt) => (
                           <button
@@ -430,7 +446,10 @@ export default function EmiratesPage() {
                     <button
                       type="button"
                       onClick={() => setOpenDropdown(openDropdown === 'date' ? null : 'date')}
-                      className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                      disabled={filtersDisabled}
+                      className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] transition-colors bg-white ${
+                        filtersDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      } ${
                         filterDate || openDropdown === 'date'
                           ? 'border-[#781E36]'
                           : 'border-[#E8CFC1] hover:border-[#781E36]'
@@ -443,7 +462,7 @@ export default function EmiratesPage() {
                         className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${openDropdown === 'date' ? 'rotate-180' : ''}`}
                       />
                     </button>
-                    {openDropdown === 'date' && (
+                    {!filtersDisabled && openDropdown === 'date' && (
                       <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
                         <button
                           type="button"
@@ -471,7 +490,8 @@ export default function EmiratesPage() {
                   <button
                     type="button"
                     onClick={handleApplyFilters}
-                    className="h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors flex items-center justify-center gap-2"
+                    disabled={filtersDisabled}
+                    className={`h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white transition-colors flex items-center justify-center gap-2 ${filtersDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#B83A4A]'}`}
                   >
                     <SlidersHorizontal className="h-4 w-4 shrink-0" />
                     {t('search')}
@@ -488,16 +508,16 @@ export default function EmiratesPage() {
             </div>
 
             {!loaded ? (
-              <p className="text-center text-base font-normal text-[#6B5B57] py-10">Loading...</p>
+              <p className="text-center text-base font-normal text-[#6B5B57] py-10">{t('loading')}</p>
             ) : items.length === 0 ? (
               <div className="flex flex-col items-center gap-4 py-16 text-center">
-                <p className="text-base font-normal text-[#6B5B57]">No emirates found.</p>
+                <p className="text-base font-normal text-[#6B5B57]">{t('noResults')}</p>
                 <button
                   type="button"
                   onClick={handleResetFilters}
                   className="h-[52px] rounded-[12px] bg-[#781E36] px-6 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors"
                 >
-                  Clear filters
+                  {t('clearFilters')}
                 </button>
               </div>
             ) : (

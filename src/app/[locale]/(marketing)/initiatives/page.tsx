@@ -45,6 +45,8 @@ export default function InitiativesPage() {
   const nav = useTranslations('nav');
   const locale = useLocale();
   const isArabic = locale === 'ar';
+  // Arabic mode: filter dropdowns are disabled — every initiative is shown instead.
+  const filtersDisabled = isArabic;
 
   const [items, setItems] = useState<PublicInitiative[]>([]);
   const [meta, setMeta] = useState({ page: 1, perPage: PER_PAGE, total: 0, totalPages: 1 });
@@ -97,6 +99,32 @@ export default function InitiativesPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  // Arabic mode: filters are disabled — drop any active filters/search and
+  // reload the unfiltered list so Arabic users always see every initiative.
+  useEffect(() => {
+    if (!isArabic) return;
+    if (!emirate && !category && !query) return;
+    setEmirate('');
+    setCategory('');
+    setQuery('');
+    setDropdownOpen(null);
+    setPage(1);
+    // The main fetch effect only re-runs on page change, so refetch
+    // explicitly when already on page 1 to drop previously filtered results.
+    if (page === 1) {
+      getPublishedInitiativesPage({ page: '1', perPage: String(PER_PAGE), listed: '1' })
+        .then(({ data, meta: m }) => {
+          setItems(data);
+          setMeta(m);
+        })
+        .catch(() => {
+          setItems([]);
+          setMeta({ page: 1, perPage: PER_PAGE, total: 0, totalPages: 1 });
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isArabic]);
 
   function handleSearchWith(q: string) {
     setSearching(true);
@@ -292,7 +320,10 @@ export default function InitiativesPage() {
                 <button
                   type="button"
                   onClick={() => setDropdownOpen(dropdownOpen === 'emirate' ? null : 'emirate')}
-                  className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                  disabled={filtersDisabled}
+                  className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] transition-colors bg-white ${
+                    filtersDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  } ${
                     emirate || dropdownOpen === 'emirate'
                       ? 'border-[#781E36]'
                       : 'border-[#E8CFC1] hover:border-[#781E36]'
@@ -305,7 +336,7 @@ export default function InitiativesPage() {
                     className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${dropdownOpen === 'emirate' ? 'rotate-180' : ''}`}
                   />
                 </button>
-                {dropdownOpen === 'emirate' && (
+                {dropdownOpen === 'emirate' && !filtersDisabled && (
                   <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
                     <button
                       type="button"
@@ -332,7 +363,10 @@ export default function InitiativesPage() {
                 <button
                   type="button"
                   onClick={() => setDropdownOpen(dropdownOpen === 'category' ? null : 'category')}
-                  className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] cursor-pointer transition-colors bg-white ${
+                  disabled={filtersDisabled}
+                  className={`flex items-center justify-between w-full h-[48px] rounded-[10px] border px-[10px] transition-colors bg-white ${
+                    filtersDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  } ${
                     category || dropdownOpen === 'category'
                       ? 'border-[#781E36]'
                       : 'border-[#E8CFC1] hover:border-[#781E36]'
@@ -345,7 +379,7 @@ export default function InitiativesPage() {
                     className={`h-4 w-4 shrink-0 text-[#989898] transition-transform duration-200 ${dropdownOpen === 'category' ? 'rotate-180' : ''}`}
                   />
                 </button>
-                {dropdownOpen === 'category' && (
+                {dropdownOpen === 'category' && !filtersDisabled && (
                   <div className="absolute top-full left-0 mt-1 w-full rounded-[10px] border border-[#E8CFC1] bg-white shadow-lg z-20 overflow-hidden">
                     <button
                       type="button"
@@ -372,7 +406,8 @@ export default function InitiativesPage() {
                 <button
                   type="button"
                   onClick={handleApplyFilters}
-                  className="h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white hover:bg-[#B83A4A] transition-colors flex items-center justify-center gap-2"
+                  disabled={filtersDisabled}
+                  className={`h-[48px] flex-1 sm:flex-none sm:w-[130px] rounded-[12px] bg-[#781E36] px-4 text-sm font-bold text-white transition-colors flex items-center justify-center gap-2 ${filtersDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#B83A4A]'}`}
                 >
                   <SlidersHorizontal className="h-4 w-4 shrink-0" />
                   {t('search') ?? 'Filter'}
