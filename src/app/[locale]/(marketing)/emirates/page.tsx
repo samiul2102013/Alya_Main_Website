@@ -555,10 +555,7 @@ export default function EmiratesPage() {
                       <p className="text-xs leading-4 text-[#6B5B57]">
                         {item.description}
                       </p>
-                      <div className="mt-auto flex items-center justify-between pt-2 border-t border-[#E8CFC1]">
-                        <span className="rounded-full bg-[#781E36] px-3 py-0.5 text-xs font-bold text-white">
-                          {item.count}
-                        </span>
+                      <div className="mt-auto flex items-center justify-end pt-2 border-t border-[#E8CFC1]">
                         <Link href={`/emirates/${item.slug}`} className="flex items-center gap-1 text-xs font-bold text-[#781E36] hover:text-[#B83A4A] transition-colors">
                           {t('readMore')}
                           <ArrowRight className="h-3 w-3 rtl:rotate-180" />
