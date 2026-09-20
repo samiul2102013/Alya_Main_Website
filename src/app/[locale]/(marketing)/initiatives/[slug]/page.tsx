@@ -12,7 +12,6 @@ import {
   MapPin,
   Clock,
   ExternalLink,
-  Share2,
   Calendar,
 } from 'lucide-react';
 import Breadcrumb from '@/components/shared/Breadcrumb';
@@ -77,6 +76,9 @@ export default function InitiativeDetailsPage() {
   const description = initiative ? pickLocalized(initiative.description, (initiative as any).descriptionAr, isArabic) : '';
   const purpose = initiative ? pickLocalized(initiative.purpose, (initiative as any).purposeAr, isArabic) : '';
   const badge = initiative ? pickLocalized(initiative.badge, (initiative as any).badgeAr, isArabic) : '';
+  const websiteLabel = initiative
+    ? pickLocalized(initiative.websiteButtonLabel, initiative.websiteButtonLabelAr, isArabic)
+    : '';
 
   const supports = t.raw('supports') as string[];
   const supportList = initiative
@@ -200,16 +202,9 @@ export default function InitiativeDetailsPage() {
                         className="flex h-[56px] w-full sm:w-[280px] items-center justify-center gap-2 rounded-[20px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors"
                       >
                         <ExternalLink className="h-5 w-5" />
-                        {t('visitOfficial')}
+                        {websiteLabel || t('visitOfficial')}
                       </a>
                     )}
-                    <a
-                      href={initiative.shareUrl || '#'}
-                      className="flex h-[56px] w-full sm:w-[280px] items-center justify-center gap-2 rounded-[20px] border-2 border-white/60 bg-white/10 px-[10px] text-sm font-bold text-white backdrop-blur-sm hover:bg-white/20 transition-colors"
-                    >
-                      <Share2 className="h-5 w-5" />
-                      {t('shareInitiative')}
-                    </a>
                   </div>
                 </div>
               </div>
@@ -327,7 +322,7 @@ export default function InitiativeDetailsPage() {
                       rel="noreferrer"
                       className="mt-8 inline-flex h-[52px] items-center justify-center rounded-md border border-white px-6 text-base font-semibold text-white hover:bg-white hover:text-[#781E36] transition-colors"
                     >
-                      {t('visitWebsite')}
+                      {websiteLabel || t('visitWebsite')}
                     </a>
                   )}
                 </section>

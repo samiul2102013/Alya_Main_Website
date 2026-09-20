@@ -13,6 +13,8 @@ export interface PublicInitiative {
   badge: string;
   badgeAr: string;
   officialWebsiteUrl: string;
+  websiteButtonLabel?: string;
+  websiteButtonLabelAr?: string;
   shareUrl: string;
   isFeatured: boolean;
   isListed?: boolean;
