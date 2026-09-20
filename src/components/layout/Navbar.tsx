@@ -103,7 +103,10 @@ export default function Navbar() {
     setLangOpen(false);
     setMobileMenuOpen(false);
     if (next !== locale) {
-      router.replace(pathname, { locale: next });
+      // Preserve the current query string (e.g. ?slug=…) so detail/booking
+      // pages keep their record after switching language.
+      const search = typeof window !== 'undefined' ? window.location.search : '';
+      router.replace(`${pathname}${search}`, { locale: next });
     }
   };
 

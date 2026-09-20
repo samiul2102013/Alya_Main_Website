@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
-import { localizeCategory, localizeTitle } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeSessionType, localizeEmirate } from '@/lib/localize-category';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import Section from '../shared/Section';
 import Reveal from '../shared/Reveal';
@@ -37,7 +37,11 @@ function toLocalized(s: PublicConsultation, index: number, isArabic: boolean): L
     id: s.id,
     slug: s.slug,
     title: localizeTitle(s.sessionTitle, s.sessionTitleAr, isArabic),
-    name: localizeCategory(s.category || s.sessionType || s.emirates, isArabic),
+    name: s.category
+      ? localizeCategory(s.category, isArabic)
+      : s.sessionType
+        ? localizeSessionType(s.sessionType, isArabic)
+        : localizeEmirate(s.emirates, isArabic),
     date: s.date || '',
     time: s.startTime ? `${s.startTime}${s.endTime ? ` - ${s.endTime}` : ''}` : s.duration || '',
     image: FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],

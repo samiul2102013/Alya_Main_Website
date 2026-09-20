@@ -10,7 +10,7 @@ import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { getPublishedConsultationsPage, type PublicConsultation } from '@/lib/api/consultations';
-import { localizeCategory, localizeTitle, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeTopicTitle, localizeContributor, localizeVideosCount, localizeSessionType, localizeLanguage, localizeEmirate, localizeMaritalStage } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { CONSULTATION_HERO_IMAGE, CONSULTATION_IMAGES } from '@/lib/image-pools';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
@@ -588,19 +588,23 @@ function ConsultationPageInner() {
                       <div className="flex items-center gap-[13px]">
                         <User className="h-5 w-5 text-[#781E36] shrink-0" />
                         <span className="font-medium text-[#781E36] text-sm leading-[17.5px]">
-                          {card.sessionType || card.maritalStage}
+                          {card.sessionType
+                            ? localizeSessionType(card.sessionType, isArabic)
+                            : localizeMaritalStage(card.maritalStage, isArabic)}
                         </span>
                       </div>
                       <div className="flex items-center gap-[13px]">
                         <Building2 className="h-5 w-5 text-[#781E36] shrink-0" />
                         <span className="font-medium text-[#781E36] text-sm leading-[17.5px]">
-                          {card.emirates || card.language}
+                          {card.emirates
+                            ? localizeEmirate(card.emirates, isArabic)
+                            : localizeLanguage(card.language, isArabic)}
                         </span>
                       </div>
                       <div className="flex items-center gap-[13px]">
                         <MapPin className="h-5 w-5 text-[#6B5B57] shrink-0" />
                         <span className="font-medium text-[#6B5B57] text-sm leading-[17.5px]">
-                          {card.language}
+                          {localizeLanguage(card.language, isArabic)}
                         </span>
                       </div>
                     </div>

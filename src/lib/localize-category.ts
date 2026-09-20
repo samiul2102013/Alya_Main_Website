@@ -75,6 +75,44 @@ const EMIRATE_AR: Record<string, string> = {
   'umm al-quwain': 'أم القيوين',
 };
 
+const SESSION_TYPE_AR: Record<string, string> = {
+  counseling: 'الاستشارات',
+  financial: 'المالية',
+  legal: 'القانونية',
+  health: 'الصحة',
+  workshop: 'ورشة عمل',
+  'pre-marital': 'قبل الزواج',
+  premarital: 'قبل الزواج',
+  marital: 'أثناء الزواج',
+  postmarital: 'بعد الزواج',
+  'post-marital': 'بعد الزواج',
+};
+
+const SESSION_TYPE_EN: Record<string, string> = {
+  counseling: 'Counseling',
+  financial: 'Financial',
+  legal: 'Legal',
+  health: 'Health',
+  workshop: 'Workshop',
+  'pre-marital': 'Pre-Marital',
+  premarital: 'Premarital',
+  marital: 'Marital',
+  postmarital: 'Post-marital',
+  'post-marital': 'Post-marital',
+};
+
+const LANGUAGE_AR: Record<string, string> = {
+  ar: 'العربية',
+  en: 'الإنجليزية',
+  both: 'كلاهما',
+};
+
+const LANGUAGE_EN: Record<string, string> = {
+  ar: 'Arabic',
+  en: 'English',
+  both: 'Both',
+};
+
 const SOURCE_AR: Record<string, string> = {
   government: 'حكومي',
   ngo: 'منظمة غير حكومية',
@@ -230,6 +268,22 @@ export function localizeEmirate(value: unknown, isArabic: boolean): string {
 export function localizeCity(value: unknown, isArabic: boolean): string {
   // City names overlap with emirate names in UAE
   return localizeEmirate(value, isArabic);
+}
+
+export function localizeSessionType(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  const key = raw.toLowerCase().trim();
+  const map = isArabic ? SESSION_TYPE_AR : SESSION_TYPE_EN;
+  return map[key] ?? raw;
+}
+
+export function localizeLanguage(value: unknown, isArabic: boolean): string {
+  const raw = safeString(value);
+  if (!raw) return '';
+  const key = raw.toLowerCase().trim();
+  const map = isArabic ? LANGUAGE_AR : LANGUAGE_EN;
+  return map[key] ?? raw;
 }
 
 export function localizeSource(value: unknown, isArabic: boolean): string {

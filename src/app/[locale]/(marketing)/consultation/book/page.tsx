@@ -4,6 +4,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { localizeTitle } from '@/lib/localize-category';
+import { pickLocalized } from '@/lib/auto-translate';
 import { motion } from 'framer-motion';
 import {
   PaymentElement,
@@ -296,7 +297,7 @@ function BookingPageInner() {
   const total = session.isFree ? 0 : Math.max(fee + processingFee - discount, 0);
 
   const summary: SummaryItem[] = [
-    { label: summaryLabels[0]?.label ?? '', value: session.counselor || '—' },
+    { label: summaryLabels[0]?.label ?? '', value: pickLocalized(session.counselor, session.counselorAr, isArabic) || '—' },
     { label: summaryLabels[1]?.label ?? '', value: localizeTitle(session.sessionTitle, session.sessionTitleAr, isArabic) },
     { label: summaryLabels[2]?.label ?? '', value: session.duration || `${session.startTime} - ${session.endTime}` },
     {
@@ -662,9 +663,9 @@ function BookingPageInner() {
                   </motion.div>
                 )}
 
-                {session.bookingNotice && (
+                {pickLocalized(session.bookingNotice, session.bookingNoticeAr, isArabic) && (
                   <p className="text-[#B83A4A] text-xs leading-[18px]">
-                    {session.bookingNotice}
+                    {pickLocalized(session.bookingNotice, session.bookingNoticeAr, isArabic)}
                   </p>
                 )}
 
