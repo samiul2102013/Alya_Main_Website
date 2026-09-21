@@ -154,7 +154,9 @@ export default function EmirateDetailPage() {
         <section className="w-full bg-white mb-16">
           <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-12">
             <div className="flex flex-col md:flex-row items-start gap-10">
-              <div className="flex flex-col gap-8 max-w-[672px] w-full">
+              {/* Hero content matches the centered Browse button: centered text
+                  column so heading, description and button read as one block. */}
+              <div className="flex flex-col items-center text-center gap-8 max-w-[672px] w-full">
                 <h1 className="font-bold text-[#781E36] text-3xl sm:text-4xl md:text-[48px] leading-snug md:leading-[67px] max-w-[640px]">
                   {displayName}
                 </h1>
