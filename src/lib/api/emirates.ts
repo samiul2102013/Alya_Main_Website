@@ -31,6 +31,7 @@ export interface PublicEmirateDetail extends PublicEmirate {
   contactPhone: string;
   serviceCenters: number;
   websiteUrl: string;
+  browseInitiativesUrl?: string;
   showStatus: boolean;
   initiatives: PublicEmirateInitiative[];
 }

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { useTranslations, useLocale } from 'next-intl';
-import { ArrowRight, ExternalLink } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Reveal from '@/components/shared/Reveal';
@@ -161,22 +161,27 @@ export default function EmirateDetailPage() {
                 <p className="font-normal text-[#6B5B57] text-base sm:text-lg md:text-[22px] leading-relaxed md:leading-[32px] max-w-[640px]">
                   {emirateSubtitle}
                 </p>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2">
-                  <Link href="/initiatives" className="flex h-[56px] sm:h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors">
-                    {t('browseInitiatives')}
-                    <ArrowRight className="h-5 w-5 rtl:rotate-180" />
-                  </Link>
-                  {emirate?.websiteUrl && (
-                    <a
-                      href={emirate.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-[56px] sm:h-[60px] w-full sm:w-[300px] items-center justify-center gap-2 rounded-[20px] border-2 border-[#781E36] bg-white px-[10px] text-sm font-bold text-[#781E36] hover:bg-[#FAEDE6] transition-colors"
-                    >
-                      <ExternalLink className="h-5 w-5" />
-                      {t('officialWebsite')}
-                    </a>
-                  )}
+                {/* Bug-15: hero shows only the Browse Initiatives button — bigger
+                    and centered; its destination is admin-configurable per
+                    emirate (defaults to /initiatives). The Official Website
+                    button was removed. */}
+                <div className="flex flex-col items-center gap-4 mt-2 w-full">
+                  {(() => {
+                    const browseUrl = emirate?.browseInitiativesUrl?.trim() || '/initiatives';
+                    const isExternal = /^https?:\/\//i.test(browseUrl);
+                    const browseClass = 'flex h-[64px] sm:h-[72px] w-full sm:w-[360px] items-center justify-center gap-2 rounded-[24px] bg-[#781E36] px-8 text-base sm:text-lg font-extrabold text-white shadow-lg hover:bg-[#B83A4A] transition-colors';
+                    return isExternal ? (
+                      <a href={browseUrl} target="_blank" rel="noopener noreferrer" className={browseClass}>
+                        {t('browseInitiatives')}
+                        <ArrowRight className="h-5 w-5 rtl:rotate-180" />
+                      </a>
+                    ) : (
+                      <Link href={browseUrl} className={browseClass}>
+                        {t('browseInitiatives')}
+                        <ArrowRight className="h-5 w-5 rtl:rotate-180" />
+                      </Link>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -230,16 +235,13 @@ export default function EmirateDetailPage() {
                           {card.description}
                         </p>
                       </div>
+                      {/* Bug-15: cards show only View Details, full width — the
+                          per-card Official Website button was removed. */}
                       <div className="flex items-center gap-3">
                       {card.slug ? (
-                        <Link href={`/initiatives/${card.slug}`} className="flex-1 h-[48px] rounded-[12px] bg-[#781E36] text-white text-sm font-bold hover:bg-[#B83A4A] transition-colors items-center justify-center inline-flex">{t('viewDetails')}</Link>
+                        <Link href={`/initiatives/${card.slug}`} className="w-full h-[48px] rounded-[12px] bg-[#781E36] text-white text-sm font-bold hover:bg-[#B83A4A] transition-colors items-center justify-center inline-flex">{t('viewDetails')}</Link>
                       ) : (
-                        <button type="button" className="flex-1 h-[48px] rounded-[12px] bg-[#781E36] text-white text-sm font-bold hover:bg-[#B83A4A] transition-colors">{t('viewDetails')}</button>
-                      )}
-                      {card.officialWebsiteUrl ? (
-                        <a href={card.officialWebsiteUrl} target="_blank" rel="noopener noreferrer" className="flex-1 h-[48px] rounded-[12px] border border-[#E8CFC1] text-[#781E36] text-sm font-bold bg-white hover:border-[#781E36] transition-colors inline-flex items-center justify-center">{t('officialWebsite')}</a>
-                      ) : (
-                        <button type="button" className="flex-1 h-[48px] rounded-[12px] border border-[#E8CFC1] text-[#781E36] text-sm font-bold bg-white hover:border-[#781E36] transition-colors">{t('officialWebsite')}</button>
+                        <button type="button" className="w-full h-[48px] rounded-[12px] bg-[#781E36] text-white text-sm font-bold hover:bg-[#B83A4A] transition-colors">{t('viewDetails')}</button>
                       )}
                     </div>
                   </div>
