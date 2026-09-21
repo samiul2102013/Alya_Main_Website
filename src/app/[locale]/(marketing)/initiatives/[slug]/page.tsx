@@ -298,12 +298,17 @@ export default function InitiativeDetailsPage() {
               </Reveal>
             )}
 
-            {contacts.length > 0 && (
+            {/* Bug-8: the website button must stay visible whenever a URL is set,
+                even when the contact list is empty (it must not be gated on
+                contacts.length, otherwise initiatives like Medeem show no
+                website button at all). */}
+            {(contacts.length > 0 || initiative.officialWebsiteUrl) && (
               <Reveal delay={0.35} direction="up">
                 <section className="w-full rounded-[20px] bg-[#781E36] p-6 sm:p-10">
                   <div className="border-b border-[#E8CFC1] pb-[10px] mb-6">
                     <h2 className="text-2xl font-bold text-white">{t('contactInfo')}</h2>
                   </div>
+                  {contacts.length > 0 && (
                   <div className="flex flex-col gap-5">
                     {contacts.map((item, i) => {
                       const Icon = CONTACT_ICONS[i % CONTACT_ICONS.length];
@@ -315,6 +320,7 @@ export default function InitiativeDetailsPage() {
                       );
                     })}
                   </div>
+                  )}
                   {initiative.officialWebsiteUrl && (
                     <a
                       href={initiative.officialWebsiteUrl}
