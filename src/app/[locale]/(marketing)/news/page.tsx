@@ -10,7 +10,7 @@ import Reveal from '@/components/shared/Reveal';
 import Pagination from '@/components/shared/Pagination';
 import { NEWS_IMAGES, NEWS_HERO_IMAGE } from '@/lib/image-pools';
 import { getPublishedNewsPage, type PublicNews } from '@/lib/api/news';
-import { localizeCategory, localizeTitle, localizeSource, localizeEmirate, localizeTopicTitle, localizeContributor, localizeVideosCount } from '@/lib/localize-category';
+import { localizeCategory, localizeTitle, localizeSource, localizeEmirate, localizeTopicTitle, localizeContributor, localizeVideosCount, formatLocalizedDate } from '@/lib/localize-category';
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
@@ -313,6 +313,10 @@ export default function NewsPage() {
   function articleCard(article: PublicNews, i: number) {
     const coverImg = article.coverImage || NEWS_IMAGES[i % NEWS_IMAGES.length];
     const title = localizeTitle(article.articleTitle, article.articleTitleAr, isArabic);
+    // Bug-13: format defensively — `new Date(badValue).toLocaleDateString()`
+    // throws RangeError and, with no error boundary on this route, a single
+    // malformed row blanks the whole page until reload.
+    const formattedDate = formatLocalizedDate(article.publishedDate, isArabic);
     return (
       <motion.div key={article.id} variants={itemVariants}
         className="flex flex-col w-full rounded-[24px] border border-[#E8CFC1] bg-white overflow-hidden"
@@ -342,11 +346,9 @@ export default function NewsPage() {
               >
                 {t('readMore')} <span className="rtl:rotate-180 inline-block">→</span>
               </Link>
-              {article.publishedDate && (
+              {formattedDate && (
                 <span className="text-[11px] font-normal text-[#989898]">
-                  {new Date(article.publishedDate).toLocaleDateString(isArabic ? 'ar-AE' : 'en-US', {
-                    month: 'short', day: 'numeric', year: 'numeric',
-                  })}
+                  {formattedDate}
                 </span>
               )}
             </div>
@@ -501,12 +503,16 @@ export default function NewsPage() {
             </div>
           ) : (
             <>
+              {/* Bug-13: paginated grids must not depend on whileInView —
+                  freshly mounted page-2 cards can get stuck at opacity 0 when
+                  they mount outside the viewport, blanking the grid until a
+                  reload. `animate` + per-page key always plays to visible. */}
               <motion.div
+                key={currentPage}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full"
                 variants={containerVariants}
                 initial="hidden"
-                whileInView="visible"
-                viewport={{ once: false, margin: '-50px' }}
+                animate="visible"
               >
                 {articles.map((article, i) => articleCard(article, i))}
               </motion.div>

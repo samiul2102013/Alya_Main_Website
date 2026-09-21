@@ -107,7 +107,9 @@ export default function LatestNews() {
         </Reveal>
 
         {/* Grid of 3 News Cards */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        {/* Bug-13: key by page so each page remounts and replays its reveal
+            deterministically instead of reusing stale animation state. */}
+        <div key={page} className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {items.map((news, index) => (
           <Reveal key={index} delay={index * 0.1} direction="up">
             <Link
