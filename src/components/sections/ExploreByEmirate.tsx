@@ -46,6 +46,15 @@ export default function ExploreByEmirate() {
   const router = useRouter();
   const isCapital = (index: number) => index === 0;
 
+  // Bug-11: after changing page, scroll back to the top of this section
+  // so the new cards are visible without manual scrolling.
+  function handlePageChange(p: number) {
+    setPage(p);
+    requestAnimationFrame(() => {
+      document.getElementById('emirates')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   const totalPages = Math.max(1, Math.ceil(items.length / EMIRATES_PER_PAGE));
   const safePage = Math.min(page, totalPages);
   const pagedItems = items.slice(
@@ -80,7 +89,7 @@ export default function ExploreByEmirate() {
   }, [isArabic]);
 
   return (
-    <Section background="default" spacing="none" id="emirates" className="py-[64px] sm:py-[80px]">
+    <Section background="default" spacing="none" id="emirates" className="py-[64px] sm:py-[80px] scroll-mt-20">
       {/* Text Header Container Info: width 1280, height 104, gap 16 */}
       <Reveal direction="up">
         <div className="flex flex-col items-center text-center gap-4 min-h-[104px] mb-12">
@@ -156,7 +165,7 @@ export default function ExploreByEmirate() {
       </div>
       {totalPages > 1 && (
         <div className="mt-10 flex justify-center">
-          <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+          <Pagination page={safePage} totalPages={totalPages} onChange={handlePageChange} />
         </div>
       )}
     </Section>

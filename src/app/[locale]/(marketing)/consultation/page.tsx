@@ -286,6 +286,15 @@ function ConsultationPageInner() {
   const safePage = Math.min(currentPage, totalPages);
   const paged = sessions;
 
+  // Bug-11: after changing page, scroll back to the top of the results grid
+  // so the new cards are visible without manual scrolling.
+  function handleConsultationPageChange(p: number) {
+    setCurrentPage(p);
+    requestAnimationFrame(() => {
+      document.getElementById('consultation-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   // Hybrid content resolution: CMS wins, i18n is the fallback.
   const rawTopics = t.raw('topics');
   const rawFaqs = t.raw('faqs');
@@ -522,7 +531,7 @@ function ConsultationPageInner() {
 
       <div id="learn-more" />
       <Reveal delay={0.3} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12">
+        <div id="consultation-results" className="max-w-[1280px] mx-auto px-4 md:px-8 pb-12 scroll-mt-28">
           {!loaded ? (
             <p className="text-center text-base font-normal text-[#6B5B57] py-10">{t('loading')}</p>
           ) : paged.length === 0 ? (
@@ -653,7 +662,7 @@ function ConsultationPageInner() {
           )}
 
           {loaded && totalPages > 1 && (
-            <Pagination page={currentPage} totalPages={totalPages} onChange={setCurrentPage} className="mt-8" />
+            <Pagination page={currentPage} totalPages={totalPages} onChange={handleConsultationPageChange} className="mt-8" />
           )}
         </div>
       </Reveal>

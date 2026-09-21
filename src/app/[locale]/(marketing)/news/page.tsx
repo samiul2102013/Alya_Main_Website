@@ -301,6 +301,15 @@ export default function NewsPage() {
     setCurrentPage(1);
   }
 
+  // Bug-11: after changing page, scroll back to the top of the articles grid
+  // so the new cards are visible without manual scrolling.
+  function handlePageChange(p: number) {
+    setCurrentPage(p);
+    requestAnimationFrame(() => {
+      document.getElementById('articles')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   function articleCard(article: PublicNews, i: number) {
     const coverImg = article.coverImage || NEWS_IMAGES[i % NEWS_IMAGES.length];
     const title = localizeTitle(article.articleTitle, article.articleTitleAr, isArabic);
@@ -477,7 +486,7 @@ export default function NewsPage() {
 
       {/* All Articles — single unified paginated grid */}
       <Reveal delay={0.25} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16" id="articles">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16 scroll-mt-28" id="articles">
           {loading || searching ? (
             <div className="flex justify-center py-10">
               <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
@@ -502,7 +511,7 @@ export default function NewsPage() {
                 {articles.map((article, i) => articleCard(article, i))}
               </motion.div>
               {totalPages >= 1 && (
-                <Pagination page={currentPage} totalPages={totalPages} onChange={setCurrentPage} className="mt-8" />
+                <Pagination page={currentPage} totalPages={totalPages} onChange={handlePageChange} className="mt-8" />
               )}
             </>
           )}

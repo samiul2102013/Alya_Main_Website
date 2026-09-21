@@ -72,6 +72,15 @@ export default function ShortsPage() {
   // let an older request overwrite the newer one's results.
   const fetchSeq = useRef(0);
 
+  // Bug-11: after changing page, scroll back to the top of the library grid
+  // so the new cards are visible without manual scrolling.
+  function handleLibraryPageChange(p: number) {
+    setLibraryPage(p);
+    requestAnimationFrame(() => {
+      document.getElementById('shorts-library')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   const presentation = usePagePresentation('shorts', {
     title: t('title'),
     description: t('description'),
@@ -417,7 +426,7 @@ export default function ShortsPage() {
 
       {/* All Shorts — single unified paginated grid */}
       <Reveal delay={0.25} direction="up">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16">
+        <div id="shorts-library" className="max-w-[1280px] mx-auto px-4 md:px-8 pb-16 scroll-mt-28">
           {loading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="h-8 w-8 animate-spin text-[#781E36]" />
@@ -436,7 +445,7 @@ export default function ShortsPage() {
                 {videos.map((video, i) => videoCard(video, i, `video-${video.id}`))}
               </motion.div>
               {libraryTotalPages >= 1 && (
-                <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={setLibraryPage} className="mt-8" />
+                <Pagination page={libraryPage} totalPages={libraryTotalPages} onChange={handleLibraryPageChange} className="mt-8" />
               )}
             </>
           )}

@@ -77,14 +77,21 @@ export default function LatestNews() {
   const { content, localize, loading: homepageLoading } = useHomepageContent();
   const fallbackItems = t.raw('news') as { tag: string; date: string; title: string; excerpt: string }[];
   const { items, page, totalPages, setPage } = useLatestNews(fallbackItems, fallbackImages, isArabic);
-  const onPageChange = useCallback((p: number) => setPage(p), [setPage]);
+  const onPageChange = useCallback((p: number) => {
+    setPage(p);
+    // Bug-11: after changing page, scroll back to the top of this section
+    // so the new cards are visible without manual scrolling.
+    requestAnimationFrame(() => {
+      document.getElementById('news')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [setPage]);
 
   const sectionTitle = localize(content?.newsTitle ?? '', content?.newsTitleAr ?? '') || t('newsTitle');
   const sectionSubtitle = localize(content?.newsSubtitle ?? '', content?.newsSubtitleAr ?? '') || t('newsSubtitle');
   const ctaLabel = localize(content?.newsCtaLabel ?? '', content?.newsCtaLabelAr ?? '') || t('newsReadMore');
 
   return (
-    <Section background="muted" spacing="none" id="news" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
+    <Section background="muted" spacing="none" id="news" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px] scroll-mt-20">
       <div className="flex flex-col gap-[64px]">
         {/* Header Container: width 1280, height 104, gap 16 */}
         <Reveal direction="up">

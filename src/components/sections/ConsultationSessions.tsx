@@ -95,10 +95,15 @@ export default function ConsultationSessions() {
   const handlePageChange = useCallback((next: number) => {
     setLoading(true);
     setPage(next);
+    // Bug-11: after changing page, scroll back to the top of this section
+    // so the new cards are visible without manual scrolling.
+    requestAnimationFrame(() => {
+      document.getElementById('consultation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }, []);
 
   return (
-    <Section background="muted" spacing="none" id="consultation" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px]">
+    <Section background="muted" spacing="none" id="consultation" containerClassName="!max-w-[1440px]" className="py-[64px] sm:py-[80px] scroll-mt-20">
       <div className="flex flex-col gap-12">
         {/* Header: centered */}
         <Reveal direction="up">

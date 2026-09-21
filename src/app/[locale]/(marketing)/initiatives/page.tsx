@@ -147,7 +147,11 @@ export default function InitiativesPage() {
 
   function handlePageChange(p: number) {
     setPage(p);
-    document.getElementById('initiatives-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Bug-11: after changing page, scroll back to the top of the results grid
+    // so the new cards are visible without manual scrolling.
+    requestAnimationFrame(() => {
+      document.getElementById('initiatives-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   function handleApplyFilters() {

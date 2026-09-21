@@ -101,7 +101,11 @@ export default function EmiratesPage() {
 
   function goToEmiratesPage(p: number) {
     setEmiratesPage(p);
-    document.getElementById('emirates-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Bug-11: after changing page, scroll back to the top of the results grid
+    // so the new cards are visible without manual scrolling.
+    requestAnimationFrame(() => {
+      document.getElementById('emirates-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   function mapDate(label: string): string {
