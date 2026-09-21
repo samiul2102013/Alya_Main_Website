@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import Container from '../shared/Container';
-import Button from '../shared/Button';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { getPresentations } from '@/lib/api/presentations';
 
@@ -217,12 +216,6 @@ export default function Navbar() {
               )}
             </AnimatePresence>
           </div>
-
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button href="#cta" size="sm" variant="primary">
-              {t('applyNow')}
-            </Button>
-          </motion.div>
         </motion.div>
 
         {/* Mobile Menu Button */}
@@ -299,9 +292,6 @@ export default function Navbar() {
                       English
                     </button>
                   </div>
-                  <Button href="#cta" size="md" variant="primary" className="w-full">
-                    {t('applyNow')}
-                  </Button>
                 </motion.div>
               </nav>
             </div>

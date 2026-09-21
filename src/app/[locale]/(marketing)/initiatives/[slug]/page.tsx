@@ -193,13 +193,14 @@ export default function InitiativeDetailsPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-[40px]">
+                  {/* Bug-16: hero button spans the full width. */}
+                  <div className="flex flex-col gap-4">
                     {initiative.officialWebsiteUrl && (
                       <a
                         href={initiative.officialWebsiteUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex h-[56px] w-full sm:w-[280px] items-center justify-center gap-2 rounded-[20px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors"
+                        className="flex h-[56px] w-full items-center justify-center gap-2 rounded-[20px] bg-[#781E36] px-[10px] text-sm font-bold text-white shadow-lg hover:bg-[#B83A4A] transition-colors"
                       >
                         <ExternalLink className="h-5 w-5" />
                         {websiteLabel || t('visitOfficial')}
