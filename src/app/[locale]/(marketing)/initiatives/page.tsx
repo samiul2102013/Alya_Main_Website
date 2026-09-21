@@ -18,7 +18,10 @@ import { localizeCategory, localizeTopicTitle, localizeContributor, localizeVide
 import { pickLocalized } from '@/lib/auto-translate';
 import { usePagePresentation } from '@/hooks/usePagePresentation';
 
-const PER_PAGE = 9;
+// 3 per page = one full grid row per page, so the contents always paginate
+// (with 9 per page the current 6 initiatives fit on a single page and the
+// pagination controls never appear).
+const PER_PAGE = 3;
 
 const CATEGORY_OPTIONS = [
   { value: 'Financial Support', label: 'Financial Support' },
